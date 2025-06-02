@@ -1,0 +1,81 @@
+﻿<UserControl x:Class="HotelDB_WPF_Framework.UserControls.UCDashboard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Loaded="UserControl_Loaded"
+             Background="#CADBC8"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch">
+
+    <Grid Margin="40">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Título -->
+        <TextBlock Text="Dashboard Geral"
+                   FontSize="30"
+                   FontWeight="Bold"
+                   FontFamily="Sylfaen"
+                   Foreground="#9C9583"
+                   Grid.Row="0"/>
+
+        <Grid Grid.Row="2" Margin="0,20,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Hóspedes -->
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Total Guests:"
+               FontWeight="Bold" FontSize="18" FontFamily="Sylfaen" Foreground="#9C9583"
+               VerticalAlignment="Center"/>
+            <TextBlock Grid.Row="0" Grid.Column="1" Name="lblTotalGuests"
+               FontSize="18" FontFamily="Sylfaen" Foreground="#9C9583"
+               VerticalAlignment="Center"/>
+
+            <!-- Quartos -->
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Total Rooms:"
+               FontWeight="Bold" FontSize="18" FontFamily="Sylfaen" Foreground="#9C9583"
+               VerticalAlignment="Center"/>
+            <TextBlock Grid.Row="1" Grid.Column="1" Name="lblTotalRooms"
+               FontSize="18" FontFamily="Sylfaen" Foreground="#9C9583"
+               VerticalAlignment="Center"/>
+
+            <!-- Reservas -->
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Total Bookings:"
+               FontWeight="Bold" FontSize="18" FontFamily="Sylfaen" Foreground="#9C9583"
+               VerticalAlignment="Center"/>
+            <TextBlock Grid.Row="2" Grid.Column="1" Name="lblTotalBookings"
+               FontSize="18" FontFamily="Sylfaen" Foreground="#9C9583"
+               VerticalAlignment="Center"/>
+
+            <!-- Faturas -->
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="Total Invoices:"
+               FontWeight="Bold" FontSize="18" FontFamily="Sylfaen" Foreground="#9C9583"
+               VerticalAlignment="Center"/>
+            <TextBlock Grid.Row="3" Grid.Column="1" Name="lblTotalInvoices"
+               FontSize="18" FontFamily="Sylfaen" Foreground="#9C9583"
+               VerticalAlignment="Center"/>
+
+            <!-- Receita -->
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="Total Revenue:"
+               FontWeight="Bold" FontSize="18" FontFamily="Sylfaen" Foreground="#9C9583"
+               VerticalAlignment="Center"/>
+            <TextBlock Grid.Row="4" Grid.Column="1" Name="lblTotalRevenue"
+               FontSize="18" FontFamily="Sylfaen" Foreground="#9C9583"
+               VerticalAlignment="Center"/>
+        </Grid>
+
+    </Grid>
+</UserControl>
+

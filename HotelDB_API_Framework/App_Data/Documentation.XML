@@ -1,0 +1,1122 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>HotelDB_API_Framework</name>
+    </assembly>
+    <members>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.ApiDescriptionExtensions.GetFriendlyId(System.Web.Http.Description.ApiDescription)">
+            <summary>
+            Generates an URI-friendly ID for the <see cref="T:System.Web.Http.Description.ApiDescription"/>. E.g. "Get-Values-id_name" instead of "GetValues/{id}?name={name}"
+            </summary>
+            <param name="description">The <see cref="T:System.Web.Http.Description.ApiDescription"/>.</param>
+            <returns>The ID as a string.</returns>
+        </member>
+        <member name="T:HotelDB_API_Framework.Areas.HelpPage.HelpPageConfig">
+            <summary>
+            Use this class to customize the Help Page.
+            For example you can set a custom <see cref="T:System.Web.Http.Description.IDocumentationProvider"/> to supply the documentation
+            or you can provide the samples for the requests/responses.
+            </summary>
+        </member>
+        <member name="T:HotelDB_API_Framework.Areas.HelpPage.Controllers.HelpController">
+            <summary>
+            The controller that will handle requests for the help page.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageConfigurationExtensions.SetDocumentationProvider(System.Web.Http.HttpConfiguration,System.Web.Http.Description.IDocumentationProvider)">
+            <summary>
+            Sets the documentation provider for help page.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="documentationProvider">The documentation provider.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageConfigurationExtensions.SetSampleObjects(System.Web.Http.HttpConfiguration,System.Collections.Generic.IDictionary{System.Type,System.Object})">
+            <summary>
+            Sets the objects that will be used by the formatters to produce sample requests/responses.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="sampleObjects">The sample objects.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageConfigurationExtensions.SetSampleRequest(System.Web.Http.HttpConfiguration,System.Object,System.Net.Http.Headers.MediaTypeHeaderValue,System.String,System.String)">
+            <summary>
+            Sets the sample request directly for the specified media type and action.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="sample">The sample request.</param>
+            <param name="mediaType">The media type.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageConfigurationExtensions.SetSampleRequest(System.Web.Http.HttpConfiguration,System.Object,System.Net.Http.Headers.MediaTypeHeaderValue,System.String,System.String,System.String[])">
+            <summary>
+            Sets the sample request directly for the specified media type and action with parameters.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="sample">The sample request.</param>
+            <param name="mediaType">The media type.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+            <param name="parameterNames">The parameter names.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageConfigurationExtensions.SetSampleResponse(System.Web.Http.HttpConfiguration,System.Object,System.Net.Http.Headers.MediaTypeHeaderValue,System.String,System.String)">
+            <summary>
+            Sets the sample request directly for the specified media type of the action.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="sample">The sample response.</param>
+            <param name="mediaType">The media type.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageConfigurationExtensions.SetSampleResponse(System.Web.Http.HttpConfiguration,System.Object,System.Net.Http.Headers.MediaTypeHeaderValue,System.String,System.String,System.String[])">
+            <summary>
+            Sets the sample response directly for the specified media type of the action with specific parameters.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="sample">The sample response.</param>
+            <param name="mediaType">The media type.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+            <param name="parameterNames">The parameter names.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageConfigurationExtensions.SetSampleForMediaType(System.Web.Http.HttpConfiguration,System.Object,System.Net.Http.Headers.MediaTypeHeaderValue)">
+            <summary>
+            Sets the sample directly for all actions with the specified media type.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="sample">The sample.</param>
+            <param name="mediaType">The media type.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageConfigurationExtensions.SetSampleForType(System.Web.Http.HttpConfiguration,System.Object,System.Net.Http.Headers.MediaTypeHeaderValue,System.Type)">
+            <summary>
+            Sets the sample directly for all actions with the specified type and media type.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="sample">The sample.</param>
+            <param name="mediaType">The media type.</param>
+            <param name="type">The parameter type or return type of an action.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageConfigurationExtensions.SetActualRequestType(System.Web.Http.HttpConfiguration,System.Type,System.String,System.String)">
+            <summary>
+            Specifies the actual type of <see cref="T:System.Net.Http.ObjectContent`1"/> passed to the <see cref="T:System.Net.Http.HttpRequestMessage"/> in an action.
+            The help page will use this information to produce more accurate request samples.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="type">The type.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageConfigurationExtensions.SetActualRequestType(System.Web.Http.HttpConfiguration,System.Type,System.String,System.String,System.String[])">
+            <summary>
+            Specifies the actual type of <see cref="T:System.Net.Http.ObjectContent`1"/> passed to the <see cref="T:System.Net.Http.HttpRequestMessage"/> in an action.
+            The help page will use this information to produce more accurate request samples.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="type">The type.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+            <param name="parameterNames">The parameter names.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageConfigurationExtensions.SetActualResponseType(System.Web.Http.HttpConfiguration,System.Type,System.String,System.String)">
+            <summary>
+            Specifies the actual type of <see cref="T:System.Net.Http.ObjectContent`1"/> returned as part of the <see cref="T:System.Net.Http.HttpRequestMessage"/> in an action.
+            The help page will use this information to produce more accurate response samples.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="type">The type.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageConfigurationExtensions.SetActualResponseType(System.Web.Http.HttpConfiguration,System.Type,System.String,System.String,System.String[])">
+            <summary>
+            Specifies the actual type of <see cref="T:System.Net.Http.ObjectContent`1"/> returned as part of the <see cref="T:System.Net.Http.HttpRequestMessage"/> in an action.
+            The help page will use this information to produce more accurate response samples.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="type">The type.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+            <param name="parameterNames">The parameter names.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageConfigurationExtensions.GetHelpPageSampleGenerator(System.Web.Http.HttpConfiguration)">
+            <summary>
+            Gets the help page sample generator.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <returns>The help page sample generator.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageConfigurationExtensions.SetHelpPageSampleGenerator(System.Web.Http.HttpConfiguration,HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator)">
+            <summary>
+            Sets the help page sample generator.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="sampleGenerator">The help page sample generator.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageConfigurationExtensions.GetModelDescriptionGenerator(System.Web.Http.HttpConfiguration)">
+            <summary>
+            Gets the model description generator.
+            </summary>
+            <param name="config">The configuration.</param>
+            <returns>The <see cref="T:HotelDB_API_Framework.Areas.HelpPage.ModelDescriptions.ModelDescriptionGenerator"/></returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageConfigurationExtensions.GetHelpPageApiModel(System.Web.Http.HttpConfiguration,System.String)">
+            <summary>
+            Gets the model that represents an API displayed on the help page. The model is initialized on the first call and cached for subsequent calls.
+            </summary>
+            <param name="config">The <see cref="T:System.Web.Http.HttpConfiguration"/>.</param>
+            <param name="apiDescriptionId">The <see cref="T:System.Web.Http.Description.ApiDescription"/> ID.</param>
+            <returns>
+            An <see cref="T:HotelDB_API_Framework.Areas.HelpPage.Models.HelpPageApiModel"/>
+            </returns>
+        </member>
+        <member name="T:HotelDB_API_Framework.Areas.HelpPage.ModelDescriptions.ModelDescription">
+            <summary>
+            Describes a type model.
+            </summary>
+        </member>
+        <member name="T:HotelDB_API_Framework.Areas.HelpPage.ModelDescriptions.ModelDescriptionGenerator">
+            <summary>
+            Generates model descriptions for given types.
+            </summary>
+        </member>
+        <member name="T:HotelDB_API_Framework.Areas.HelpPage.ModelDescriptions.ModelNameAttribute">
+            <summary>
+            Use this attribute to change the name of the <see cref="T:HotelDB_API_Framework.Areas.HelpPage.ModelDescriptions.ModelDescription"/> generated for a type.
+            </summary>
+        </member>
+        <member name="T:HotelDB_API_Framework.Areas.HelpPage.Models.HelpPageApiModel">
+            <summary>
+            The model that represents an API displayed on the help page.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.Models.HelpPageApiModel.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:HotelDB_API_Framework.Areas.HelpPage.Models.HelpPageApiModel"/> class.
+            </summary>
+        </member>
+        <member name="P:HotelDB_API_Framework.Areas.HelpPage.Models.HelpPageApiModel.ApiDescription">
+            <summary>
+            Gets or sets the <see cref="P:HotelDB_API_Framework.Areas.HelpPage.Models.HelpPageApiModel.ApiDescription"/> that describes the API.
+            </summary>
+        </member>
+        <member name="P:HotelDB_API_Framework.Areas.HelpPage.Models.HelpPageApiModel.UriParameters">
+            <summary>
+            Gets or sets the <see cref="T:HotelDB_API_Framework.Areas.HelpPage.ModelDescriptions.ParameterDescription"/> collection that describes the URI parameters for the API.
+            </summary>
+        </member>
+        <member name="P:HotelDB_API_Framework.Areas.HelpPage.Models.HelpPageApiModel.RequestDocumentation">
+            <summary>
+            Gets or sets the documentation for the request.
+            </summary>
+        </member>
+        <member name="P:HotelDB_API_Framework.Areas.HelpPage.Models.HelpPageApiModel.RequestModelDescription">
+            <summary>
+            Gets or sets the <see cref="T:HotelDB_API_Framework.Areas.HelpPage.ModelDescriptions.ModelDescription"/> that describes the request body.
+            </summary>
+        </member>
+        <member name="P:HotelDB_API_Framework.Areas.HelpPage.Models.HelpPageApiModel.RequestBodyParameters">
+            <summary>
+            Gets the request body parameter descriptions.
+            </summary>
+        </member>
+        <member name="P:HotelDB_API_Framework.Areas.HelpPage.Models.HelpPageApiModel.ResourceDescription">
+            <summary>
+            Gets or sets the <see cref="T:HotelDB_API_Framework.Areas.HelpPage.ModelDescriptions.ModelDescription"/> that describes the resource.
+            </summary>
+        </member>
+        <member name="P:HotelDB_API_Framework.Areas.HelpPage.Models.HelpPageApiModel.ResourceProperties">
+            <summary>
+            Gets the resource property descriptions.
+            </summary>
+        </member>
+        <member name="P:HotelDB_API_Framework.Areas.HelpPage.Models.HelpPageApiModel.SampleRequests">
+            <summary>
+            Gets the sample requests associated with the API.
+            </summary>
+        </member>
+        <member name="P:HotelDB_API_Framework.Areas.HelpPage.Models.HelpPageApiModel.SampleResponses">
+            <summary>
+            Gets the sample responses associated with the API.
+            </summary>
+        </member>
+        <member name="P:HotelDB_API_Framework.Areas.HelpPage.Models.HelpPageApiModel.ErrorMessages">
+            <summary>
+            Gets the error messages associated with this model.
+            </summary>
+        </member>
+        <member name="T:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator">
+            <summary>
+            This class will generate the samples for the help page.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator"/> class.
+            </summary>
+        </member>
+        <member name="P:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator.ActualHttpMessageTypes">
+            <summary>
+            Gets CLR types that are used as the content of <see cref="T:System.Net.Http.HttpRequestMessage"/> or <see cref="T:System.Net.Http.HttpResponseMessage"/>.
+            </summary>
+        </member>
+        <member name="P:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator.ActionSamples">
+            <summary>
+            Gets the objects that are used directly as samples for certain actions.
+            </summary>
+        </member>
+        <member name="P:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator.SampleObjects">
+            <summary>
+            Gets the objects that are serialized as samples by the supported formatters.
+            </summary>
+        </member>
+        <member name="P:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator.SampleObjectFactories">
+            <summary>
+            Gets factories for the objects that the supported formatters will serialize as samples. Processed in order,
+            stopping when the factory successfully returns a non-<see langref="null"/> object.
+            </summary>
+            <remarks>
+            Collection includes just <see cref="M:HotelDB_API_Framework.Areas.HelpPage.ObjectGenerator.GenerateObject(System.Type)"/> initially. Use
+            <code>SampleObjectFactories.Insert(0, func)</code> to provide an override and
+            <code>SampleObjectFactories.Add(func)</code> to provide a fallback.</remarks>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator.GetSampleRequests(System.Web.Http.Description.ApiDescription)">
+            <summary>
+            Gets the request body samples for a given <see cref="T:System.Web.Http.Description.ApiDescription"/>.
+            </summary>
+            <param name="api">The <see cref="T:System.Web.Http.Description.ApiDescription"/>.</param>
+            <returns>The samples keyed by media type.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator.GetSampleResponses(System.Web.Http.Description.ApiDescription)">
+            <summary>
+            Gets the response body samples for a given <see cref="T:System.Web.Http.Description.ApiDescription"/>.
+            </summary>
+            <param name="api">The <see cref="T:System.Web.Http.Description.ApiDescription"/>.</param>
+            <returns>The samples keyed by media type.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator.GetSample(System.Web.Http.Description.ApiDescription,HotelDB_API_Framework.Areas.HelpPage.SampleDirection)">
+            <summary>
+            Gets the request or response body samples.
+            </summary>
+            <param name="api">The <see cref="T:System.Web.Http.Description.ApiDescription"/>.</param>
+            <param name="sampleDirection">The value indicating whether the sample is for a request or for a response.</param>
+            <returns>The samples keyed by media type.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator.GetActionSample(System.String,System.String,System.Collections.Generic.IEnumerable{System.String},System.Type,System.Net.Http.Formatting.MediaTypeFormatter,System.Net.Http.Headers.MediaTypeHeaderValue,HotelDB_API_Framework.Areas.HelpPage.SampleDirection)">
+            <summary>
+            Search for samples that are provided directly through <see cref="P:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator.ActionSamples"/>.
+            </summary>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+            <param name="parameterNames">The parameter names.</param>
+            <param name="type">The CLR type.</param>
+            <param name="formatter">The formatter.</param>
+            <param name="mediaType">The media type.</param>
+            <param name="sampleDirection">The value indicating whether the sample is for a request or for a response.</param>
+            <returns>The sample that matches the parameters.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator.GetSampleObject(System.Type)">
+            <summary>
+            Gets the sample object that will be serialized by the formatters. 
+            First, it will look at the <see cref="P:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator.SampleObjects"/>. If no sample object is found, it will try to create
+            one using <see cref="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator.DefaultSampleObjectFactory(HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator,System.Type)"/> (which wraps an <see cref="T:HotelDB_API_Framework.Areas.HelpPage.ObjectGenerator"/>) and other
+            factories in <see cref="P:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator.SampleObjectFactories"/>.
+            </summary>
+            <param name="type">The type.</param>
+            <returns>The sample object.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator.ResolveHttpRequestMessageType(System.Web.Http.Description.ApiDescription)">
+            <summary>
+            Resolves the actual type of <see cref="T:System.Net.Http.ObjectContent`1"/> passed to the <see cref="T:System.Net.Http.HttpRequestMessage"/> in an action.
+            </summary>
+            <param name="api">The <see cref="T:System.Web.Http.Description.ApiDescription"/>.</param>
+            <returns>The type.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator.ResolveType(System.Web.Http.Description.ApiDescription,System.String,System.String,System.Collections.Generic.IEnumerable{System.String},HotelDB_API_Framework.Areas.HelpPage.SampleDirection,System.Collections.ObjectModel.Collection{System.Net.Http.Formatting.MediaTypeFormatter}@)">
+            <summary>
+            Resolves the type of the action parameter or return value when <see cref="T:System.Net.Http.HttpRequestMessage"/> or <see cref="T:System.Net.Http.HttpResponseMessage"/> is used.
+            </summary>
+            <param name="api">The <see cref="T:System.Web.Http.Description.ApiDescription"/>.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+            <param name="parameterNames">The parameter names.</param>
+            <param name="sampleDirection">The value indicating whether the sample is for a request or a response.</param>
+            <param name="formatters">The formatters.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleGenerator.WriteSampleObjectUsingFormatter(System.Net.Http.Formatting.MediaTypeFormatter,System.Object,System.Type,System.Net.Http.Headers.MediaTypeHeaderValue)">
+            <summary>
+            Writes the sample object using formatter.
+            </summary>
+            <param name="formatter">The formatter.</param>
+            <param name="value">The value.</param>
+            <param name="type">The type.</param>
+            <param name="mediaType">Type of the media.</param>
+            <returns></returns>
+        </member>
+        <member name="T:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleKey">
+            <summary>
+            This is used to identify the place where the sample should be applied.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleKey.#ctor(System.Net.Http.Headers.MediaTypeHeaderValue)">
+            <summary>
+            Creates a new <see cref="T:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleKey"/> based on media type.
+            </summary>
+            <param name="mediaType">The media type.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleKey.#ctor(System.Net.Http.Headers.MediaTypeHeaderValue,System.Type)">
+            <summary>
+            Creates a new <see cref="T:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleKey"/> based on media type and CLR type.
+            </summary>
+            <param name="mediaType">The media type.</param>
+            <param name="type">The CLR type.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleKey.#ctor(HotelDB_API_Framework.Areas.HelpPage.SampleDirection,System.String,System.String,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Creates a new <see cref="T:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleKey"/> based on <see cref="P:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleKey.SampleDirection"/>, controller name, action name and parameter names.
+            </summary>
+            <param name="sampleDirection">The <see cref="P:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleKey.SampleDirection"/>.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+            <param name="parameterNames">The parameter names.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleKey.#ctor(System.Net.Http.Headers.MediaTypeHeaderValue,HotelDB_API_Framework.Areas.HelpPage.SampleDirection,System.String,System.String,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Creates a new <see cref="T:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleKey"/> based on media type, <see cref="P:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleKey.SampleDirection"/>, controller name, action name and parameter names.
+            </summary>
+            <param name="mediaType">The media type.</param>
+            <param name="sampleDirection">The <see cref="P:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleKey.SampleDirection"/>.</param>
+            <param name="controllerName">Name of the controller.</param>
+            <param name="actionName">Name of the action.</param>
+            <param name="parameterNames">The parameter names.</param>
+        </member>
+        <member name="P:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleKey.ControllerName">
+            <summary>
+            Gets the name of the controller.
+            </summary>
+            <value>
+            The name of the controller.
+            </value>
+        </member>
+        <member name="P:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleKey.ActionName">
+            <summary>
+            Gets the name of the action.
+            </summary>
+            <value>
+            The name of the action.
+            </value>
+        </member>
+        <member name="P:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleKey.MediaType">
+            <summary>
+            Gets the media type.
+            </summary>
+            <value>
+            The media type.
+            </value>
+        </member>
+        <member name="P:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleKey.ParameterNames">
+            <summary>
+            Gets the parameter names.
+            </summary>
+        </member>
+        <member name="P:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleKey.SampleDirection">
+            <summary>
+            Gets the <see cref="P:HotelDB_API_Framework.Areas.HelpPage.HelpPageSampleKey.SampleDirection"/>.
+            </summary>
+        </member>
+        <member name="T:HotelDB_API_Framework.Areas.HelpPage.ImageSample">
+            <summary>
+            This represents an image sample on the help page. There's a display template named ImageSample associated with this class.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.ImageSample.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:HotelDB_API_Framework.Areas.HelpPage.ImageSample"/> class.
+            </summary>
+            <param name="src">The URL of an image.</param>
+        </member>
+        <member name="T:HotelDB_API_Framework.Areas.HelpPage.InvalidSample">
+            <summary>
+            This represents an invalid sample on the help page. There's a display template named InvalidSample associated with this class.
+            </summary>
+        </member>
+        <member name="T:HotelDB_API_Framework.Areas.HelpPage.ObjectGenerator">
+            <summary>
+            This class will create an object of a given type and populate it with sample data.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.ObjectGenerator.GenerateObject(System.Type)">
+            <summary>
+            Generates an object for a given type. The type needs to be public, have a public default constructor and settable public properties/fields. Currently it supports the following types:
+            Simple types: <see cref="T:System.Int32"/>, <see cref="T:System.String"/>, <see cref="T:System.Enum"/>, <see cref="T:System.DateTime"/>, <see cref="T:System.Uri"/>, etc.
+            Complex types: POCO types.
+            Nullables: <see cref="T:System.Nullable`1"/>.
+            Arrays: arrays of simple types or complex types.
+            Key value pairs: <see cref="T:System.Collections.Generic.KeyValuePair`2"/>
+            Tuples: <see cref="T:System.Tuple`1"/>, <see cref="T:System.Tuple`2"/>, etc
+            Dictionaries: <see cref="T:System.Collections.Generic.IDictionary`2"/> or anything deriving from <see cref="T:System.Collections.Generic.IDictionary`2"/>.
+            Collections: <see cref="T:System.Collections.Generic.IList`1"/>, <see cref="T:System.Collections.Generic.IEnumerable`1"/>, <see cref="T:System.Collections.Generic.ICollection`1"/>, <see cref="T:System.Collections.IList"/>, <see cref="T:System.Collections.IEnumerable"/>, <see cref="T:System.Collections.ICollection"/> or anything deriving from <see cref="T:System.Collections.Generic.ICollection`1"/> or <see cref="T:System.Collections.IList"/>.
+            Queryables: <see cref="T:System.Linq.IQueryable"/>, <see cref="T:System.Linq.IQueryable`1"/>.
+            </summary>
+            <param name="type">The type.</param>
+            <returns>An object of the given type.</returns>
+        </member>
+        <member name="T:HotelDB_API_Framework.Areas.HelpPage.SampleDirection">
+            <summary>
+            Indicates whether the sample is used for request or response
+            </summary>
+        </member>
+        <member name="T:HotelDB_API_Framework.Areas.HelpPage.TextSample">
+            <summary>
+            This represents a preformatted text sample on the help page. There's a display template named TextSample associated with this class.
+            </summary>
+        </member>
+        <member name="T:HotelDB_API_Framework.Areas.HelpPage.XmlDocumentationProvider">
+            <summary>
+            A custom <see cref="T:System.Web.Http.Description.IDocumentationProvider"/> that reads the API documentation from an XML documentation file.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Areas.HelpPage.XmlDocumentationProvider.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:HotelDB_API_Framework.Areas.HelpPage.XmlDocumentationProvider"/> class.
+            </summary>
+            <param name="documentPath">The physical path to XML document.</param>
+        </member>
+        <member name="T:HotelDB_API_Framework.Controllers.BookingsController">
+            <summary>
+            Controlador responsável pela gestão das reservas.
+            Expõe endpoints da API para consultar, criar, atualizar e eliminar reservas,
+            delegando as regras de negócio ao <see cref="T:HotelDB_API_Framework.Services.BookingService"/>.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.BookingsController.#ctor">
+            <summary>
+            Construtor do controlador de reservas.
+            Inicializa a ligação à base de dados e o serviço de reservas responsável pela aplicação das regras de negócio.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.BookingsController.Get">
+            <summary>
+            Obtém a lista de todas as reservas.
+            </summary>
+            <returns>Lista de reservas ordenada por data de check-in.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.BookingsController.Get(System.Int32)">
+            <summary>
+            Obtém uma reserva pelo seu ID.
+            </summary>
+            <param name="id">ID da reserva.</param>
+            <returns>Reserva correspondente ou mensagem de erro.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.BookingsController.Post(HotelDB_API_Framework.Booking)">
+            <summary>
+            Adiciona uma nova reserva.
+            </summary>
+            <param name="newBooking">Objeto reserva a adicionar.</param>
+            <returns>Mensagem de sucesso ou erro.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.BookingsController.Put(HotelDB_API_Framework.Booking)">
+            <summary>
+            Atualiza uma reserva existente.
+            </summary>
+            <param name="updatedBooking">Objeto reserva com dados atualizados.</param>
+            <returns>Mensagem de sucesso ou erro.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.BookingsController.Delete(System.Int32)">
+            <summary>
+            Elimina uma reserva pelo seu ID.
+            </summary>
+            <param name="id">ID da reserva a eliminar.</param>
+            <returns>Mensagem de sucesso ou erro.</returns>
+        </member>
+        <member name="T:HotelDB_API_Framework.Controllers.DashboardController">
+            <summary>
+            Controlador responsável por fornecer estatísticas gerais para o dashboard da aplicação.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.DashboardController.#ctor">
+            <summary>
+            Inicializa o controlador e estabelece ligação à base de dados.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.DashboardController.Get">
+            <summary>
+            Obtém estatísticas agregadas para o dashboard.
+            </summary>
+            <returns>Objeto contendo totais de hóspedes, quartos, reservas, faturas e receita.</returns>
+        </member>
+        <member name="T:HotelDB_API_Framework.Controllers.ExtraServicesController">
+            <summary>
+            Controlador responsável pela gestão de serviços extra.
+            Permite consultar, adicionar, atualizar e remover serviços associados a reservas.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.ExtraServicesController.#ctor">
+            <summary>
+            Construtor do controlador de serviços extra.
+            Inicializa o DataContext.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.ExtraServicesController.Get">
+            <summary>
+            Obtém a lista de todos os serviços extra.
+            </summary>
+            <returns>Lista de serviços ordenada por ID.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.ExtraServicesController.Get(System.Int32)">
+            <summary>
+            Obtém um serviço extra pelo seu ID.
+            </summary>
+            <param name="id">ID do serviço extra.</param>
+            <returns>Serviço correspondente ou mensagem de erro.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.ExtraServicesController.Post(HotelDB_API_Framework.ExtraService)">
+            <summary>
+            Adiciona um novo serviço extra.
+            </summary>
+            <param name="newExtra">Objeto do serviço extra a adicionar.</param>
+            <returns>Mensagem de sucesso ou erro.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.ExtraServicesController.Put(HotelDB_API_Framework.ExtraService)">
+            <summary>
+            Atualiza um serviço extra existente.
+            </summary>
+            <param name="updatedExtra">Objeto com os dados atualizados.</param>
+            <returns>Mensagem de sucesso ou erro.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.ExtraServicesController.Delete(System.Int32)">
+            <summary>
+            Elimina um serviço extra pelo seu ID.
+            </summary>
+            <param name="id">ID do serviço extra a eliminar.</param>
+            <returns>Mensagem de sucesso ou erro.</returns>
+        </member>
+        <member name="T:HotelDB_API_Framework.Controllers.GuestsController">
+            <summary>
+            Controlador responsável pela gestão dos hospedes.
+            Expõe endpoints da API para consultar, criar, atualizar e eliminar hospedes,
+            delegando as regras de negócio ao <see cref="T:HotelDB_API_Framework.Services.GuestService"/>.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.GuestsController.#ctor">
+            <summary>
+            Construtor do controlador de hóspedes
+            Inicializa a ligação à base de dados e o serviço de hóspedes responsável pela aplicação das regras de negócio.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.GuestsController.Get">
+            <summary>
+            Obtém a lista de todos os hóspedes.
+            </summary>
+            <returns>Lista de hóspedes ordenada por nome.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.GuestsController.Get(System.Int32)">
+            <summary>
+            Obtém um hóspede pelo seu ID.
+            </summary>
+            <param name="id">ID do hóspede.</param>
+            <returns>Hóspede correspondente ou mensagem de erro se não existir.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.GuestsController.Post(HotelDB_API_Framework.Guest)">
+            <summary>
+            Adiciona um novo hóspede.
+            </summary>
+            <param name="newGuest">Objeto hóspede a adicionar.</param>
+            <returns>Mensagem de sucesso ou erro.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.GuestsController.Put(HotelDB_API_Framework.Guest)">
+            <summary>
+            Atualiza os dados de um hóspede existente.
+            </summary>
+            <param name="updatedGuest">Objeto hóspede com os dados atualizados.</param>
+            <returns>Mensagem de sucesso ou erro.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.GuestsController.Delete(System.Int32)">
+            <summary>
+            Elimina um hóspede pelo seu ID.
+            </summary>
+            <param name="id">ID do hóspede a eliminar.</param>
+            <returns>Mensagem de sucesso ou erro.</returns>
+        </member>
+        <member name="T:HotelDB_API_Framework.Controllers.InvoicesController">
+            <summary>
+            Controlador responsável pela gestão das faturas.
+            Aplica regras de negócio através do <see cref="T:HotelDB_API_Framework.Services.InvoiceService"/>.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.InvoicesController.#ctor">
+            <summary>
+            Construtor do controlador de faturas.
+            Inicializa o DataContext e o serviço associado.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.InvoicesController.Get">
+            <summary>
+            Obtém a lista de todas as faturas.
+            </summary>
+            <returns>Lista de faturas ordenada pela data de emissão.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.InvoicesController.Get(System.Int32)">
+            <summary>
+            Obtém uma fatura pelo seu ID.
+            </summary>
+            <param name="id">ID da fatura.</param>
+            <returns>Fatura correspondente ou mensagem de erro.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.InvoicesController.Post(HotelDB_API_Framework.Invoice)">
+            <summary>
+            Adiciona uma nova fatura.
+            </summary>
+            <param name="newInvoice">Objeto fatura a adicionar.</param>
+            <returns>Mensagem de sucesso ou erro.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.InvoicesController.Put(HotelDB_API_Framework.Invoice)">
+            <summary>
+            Atualiza os dados de uma fatura existente.
+            </summary>
+            <param name="updatedInvoice">Fatura com os dados atualizados.</param>
+            <returns>Mensagem de sucesso ou erro.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.InvoicesController.Delete(System.Int32)">
+            <summary>
+            Elimina uma fatura pelo seu ID.
+            </summary>
+            <param name="id">ID da fatura a eliminar.</param>
+            <returns>Mensagem de sucesso ou erro.</returns>
+        </member>
+        <member name="T:HotelDB_API_Framework.Controllers.RoomsController">
+            <summary>
+            Controlador responsável pela gestão dos quartos.
+            Expõe endpoints da API para consultar, criar, atualizar e eliminar quartos,
+            delegando as regras de negócio ao <see cref="T:HotelDB_API_Framework.Services.RoomService"/>.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.RoomsController.#ctor">
+            <summary>
+            Construtor do controlador de quartos.
+            Inicializa a ligação à base de dados e o serviço de quartos responsável pela aplicação das regras de negócio.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.RoomsController.Get">
+            <summary>
+            Obtém a lista de todos os quartos.
+            </summary>
+            <returns>Lista de quartos ordenada pelo número.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.RoomsController.Get(System.Int32)">
+            <summary>
+            Obtém um quarto pelo seu ID.
+            </summary>
+            <param name="id">ID do quarto.</param>
+            <returns>Quarto correspondente ou mensagem de erro se não existir.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.RoomsController.Post(HotelDB_API_Framework.Room)">
+            <summary>
+            Adiciona um novo quarto.
+            </summary>
+            <param name="newRoom">Objeto quarto a adicionar.</param>
+            <returns>Mensagem de sucesso ou erro.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.RoomsController.Put(HotelDB_API_Framework.Room)">
+            <summary>
+            Atualiza os dados de um quarto existente.
+            </summary>
+            <param name="updatedRoom">Objeto quarto com os dados atualizados.</param>
+            <returns>Mensagem de sucesso ou erro.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Controllers.RoomsController.Delete(System.Int32)">
+            <summary>
+            Elimina um quarto pelo seu ID.
+            </summary>
+            <param name="id">ID do quarto a eliminar.</param>
+            <returns>Mensagem de sucesso ou erro.</returns>
+        </member>
+        <member name="F:HotelDB_API_Framework.Enums.BookingStatus.Reserved">
+            <summary>
+            Reserva foi criada, mas o hóspede ainda não fez check-in
+            </summary>
+        </member>
+        <member name="F:HotelDB_API_Framework.Enums.BookingStatus.CheckedIn">
+            <summary>
+            O hóspede fez check-in
+            </summary>
+        </member>
+        <member name="F:HotelDB_API_Framework.Enums.BookingStatus.CheckedOut">
+            <summary>
+            // O hóspede saiu
+            </summary>
+        </member>
+        <member name="F:HotelDB_API_Framework.Enums.BookingStatus.Cancelled">
+            <summary>
+            A reserva foi cancelada antes ou durante
+            </summary>
+        </member>
+        <member name="F:HotelDB_API_Framework.Enums.BookingStatus.Completed">
+            <summary>
+            Reserva terminada com sucesso
+            </summary>
+        </member>
+        <member name="T:HotelDB_API_Framework.Enums.ExtraServiceType">
+            <summary>
+            Representa os tipos possíveis de serviços extra.
+            </summary>
+        </member>
+        <member name="F:HotelDB_API_Framework.Enums.ExtraServiceType.Breakfast">
+            <summary>O serviço extra é o pequeno-almoço.</summary> 
+        </member>
+        <member name="F:HotelDB_API_Framework.Enums.ExtraServiceType.SpaAccess">
+            <summary>O serviço extra é o acesso ao Spa.</summary>
+        </member>
+        <member name="F:HotelDB_API_Framework.Enums.ExtraServiceType.PrivateParking">
+            <summary>O serviço extra é o estacionamento no parque do Hotel.</summary>
+        </member>
+        <member name="F:HotelDB_API_Framework.Enums.ExtraServiceType.Laundry">
+            <summary>O serviço extra é o serviço de lavandaria.</summary>
+        </member>
+        <member name="T:HotelDB_API_Framework.Enums.InvoicePaymentMethod">
+            <summary>
+            Representa os meios de pagamento disponíveis
+            </summary>
+        </member>
+        <member name="F:HotelDB_API_Framework.Enums.InvoicePaymentMethod.Cash">
+            <summary>O meio de pagamento escolhido é o pagamento em dinheiro.</summary>
+        </member>
+        <member name="F:HotelDB_API_Framework.Enums.InvoicePaymentMethod.CreditCard">
+            <summary>O meio de pagamento escolhido é o pagamento com cartão de crédito.</summary>
+        </member>
+        <member name="F:HotelDB_API_Framework.Enums.InvoicePaymentMethod.DebitCard">
+            <summary>O meio de pagamento escolhido é o pagamento com cartão de débito.</summary>
+        </member>
+        <member name="T:HotelDB_API_Framework.Enums.RoomStatus">
+            <summary>
+            Representa os estados possíveis de um quarto.
+            </summary>
+        </member>
+        <member name="F:HotelDB_API_Framework.Enums.RoomStatus.Available">
+            <summary>O quarto está disponível para reserva.</summary>
+        </member>
+        <member name="F:HotelDB_API_Framework.Enums.RoomStatus.Reserved">
+            <summary>O quarto está reservado, mas ainda não ocupado.</summary>
+        </member>
+        <member name="F:HotelDB_API_Framework.Enums.RoomStatus.Occupied">
+            <summary>O quarto está atualmente ocupado por um hóspede.</summary>
+        </member>
+        <member name="F:HotelDB_API_Framework.Enums.RoomStatus.UnderMaintenance">
+            <summary>O quarto está em manutenção e indisponível.</summary>
+        </member>
+        <member name="T:HotelDB_API_Framework.Enums.RoomType">
+            <summary>
+            Representa os tipos possíveis de um quarto.
+            </summary>
+        </member>
+        <member name="F:HotelDB_API_Framework.Enums.RoomType.Standard">
+            <summary>O quarto é do tipo Standard.</summary>
+        </member>
+        <member name="F:HotelDB_API_Framework.Enums.RoomType.Suite">
+            <summary>O quarto é do tipo Suite.</summary>
+        </member>
+        <member name="F:HotelDB_API_Framework.Enums.RoomType.Luxury">
+            <summary>O quarto é do tipo Luxury.</summary>
+        </member>
+        <member name="T:HotelDB_API_Framework.Models.DashboardStats">
+            <summary>
+            Representa um conjunto de estatísticas agregadas para o dashboard da aplicação.
+            </summary>
+        </member>
+        <member name="P:HotelDB_API_Framework.Models.DashboardStats.TotalGuests">
+            <summary>
+            Total de hóspedes registados.
+            </summary>
+        </member>
+        <member name="P:HotelDB_API_Framework.Models.DashboardStats.TotalRooms">
+            <summary>
+            Total de quartos disponíveis no sistema.
+            </summary>
+        </member>
+        <member name="P:HotelDB_API_Framework.Models.DashboardStats.TotalBookings">
+            <summary>
+            Total de reservas efetuadas.
+            </summary>
+        </member>
+        <member name="P:HotelDB_API_Framework.Models.DashboardStats.TotalInvoices">
+            <summary>
+            Total de faturas emitidas.
+            </summary>
+        </member>
+        <member name="P:HotelDB_API_Framework.Models.DashboardStats.TotalRevenue">
+            <summary>
+            Receita total calculada a partir das faturas.
+            </summary>
+        </member>
+        <member name="T:HotelDB_API_Framework.Services.ApiService">
+            <summary>
+            Serviço responsável por comunicar com a Web API do sistema de gestão hoteleira.
+            Fornece métodos genéricos para operações GET, POST, PUT e DELETE.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.ApiService.#ctor(System.String)">
+            <summary>
+            Inicializa o ApiService com o endereço base da API.
+            </summary>
+            <param name="baseUrl">URL base da API (ex: https://localhost:44319/api/)</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.ApiService.GetAllAsync``1(System.String)">
+            <summary>
+            Obtém todos os elementos de um endpoint.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.ApiService.GetByIdAsync``1(System.String,System.Int32)">
+            <summary>
+            Obtém um elemento por ID.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.ApiService.PostAsync``1(System.String,``0)">
+            <summary>
+            Envia um objeto para a API para criar (POST).
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.ApiService.PutAsync``1(System.String,``0)">
+            <summary>
+            Atualiza um objeto (PUT).
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.ApiService.DeleteAsync(System.String,System.Int32)">
+            <summary>
+            Elimina um recurso pelo ID.
+            </summary>
+        </member>
+        <member name="T:HotelDB_API_Framework.Services.BookingService">
+            <summary>
+            Serviço responsável por aplicar regras de negócio relacionadas com reservas.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.BookingService.#ctor(HotelDB_API_Framework.HotelDBDataClassesDataContext)">
+            <summary>
+            Contrutor do serviço de reservas
+            </summary>
+            <param name="dc">Instância do DataContext usada para acesso à base de dados.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.BookingService.IsValidGuest(System.Int32)">
+            <summary>
+            Verifica se o hóspede com o ID fornecido existe.
+            </summary>
+            <param name="guestId">ID do hóspede a validar.</param>
+            <returns>Verdadeiro se existir, falso caso contrário.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.BookingService.IsValidRoom(System.Int32)">
+            <summary>
+            Verifica se o quarto com o ID fornecido existe.
+            </summary>
+            <param name="roomId">ID do quarto a validar.</param>
+            <returns>Verdadeiro se existir, falso caso contrário.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.BookingService.IsDateRangeValid(System.DateTime,System.DateTime)">
+            <summary>
+            Verifica se o intervalo de datas da reserva é válido.
+            </summary>
+            <param name="checkIn">Data de check-in.</param>
+            <param name="checkOut">Data de check-out.</param>
+            <returns>Verdadeiro se check-in for anterior a check-out, falso caso contrário.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.BookingService.HasOverlappingBooking(HotelDB_API_Framework.Booking)">
+            <summary>
+            Verifica se já existe uma reserva que se sobrepõe no mesmo quarto e período.
+            Exclui a própria reserva em caso de atualização.
+            </summary>
+            <param name="booking">Reserva a validar</param>
+            <returns>Verdadeiro se houver conflito, falso caso contrário.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.BookingService.CanBeCancelled(HotelDB_API_Framework.Booking)">
+            <summary>
+            Verifica se a reserva pode ser cancelada
+            </summary>
+            <param name="booking">Reserva a cancelar</param>
+            <returns>Verdadeiro se puder ser cancelado, falso caso contrário.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.BookingService.CancelNoShows(System.TimeSpan)">
+            <summary>
+            Permite o concelamento automático, caso o hospede não faça o check in na data e hora definida
+            </summary>
+            <param name="horaLimite">Hora até à qual o hospede pode fazer o check in</param>
+        </member>
+        <member name="T:HotelDB_API_Framework.Services.ExtraServiceService">
+            <summary>
+            Serviço responsável por aplicar regras de negócio relacionadas com serviços extra.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.ExtraServiceService.#ctor(HotelDB_API_Framework.HotelDBDataClassesDataContext)">
+            <summary>
+            Construtor do serviço de serviços extra.
+            </summary>
+            <param name="dc">Instância do DataContext usada para acesso à base de dados.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.ExtraServiceService.IsValidServiceType(System.Int32)">
+            <summary>
+            Verifica se o tipo de serviço fornecido é válido segundo o enum <see cref="T:HotelDB_API_Framework.Enums.ExtraServiceType"/>.
+            </summary>
+            <param name="type">Valor inteiro a validar.</param>
+            <returns>Verdadeiro se corresponder a um valor definido no enum, falso caso contrário.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.ExtraServiceService.IsValidBooking(System.Int32)">
+            <summary>
+            Verifica se a reserva associada ao serviço extra existe.
+            </summary>
+            <param name="bookingId">ID da reserva a verificar.</param>
+            <returns>Verdadeiro se a reserva existir, falso caso contrário.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.ExtraServiceService.ExistsById(System.Int32)">
+            <summary>
+            Verifica se já existe um serviço extra com o ID fornecido.
+            </summary>
+            <param name="extraServiceId">ID do serviço extra a verificar.</param>
+            <returns>Verdadeiro se já existir, falso caso contrário.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.ExtraServiceService.GetTotalForBooking(System.Int32)">
+            <summary>
+            Obtém o total dos serviços extra associados a uma reserva.
+            </summary>
+            <param name="bookingId">ID da reserva.</param>
+            <returns>Total em euros dos serviços extra.</returns>
+        </member>
+        <member name="T:HotelDB_API_Framework.Services.GuestService">
+            <summary>
+            Serviço responsável por aplicar regras de negócio relacionadas com os hóspedes.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.GuestService.#ctor(HotelDB_API_Framework.HotelDBDataClassesDataContext)">
+            <summary>
+            Construtor do serviço de hóspedes.
+            </summary>
+            <param name="dc">Instância do DataContext usada para acesso à base de dados.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.GuestService.HasBookings(System.Int32)">
+            <summary>
+            Verifica se o hóspede tem reservas associadas.
+            </summary>
+            <param name="guestId">ID do hóspede a verificar.</param>
+            <returns>Verdadeiro se existirem reservas, falso caso contrário.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.GuestService.IsEmailUnique(System.String,System.Nullable{System.Int32})">
+            <summary>
+            Verifica se o email fornecido é único no sistema.
+            Exclui o hóspede com o ID indicado (caso esteja a editar os próprios dados).
+            </summary>
+            <param name="email">Email a verificar.</param>
+            <param name="excludeGuestId">ID do hóspede a excluir da verificação (edição).</param>
+            <returns>Verdadeiro se for único, falso caso contrário.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.GuestService.IsIdentificationUnique(System.String,System.Nullable{System.Int32})">
+            <summary>
+            Verifica se o documento de identificação fornecido é único no sistema.
+            Exclui o próprio hóspede (em caso de edição).
+            </summary>
+            <param name="document">Documento de identificação (ex.: NIF, CC).</param>
+            <param name="excludeGuestId">ID do hóspede a excluir da verificação (edição).</param>
+            <returns>Verdadeiro se for único, falso caso contrário.</returns>
+        </member>
+        <member name="T:HotelDB_API_Framework.Services.InvoiceService">
+            <summary>
+            Serviço responsável por aplicar regras de negócio relacionadas com faturas.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.InvoiceService.#ctor(HotelDB_API_Framework.HotelDBDataClassesDataContext)">
+            <summary>
+            Construtor do serviço de faturas.
+            </summary>
+            <param name="dc">Instância do DataContext usada para acesso à base de dados.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.InvoiceService.IsValidBooking(System.Int32)">
+            <summary>
+            Verifica se a reserva com o ID fornecido existe na base de dados.
+            </summary>
+            <param name="bookingId">ID da reserva a verificar.</param>
+            <returns>Verdadeiro se a reserva existir, falso caso contrário.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.InvoiceService.IsBookingAlreadyInvoiced(System.Int32)">
+            <summary>
+            Verifica se já existe uma fatura emitida para a reserva fornecida.
+            </summary>
+            <param name="bookingId">ID da reserva a verificar.</param>
+            <returns>Verdadeiro se já existir fatura, falso caso contrário.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.InvoiceService.CalculateTotals(HotelDB_API_Framework.Invoice)">
+            <summary>
+            Calcula os totais de uma fatura com base na reserva associada.
+            Calcula ExtrasTotal e StayTotal (noites × preço por noite + extras).
+            Define também a data de emissão (IssueDate).
+            </summary>
+            <param name="invoice">Fatura a ser atualizada com os valores calculados.</param>
+        </member>
+        <member name="T:HotelDB_API_Framework.Services.NetworkService">
+            <summary>
+            Serviço responsável por verificar a conectividade de rede e disponibilidade da API.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.NetworkService.#ctor(System.String)">
+            <summary>
+            Inicializa o serviço de rede com o URL a testar (ex: https://localhost:44319/api/values).
+            </summary>
+            <param name="testUrl">Endpoint da API para verificação.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.NetworkService.IsInternetAvailable">
+            <summary>
+            Verifica se a máquina está ligada à internet.
+            </summary>
+            <returns>Verdadeiro se houver ligação à Internet, falso caso contrário.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.NetworkService.IsApiAvailableAsync">
+            <summary>
+            Verifica se a API está acessível via HTTP.
+            </summary>
+            <returns>Verdadeiro se a API responder com sucesso, falso caso contrário.</returns>
+        </member>
+        <member name="T:HotelDB_API_Framework.Services.RoomService">
+            <summary>
+            Serviço responsável por aplicar regras de negócio relacionadas com os quartos.
+            </summary>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.RoomService.#ctor(HotelDB_API_Framework.HotelDBDataClassesDataContext)">
+            <summary>
+            Construtor do serviço de quartos.
+            </summary>
+            <param name="dc">Instância do DataContext usada para acesso à base de dados.</param>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.RoomService.CanRoomBeDeleted(HotelDB_API_Framework.Room)">
+            <summary>
+            Verifica se um quarto pode ser eliminado.
+            Só é possível eliminar quartos disponíveis e sem reservas associadas.
+            </summary>
+            <param name="room">Objeto quarto a validar.</param>
+            <returns>Verdadeiro se puder ser eliminado, falso caso contrário.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.RoomService.IsRoomNumberUnique(System.Int32,System.Nullable{System.Int32})">
+            <summary>
+            Verifica se o número do quarto é único, excluindo opcionalmente um ID específico.
+            </summary>
+            <param name="number">Número do quarto a verificar.</param>
+            <param name="excludeRoomId">ID do quarto a excluir da verificação (para edição).</param>
+            <returns>Verdadeiro se o número for único, falso caso contrário.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.RoomService.IsValidRoomType(System.Int32)">
+            <summary>
+            Verifica se o valor fornecido corresponde a um tipo de quarto válido.
+            </summary>
+            <param name="type">Valor numérico do tipo de quarto.</param>
+            <returns>Verdadeiro se o tipo for válido, falso caso contrário.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.RoomService.IsRoomCurrentlyOccupied(System.Int32)">
+            <summary>
+            Verifica se o quarto está atualmente ocupado (reserva com status CheckedIn).
+            </summary>
+            <param name="roomId">ID do quarto a verificar.</param>
+            <returns>Verdadeiro se estiver ocupado, falso caso contrário.</returns>
+        </member>
+        <member name="M:HotelDB_API_Framework.Services.RoomService.GetBasePriceForRoomType(HotelDB_API_Framework.Enums.RoomType)">
+            <summary>
+            Obtém o preço base sugerido para o tipo de quarto fornecido.
+            (Regra opcional de apoio à definição de preços).
+            </summary>
+            <param name="type">Tipo de quarto.</param>
+            <returns>Preço base sugerido.</returns>
+        </member>
+    </members>
+</doc>
