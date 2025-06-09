@@ -17,6 +17,7 @@ namespace HotelWebApp
                 o.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
 
+            builder.Services.AddScoped<IGuestRepository, GuestRepository>();
 
             var app = builder.Build();
 

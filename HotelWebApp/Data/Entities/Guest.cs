@@ -2,13 +2,13 @@
 
 namespace HotelWebApp.Data.Entities
 {
-    public class Guest
+    public class Guest : IEntity
     {
-        public int GuestId { get; set; }
+        public int Id { get; set; }
 
         [Display(Name = "Full Name")]
         [Required(ErrorMessage = "{0} is required.")]
-        [MaxLength(100, ErrorMessage = "{0} cannot exceed 100 characters.")]
+        [MaxLength(100, ErrorMessage = "{0} cannot exceed {1} characters.")]
         public string Name { get; set; }
 
 
@@ -26,7 +26,7 @@ namespace HotelWebApp.Data.Entities
 
         [Display(Name = "Identification Document")]
         [Required(ErrorMessage = "{0} is required.")]
-        [MaxLength(50, ErrorMessage = "{0} cannot exceed 50 characters.")]
+        [MaxLength(50, ErrorMessage = "{0} cannot exceed {1} characters.")]
         public string IdentificationDocument { get; set; }
     }
 }
