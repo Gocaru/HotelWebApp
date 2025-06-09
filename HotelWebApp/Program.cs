@@ -1,3 +1,6 @@
+using HotelWebApp.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace HotelWebApp
 {
     public class Program
@@ -8,6 +11,12 @@ namespace HotelWebApp
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+
+            builder.Services.AddDbContext<DataContext>(o =>
+            {
+                o.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+            });
+
 
             var app = builder.Build();
 

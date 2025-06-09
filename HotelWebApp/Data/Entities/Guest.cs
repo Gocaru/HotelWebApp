@@ -6,22 +6,27 @@ namespace HotelWebApp.Data.Entities
     {
         public int GuestId { get; set; }
 
-        [Required(ErrorMessage = "Full name is required.")]
-        [MaxLength(100, ErrorMessage = "Full name cannot exceed 100 characters.")]
+        [Display(Name = "Full Name")]
+        [Required(ErrorMessage = "{0} is required.")]
+        [MaxLength(100, ErrorMessage = "{0} cannot exceed 100 characters.")]
         public string Name { get; set; }
 
-        [Required(ErrorMessage = "Contact number is required.")]
-        [Phone(ErrorMessage = "Please enter a valid phone number")]
+
         [Display(Name = "Contact Number")]
+        [Required(ErrorMessage = "{0} is required.")]
+        [Phone(ErrorMessage = "Please enter a valid {0}")]
         public string Contact { get; set; }
 
-        [Required(ErrorMessage = "Email address is required.")]
-        [EmailAddress(ErrorMessage = "Please enter a valid email address")]
+
+        [Display(Name = "Email Address")]
+        [Required(ErrorMessage = "{0} is required.")]
+        [EmailAddress(ErrorMessage = "Please enter a valid {0}")]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "Identification document is required.")]
-        [MaxLength(ErrorMessage = "Identification document cannot exceed 50 characters.")]
+
         [Display(Name = "Identification Document")]
+        [Required(ErrorMessage = "{0} is required.")]
+        [MaxLength(50, ErrorMessage = "{0} cannot exceed 50 characters.")]
         public string IdentificationDocument { get; set; }
     }
 }
