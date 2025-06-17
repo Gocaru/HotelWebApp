@@ -92,7 +92,7 @@ namespace HotelWebApp.Controllers
         }
 
         // POST: GuestsController/Delete/5
-        [HttpPost]
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
