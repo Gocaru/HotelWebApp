@@ -1,4 +1,6 @@
 using HotelWebApp.Data;
+using HotelWebApp.Data.Entities;
+using HotelWebApp.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelWebApp
@@ -8,16 +10,17 @@ namespace HotelWebApp
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+            builder.Services.AddDbContext<HotelWebAppContext>(options => options.UseSqlServer(connectionString));
+
+            builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<HotelWebAppContext>();
+
+            builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-            builder.Services.AddDbContext<DataContext>(o =>
-            {
-                o.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-            });
-
-            builder.Services.AddScoped<IGuestRepository, GuestRepository>();
 
             var app = builder.Build();
 
@@ -34,11 +37,15 @@ namespace HotelWebApp
 
             app.UseRouting();
 
+            app.UseAuthentication();
+
             app.UseAuthorization();
 
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
+
+            app.MapRazorPages();
 
             app.Run();
         }
