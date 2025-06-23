@@ -1,13 +1,13 @@
 ﻿using HotelWebApp.Data.Entities;
 using HotelWebApp.Data.Repositories;
 using HotelWebApp.Models;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Threading.Tasks;
 
 namespace HotelWebApp.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class RoomsController : Controller
     {
         private readonly IRoomRepository _roomRepository;
@@ -28,7 +28,7 @@ namespace HotelWebApp.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var room = await _roomRepository.GetByIdAsync(id);
-            if(room == null) return NotFound();
+            if (room == null) return NotFound();
             return View(room);
         }
 
@@ -45,7 +45,7 @@ namespace HotelWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(RoomViewModel viewModel)
         {
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
                 var room = new Room
                 {
@@ -74,7 +74,7 @@ namespace HotelWebApp.Controllers
                 Id = room.Id,
                 RoomNumber = room.RoomNumber,
                 Capacity = room.Capacity,
-                PricePerNight= room.PricePerNight,
+                PricePerNight = room.PricePerNight,
                 Type = room.Type,
                 Status = room.Status
             };
@@ -88,9 +88,9 @@ namespace HotelWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, RoomViewModel viewModel)
         {
-            if(id != viewModel.Id) return NotFound();
+            if (id != viewModel.Id) return NotFound();
 
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
                 var room = await _roomRepository.GetByIdAsync(id);
 
@@ -128,8 +128,8 @@ namespace HotelWebApp.Controllers
 
         private void PopulateDropdowns()
         {
-            ViewBag.RoomTypes = new SelectList(Enum.GetValues(typeof(RoomType)));
-            ViewBag.RoomStatuses = new SelectList(Enum.GetValues(typeof(RoomStatus)));
+            ViewBag.RoomTypes = Enum.GetValues(typeof(RoomType));
+            ViewBag.RoomStatuses = Enum.GetValues(typeof(RoomStatus));
         }
     }
 }

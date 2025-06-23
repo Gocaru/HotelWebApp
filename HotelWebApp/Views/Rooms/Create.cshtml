@@ -1,4 +1,5 @@
 ﻿@model HotelWebApp.Models.RoomViewModel
+@using HotelWebApp.Data.Entities
 
 @{
     ViewData["Title"] = "Create";
@@ -20,7 +21,7 @@
             <div class="form-group">
                 <label asp-for="Type" class="control-label"></label>
                 <select asp-for="Type" class="form-control"
-                        asp-items="@(new SelectList(ViewBag.RoomTypes))">
+                        asp-items="Html.GetEnumSelectList<RoomType>()">
                     <option value="">-- Select --</option>
                 </select> 
                 <span asp-validation-for="Type" class="text-danger"></span>
@@ -38,7 +39,7 @@
             <div class="form-group">
                 <label asp-for="Status" class="control-label"></label>
                 <select asp-for="Status" class="form-control"
-                        asp-items="@(new SelectList(ViewBag.RoomStatuses))">
+                        asp-items="Html.GetEnumSelectList<RoomStatus>()">
                     <option value="">-- Select --</option>
                 </select>
                 <span asp-validation-for="Status" class="text-danger"></span>
