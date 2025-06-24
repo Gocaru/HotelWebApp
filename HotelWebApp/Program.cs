@@ -26,6 +26,7 @@ namespace HotelWebApp
                 .AddEntityFrameworkStores<HotelWebAppContext>();
 
             builder.Services.AddScoped<IRoomRepository, RoomRepository>();
+            builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
 
             builder.Services.AddTransient<SeedDb>();
 

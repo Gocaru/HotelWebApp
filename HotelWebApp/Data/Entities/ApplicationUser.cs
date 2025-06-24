@@ -17,7 +17,7 @@ namespace HotelWebApp.Data.Entities
         [Display(Name = "Identification Document")]
         public string? IdentificationDocument { get; set; }
 
-        //public ICollection<Reservation> Reservations { get; set; }
+        public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
 
         //public ICollection<Invoice> Invoices { get; set; }
 

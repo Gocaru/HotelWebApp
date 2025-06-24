@@ -30,5 +30,7 @@ namespace HotelWebApp.Data.Entities
         [Required(ErrorMessage = "{0} is required.")]
         [Display(Name = "Room Status")]
         public RoomStatus Status { get; set; }
+
+        public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
     }
 }
