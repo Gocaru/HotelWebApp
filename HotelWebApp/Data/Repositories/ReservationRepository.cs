@@ -3,48 +3,114 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HotelWebApp.Data.Repositories
 {
+    /// <summary>
+    /// Repository for managing data operations for the Reservation entity.
+    /// Implements the IReservationRepository interface.
+    /// </summary>
     public class ReservationRepository : IReservationRepository
     {
         private readonly HotelWebAppContext _context;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ReservationRepository"/> class.
+        /// </summary>
+        /// <param name="context">The database context injected by the application.</param>
         public ReservationRepository(HotelWebAppContext context)
         {
             _context = context;
         }
 
-        public async Task<IEnumerable<Reservation>> GetAllAsync()
+        /// <summary>
+        /// Asynchronously retrieves all reservations, including related Guest and Room details.
+        /// The reservations are ordered by check-in date in descending order.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a collection of all reservations with their details.</returns>
+        public async Task<IEnumerable<Reservation>> GetAllWithDetailsAsync()
         {
             return await _context.Reservations
-                                 .Include(r => r.Guest)
-                                 .Include(r => r.Room)
-                                 .ToListAsync();
+                .Include(r => r.ApplicationUser)
+                .Include(r => r.Room)
+                .OrderByDescending(r => r.CheckInDate)
+                .ToListAsync();
         }
 
-        public async Task<Reservation?> GetByIdAsync(int id)
+        /// <summary>
+        /// Asynchronously retrieves a single reservation by its ID, including related Guest and Room details.
+        /// </summary>
+        /// <param name="id">The ID of the reservation to find.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the reservation entity with its details, or null if not found.</returns>
+        public async Task<Reservation?> GetByIdWithDetailsAsync(int id)
         {
             return await _context.Reservations
-                                 .Include(r => r.Guest)
-                                 .Include(r => r.Room)
-                                 .FirstOrDefaultAsync(r => r.Id == id);
+                .Include(r => r.ApplicationUser)
+                .Include(r => r.Room)
+                .FirstOrDefaultAsync(r => r.Id == id);
         }
 
+        /// <summary>
+        /// Asynchronously adds a new reservation to the database.
+        /// </summary>
+        /// <param name="reservation">The reservation entity to create.</param>
+        /// <returns>A task that represents the asynchronous save operation.</returns>
         public async Task CreateAsync(Reservation reservation)
         {
             _context.Reservations.Add(reservation);
             await _context.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// synchronously updates an existing reservation in the database.
+        /// </summary>
+        /// <param name="reservation">The reservation entity with updated values.</param>
+        /// <returns>A task that represents the asynchronous save operation.</returns>
         public async Task UpdateAsync(Reservation reservation)
         {
             _context.Reservations.Update(reservation);
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(Reservation reservation)
+        /// <summary>
+        /// Asynchronously deletes a reservation from the database by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the reservation to delete.</param>
+        /// <returns>A task that represents the asynchronous save operation.</returns>
+        public async Task DeleteAsync(int id)
         {
-            _context.Reservations.Remove(reservation);
-            await _context.SaveChangesAsync();
+            var reservation = await GetByIdWithDetailsAsync(id);
+            if (reservation != null)
+            {
+                _context.Reservations.Remove(reservation);
+                await _context.SaveChangesAsync();
+            }
+
         }
 
+        /// <summary>
+        /// Asynchronously checks if a specific room is available for a given date range, preventing booking overlaps
+        /// </summary>
+        /// <param name="roomId">The ID of the room to check.</param>
+        /// <param name="checkIn">The desired check-in date.</param>
+        /// <param name="checkOut">The desired check-out date.</param>
+        /// <param name="reservationIdToExclude">Optional. The ID of an existing reservation to exclude from the check (used when editing a reservation).</param>
+        /// <returns>A task that represents the asynchronous operation. The task result is true if the room is available; otherwise, false.</returns>
+        public async Task<bool> IsRoomAvailableAsync(int roomId, DateTime checkIn, DateTime checkOut, int? reservationIdToExclude = null)
+        {
+            var query = _context.Reservations
+                .Where(r => r.RoomId == roomId &&
+                             r.Status != ReservationStatus.Cancelled &&
+                             r.CheckInDate < checkOut &&
+                             r.CheckInDate > checkIn);
+
+            // When editing a reservation, we must exclude it from the check,
+            // otherwise it would conflict with itself.
+            if (reservationIdToExclude.HasValue)
+            {
+                query = query.Where(r => r.Id != reservationIdToExclude.Value);
+            }
+
+            // If the query finds any overlapping reservation (.AnyAsync() == true), the room is NOT available.
+            // Therefore, we return the negation (!) of the result.
+            return !await query.AnyAsync();
+        }
     }
 }

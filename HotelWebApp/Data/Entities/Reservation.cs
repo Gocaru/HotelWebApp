@@ -37,6 +37,6 @@ namespace HotelWebApp.Data.Entities
         public string GuestId { get; set ; }
 
         [ForeignKey("GuestId")]
-        public virtual ApplicationUser? Guest { get; set ; }
+        public virtual ApplicationUser? ApplicationUser { get; set ; }
     }
 }
