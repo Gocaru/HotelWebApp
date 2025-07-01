@@ -112,5 +112,38 @@ namespace HotelWebApp.Data.Repositories
             // Therefore, we return the negation (!) of the result.
             return !await query.AnyAsync();
         }
+
+        /// <summary>
+        /// Asynchronously retrieves all reservations for a specific guest, including related room details.
+        /// </summary>
+        /// <param name="guestId">he unique identifier of the guest (ApplicationUser ID).</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation. 
+        /// The task result contains a collection of <see cref="Reservation"/> objects for the specified guest, ordered by check-in date in descending order.
+        /// Returns an empty list if the guest ID is null or empty.
+        /// </returns>
+        public async Task<IEnumerable<Reservation>> GetReservationsByGuestIdWithDetailsAsync(string guestId)
+        {
+            if(string.IsNullOrEmpty(guestId))
+            {
+                return new List<Reservation>();
+            }
+
+            return await _context.Reservations
+                .Where(r => r.GuestId == guestId)
+                .Include(r => r.Room)
+                .OrderByDescending(r => r.CheckInDate)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Asynchronously retrieves a single reservation by its ID without loading related entities.
+        /// </summary>
+        /// <param name="id">The ID of the reservation to find.</param>
+        /// <returns>The reservation entity, or null if not found.</returns>
+        public async Task<Reservation?> GetByIdAsync(int id)
+        {
+            return await _context.Reservations.FindAsync(id);
+        }
     }
 }

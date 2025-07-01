@@ -16,5 +16,9 @@ namespace HotelWebApp.Data.Repositories
 
         Task<bool> IsRoomAvailableAsync(int roomId, DateTime checkIn, DateTime checkOut, int? reservationIdToExclude = null);
 
+        Task<IEnumerable<Reservation>> GetReservationsByGuestIdWithDetailsAsync(string guestId);
+
+        Task<Reservation?> GetByIdAsync(int id);
+
     }
 }

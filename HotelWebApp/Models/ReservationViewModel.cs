@@ -8,9 +8,8 @@ namespace HotelWebApp.Models
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Please select a guest.")]
         [Display(Name = "Guest")]
-        public string GuestId { get; set; } // O ID do ApplicationUser
+        public string? GuestId { get; set; } // O ID do ApplicationUser
 
         [Required(ErrorMessage ="Please select a room.")]
         [Display(Name = "Room")]
@@ -25,6 +24,11 @@ namespace HotelWebApp.Models
         [DataType(DataType.Date)]
         [Display(Name = "Check-out Date")]
         public DateTime CheckOutDate { get; set; } = DateTime.Today.AddDays(1);
+
+        [Required]
+        [Range(1, 10, ErrorMessage = "Please enter a valid number of guests.")]
+        [Display(Name = "Number of Guests")]
+        public int NumberOfGuests { get; set; }
 
         public ReservationStatus? Status { get; set; }
 

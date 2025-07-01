@@ -51,5 +51,12 @@ namespace HotelWebApp.Data.Repositories
             return await _context.Rooms.AnyAsync(r => r.Id == id);
         }
 
+        public async Task<IEnumerable<Room>> GetAvailableRoomsAsync()
+        {
+            return await _context.Rooms
+                             .Where(r => r.Status == RoomStatus.Available)
+                             .OrderBy(r => r.RoomNumber)    
+                             .ToListAsync();
+        }
     }
 }

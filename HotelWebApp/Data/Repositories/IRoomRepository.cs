@@ -15,5 +15,7 @@ namespace HotelWebApp.Data.Repositories
         Task DeleteAsync(int id);
 
         Task<bool> ExistsAsync(int id);
+
+        Task<IEnumerable<Room>> GetAvailableRoomsAsync();
     }
 }

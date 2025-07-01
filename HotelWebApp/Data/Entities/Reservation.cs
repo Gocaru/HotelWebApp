@@ -28,6 +28,11 @@ namespace HotelWebApp.Data.Entities
         public ReservationStatus Status { get; set ; }
 
         [Required]
+        [Range(1, 10, ErrorMessage = "Number of guests must be between 1 and 10.")]
+        [Display(Name = "Number of Guests")]
+        public int NumberOfGuests { get; set; }
+
+        [Required]
         public int RoomId { get; set ; }
 
         [ForeignKey("RoomId")]
