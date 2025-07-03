@@ -5,6 +5,7 @@ using HotelWebApp.Data.Seed;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using HotelWebApp.Services;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace HotelWebApp
 {
@@ -14,24 +15,34 @@ namespace HotelWebApp
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddTransient<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender, EmailSender>();
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+            builder.Services.AddTransient<IEmailSender, EmailSender>();
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
             builder.Services.AddDbContext<HotelWebAppContext>(options => options.UseSqlServer(connectionString));
 
-            builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<HotelWebAppContext>();
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            {
+                options.SignIn.RequireConfirmedAccount = true;
+                // Pode adicionar outras configurações de password, etc., aqui.
+                // options.Password.RequireDigit = true;
+            })
+            .AddEntityFrameworkStores<HotelWebAppContext>()
+            .AddDefaultUI() // Adiciona a UI padrão do Identity
+            .AddDefaultTokenProviders(); // Adiciona os geradores de token
 
             builder.Services.AddScoped<IRoomRepository, RoomRepository>();
             builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+            builder.Services.AddScoped<IReservationService, ReservationService>();
+            
 
             builder.Services.AddTransient<SeedDb>();
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+
+            builder.Services.AddRazorPages();
 
 
             var app = builder.Build();
@@ -50,7 +61,6 @@ namespace HotelWebApp
             app.UseRouting();
 
             app.UseAuthentication();
-
             app.UseAuthorization();
 
             app.MapControllerRoute(
