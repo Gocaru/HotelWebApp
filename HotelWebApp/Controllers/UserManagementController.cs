@@ -16,11 +16,13 @@ namespace HotelWebApp.Controllers
             _userManager = userManager;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var users = _userManager.Users.ToList();
-            return View(users);
+            // Pede ao UserManager a lista de utilizadores que pertencem à role "Employee".
+            var employees = await _userManager.GetUsersInRoleAsync("Employee");
+            return View(employees);
         }
+
 
         public IActionResult CreateEmployee()
         {

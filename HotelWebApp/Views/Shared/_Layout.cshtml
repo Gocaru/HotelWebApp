@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/HotelWebApp.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
 </head>
 <body>
     <header>
@@ -28,7 +30,7 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Rooms" asp-action="Index">Rooms</a>
                             </li>
                         }
-                        @if (User.IsInRole("Admin") || User.IsInRole("Employee"))
+                        @if (User.IsInRole("Employee"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Reservations" asp-action="Index">Reservations</a>
@@ -37,7 +39,7 @@
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="UserManagement" asp-action="Index">Manage Users</a>
+                                <a class="nav-link text-dark" asp-controller="UserManagement" asp-action="Index">Manage Employees</a>
                             </li>
                         }
                         @if (User.IsInRole("Guest"))

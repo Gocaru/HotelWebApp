@@ -1,8 +1,8 @@
-﻿using MailKit.Security;
-using Microsoft.AspNetCore.Identity.UI.Services;
+﻿using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using MailKit.Net.Smtp;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace HotelWebApp.Services
 {
@@ -26,7 +26,7 @@ namespace HotelWebApp.Services
             var bodyBuilder = new BodyBuilder { HtmlBody = htmlMessage };
             emailMessage.Body = bodyBuilder.ToMessageBody();
 
-            using(var client = new SmtpClient())
+            using (var client = new SmtpClient())
             {
                 await client.ConnectAsync(_emailSettings.SmtpServer, _emailSettings.Port, SecureSocketOptions.StartTls);
                 await client.AuthenticateAsync(_emailSettings.SenderEmail, _emailSettings.Password);
