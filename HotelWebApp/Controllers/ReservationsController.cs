@@ -1,6 +1,7 @@
 ﻿using HotelWebApp.Data.Entities;
 using HotelWebApp.Data.Repositories;
 using HotelWebApp.Models;
+using HotelWebApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,12 +15,14 @@ namespace HotelWebApp.Controllers
         private readonly IReservationRepository _reservationRepo;
         private readonly IRoomRepository _roomRepo;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IReservationService _reservationService;
 
-        public ReservationsController(IReservationRepository reservationRepo, IRoomRepository roomRepo, UserManager<ApplicationUser> userManager)
+        public ReservationsController(IReservationRepository reservationRepo, IRoomRepository roomRepo, UserManager<ApplicationUser> userManager, IReservationService reservationService)
         {
             _reservationRepo = reservationRepo;
             _roomRepo = roomRepo;
             _userManager = userManager;
+            _reservationService = reservationService;
         }
 
         // GET: Reservations
@@ -110,33 +113,22 @@ namespace HotelWebApp.Controllers
 
             if (ModelState.IsValid)
             {
-                var room = await _roomRepo.GetByIdAsync(model.RoomId);
-                if (room == null) return NotFound();
+                var result = await _reservationService.CreateReservationAsync(model, model.GuestId);
 
-                var numberOfNights = (model.CheckOutDate - model.CheckInDate).Days;
-
-                var reservation = new Reservation
+                if (result.Succeeded)
                 {
-                    GuestId = model.GuestId,
-                    RoomId = model.RoomId,
-                    CheckInDate = model.CheckInDate,
-                    CheckOutDate = model.CheckOutDate,
-                    NumberOfGuests = model.NumberOfGuests,
-                    Status = ReservationStatus.Confirmed,
-                    TotalPrice = numberOfNights * room.PricePerNight
-                };
-
-                await _reservationRepo.CreateAsync(reservation);
-
-                room.Status = RoomStatus.Reserved;
-                await _roomRepo.UpdateAsync(room);
-
-                if (User.IsInRole("Guest"))
-                {
-                    return RedirectToAction(nameof(MyReservations));
+                    // Redireciona com base no role do utilizador
+                    if (User.IsInRole("Guest"))
+                    {
+                        return RedirectToAction(nameof(MyReservations));
+                    }
+                    return RedirectToAction(nameof(Index));
                 }
-
-                return RedirectToAction(nameof(Index));
+                else
+                {
+                    // Se o serviço retornou um erro, mostre-o ao utilizador
+                    ModelState.AddModelError(string.Empty, result.Error);
+                }
             }
 
             if (User.IsInRole("Employee"))
@@ -177,6 +169,7 @@ namespace HotelWebApp.Controllers
                 CheckInDate = reservation.CheckInDate,
                 CheckOutDate = reservation.CheckOutDate,
                 Status = reservation.Status,
+                NumberOfGuests = reservation.NumberOfGuests,
                 Guests = await GetGuestListItems(),
                 Rooms = await GetRoomListItems()
             };
@@ -201,32 +194,17 @@ namespace HotelWebApp.Controllers
 
             if (ModelState.IsValid)
             {
-                try
+                var result = await _reservationService.UpdateReservationAsync(id, model);
+
+                if (result.Succeeded)
                 {
-                    var reservationToUpdate = await _reservationRepo.GetByIdWithDetailsAsync(id);
-                    if (reservationToUpdate == null) return NotFound();
-
-                    var room = await _roomRepo.GetByIdAsync(model.RoomId);
-                    if (room == null) return NotFound();
-
-                    var numberOfNights = (model.CheckOutDate - model.CheckInDate).Days;
-
-                    // Atualiza as propriedades da entidade existente
-                    reservationToUpdate.GuestId = model.GuestId;
-                    reservationToUpdate.RoomId = model.RoomId;
-                    reservationToUpdate.CheckInDate = model.CheckInDate;
-                    reservationToUpdate.CheckOutDate = model.CheckOutDate;
-                    reservationToUpdate.TotalPrice = numberOfNights * room.PricePerNight;
-                    // O Status pode ser alterado aqui se o formulário permitir (ex: para cancelar)
-                    // reservationToUpdate.Status = model.Status;
-
-                    await _reservationRepo.UpdateAsync(reservationToUpdate);
+                    return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateConcurrencyException)
+                else
                 {
-                    throw;
+                    // Se o serviço retornou um erro, mostre-o
+                    ModelState.AddModelError(string.Empty, result.Error);
                 }
-                return RedirectToAction(nameof(Index));
             }
 
             // Se a validação falhar, repopula as dropdowns
@@ -390,5 +368,97 @@ namespace HotelWebApp.Controllers
             TempData["SuccessMessage"] = "Reservation cancelled successfully.";
             return RedirectToAction(nameof(MyReservations));
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Employee")]
+        public async Task<IActionResult> CheckIn(int id)
+        {
+            // Obtem a reserva com os detalhes necessários (incluindo o quarto)
+            var reservation = await _reservationRepo.GetByIdWithDetailsAsync(id);
+
+            if (reservation == null)
+            {
+                return NotFound();
+            }
+
+            // Valida as regras de negócio para o check-in
+            // Só se pode fazer check-in de uma reserva 'Confirmed' e na data de entrada.
+            if (reservation.Status != ReservationStatus.Confirmed)
+            {
+                TempData["ErrorMessage"] = "Apenas reservas confirmadas podem fazer check-in.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (reservation.CheckInDate.Date != DateTime.Today.Date)
+            {
+                TempData["ErrorMessage"] = "O check-in só pode ser realizado na data de entrada da reserva.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Atualiza os status da Reserva e do Quarto
+            reservation.Status = ReservationStatus.CheckedIn;
+            if (reservation.Room != null)
+            {
+                reservation.Room.Status = RoomStatus.Occupied;
+            }
+            else
+            {
+                // Se por algum motivo o quarto não estiver associado, não podemos continuar.
+                TempData["ErrorMessage"] = "Erro: A reserva não tem um quarto associado.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Salva as alterações
+            await _reservationRepo.UpdateAsync(reservation);
+
+            TempData["SuccessMessage"] = $"Check-in para o hóspede {reservation.ApplicationUser.FullName} realizado com sucesso!";
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Employee")]
+        public async Task<IActionResult> CheckOut(int id)
+        {
+            var reservation = await _reservationRepo.GetByIdWithDetailsAsync(id);
+
+            if (reservation == null)
+            {
+                return NotFound();
+            }
+
+            // Valida a regra de negócio: só se pode fazer check-out de uma reserva que está "CheckedIn"
+            if (reservation.Status != ReservationStatus.CheckedIn)
+            {
+                TempData["ErrorMessage"] = "This action is only available for currently checked-in reservations.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Atualiza os status da Reserva para "CheckedOut" e do Quarto para "Available"
+            reservation.Status = ReservationStatus.CheckedOut;
+            if (reservation.Room != null)
+            {
+                reservation.Room.Status = RoomStatus.Available;
+            }
+            else
+            {
+                // Medida de segurança
+                TempData["ErrorMessage"] = "Error: The reservation is not linked to a room.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // TODO (Conforme o enunciado):
+            // Neste ponto, seria implementada a lógica de "Cálculo automático do valor total" e "Geração de faturas".
+            // Por exemplo: reservation.FinalPrice = CalculateFinalPrice(reservation);
+
+            // Salva as alterações na base de dados
+            await _reservationRepo.UpdateAsync(reservation);
+
+            TempData["SuccessMessage"] = $"Check-out for guest '{reservation.ApplicationUser.FullName}' completed successfully!";
+            return RedirectToAction(nameof(Index));
+        }
+
+
     }
 }

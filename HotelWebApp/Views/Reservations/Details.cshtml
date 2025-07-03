@@ -1,64 +1,71 @@
 ﻿@model HotelWebApp.Data.Entities.Reservation
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Reservation Details";
 }
 
 <h1>Details</h1>
 
 <div>
-    <h4>Reservation</h4>
+    <h4>Reservation Information</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CheckInDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CheckInDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CheckOutDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CheckOutDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ReservationDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ReservationDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TotalPrice)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TotalPrice)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Status)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Room)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Room.RoomNumber)
-        </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             Guest
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.ApplicationUser.FullName)
+        </dd>
+        <dt class="col-sm-2">
+            Room Number
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Room.RoomNumber)
+        </dd>
+
+        <dt class="col-sm-2">
+            Number of Guests
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.NumberOfGuests)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.CheckInDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Model.CheckInDate.ToString("dd/MM/yyyy HH:mm")
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.CheckOutDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Model.CheckOutDate.ToString("dd/MM/yyyy HH:mm")
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ReservationDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Model.ReservationDate.ToString("dd/MM/yyyy HH:mm:ss")
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.TotalPrice)
+        </dt>
+        <dd class="col-sm-10">
+            @Model.TotalPrice.ToString("C")
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Status)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Status)
         </dd>
     </dl>
 </div>
-<div>
+<div class="mt-3">
     @if (User.IsInRole("Employee"))
     {
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
-        <a asp-action="Index" class="btn btn-secondary">Back to Full List</a>
+        <a asp-action="Index" class="btn btn-secondary">Back to Reservations List</a>
     }
     else if (User.IsInRole("Guest"))
     {
