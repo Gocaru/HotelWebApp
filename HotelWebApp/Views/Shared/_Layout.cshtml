@@ -29,6 +29,14 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Rooms" asp-action="Index">Rooms</a>
                             </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Amenities" asp-action="Index">Amenities</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="UserManagement" asp-action="Index">Manage Employees</a>
+                            </li>
                         }
                         @if (User.IsInRole("Employee"))
                         {
@@ -36,12 +44,7 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Reservations" asp-action="Index">Reservations</a>
                             </li>
                         }
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="UserManagement" asp-action="Index">Manage Employees</a>
-                            </li>
-                        }
+
                         @if (User.IsInRole("Guest"))
                         {
                             <li class="nav-item">

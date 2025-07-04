@@ -15,6 +15,10 @@ public class HotelWebAppContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<Reservation> Reservations { get; set; }
 
+    public DbSet<Amenity> Amenities { get; set; }
+    
+    public DbSet<ReservationAmenity> ReservationAmenities { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

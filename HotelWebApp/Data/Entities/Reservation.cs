@@ -43,5 +43,7 @@ namespace HotelWebApp.Data.Entities
 
         [ForeignKey("GuestId")]
         public virtual ApplicationUser? ApplicationUser { get; set ; }
+
+        public ICollection<ReservationAmenity> ReservationAmenities { get; set; } = new HashSet<ReservationAmenity>();
     }
 }
