@@ -15,5 +15,7 @@ namespace HotelWebApp.Data.Repositories
         Task DeleteAsync(Amenity amenity);
 
         Task<bool> AmenityExistsAsync(int id);
+
+        Task<bool> IsInUseAsync(int id);
     }
 }

@@ -16,13 +16,15 @@ namespace HotelWebApp.Controllers
         private readonly IRoomRepository _roomRepo;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IReservationService _reservationService;
+        private readonly IAmenityRepository _amenityRepository;
 
-        public ReservationsController(IReservationRepository reservationRepo, IRoomRepository roomRepo, UserManager<ApplicationUser> userManager, IReservationService reservationService)
+        public ReservationsController(IReservationRepository reservationRepo, IRoomRepository roomRepo, UserManager<ApplicationUser> userManager, IReservationService reservationService, IAmenityRepository amenityRepository)
         {
             _reservationRepo = reservationRepo;
             _roomRepo = roomRepo;
             _userManager = userManager;
             _reservationService = reservationService;
+            _amenityRepository = amenityRepository;
         }
 
         // GET: Reservations
@@ -55,6 +57,12 @@ namespace HotelWebApp.Controllers
                 {
                     return Forbid(); // Acesso Proibido! A reserva não é deste Guest.
                 }
+            }
+
+            if (User.IsInRole("Employee") || User.IsInRole("Admin"))
+            {
+                var allAmenities = await _amenityRepository.GetAllAsync();
+                ViewBag.Amenities = new SelectList(allAmenities, "Id", "Name");
             }
 
             return View(reservation);
@@ -459,6 +467,46 @@ namespace HotelWebApp.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Employee, Admin")]
+        public async Task<IActionResult> AddAmenityToReservation(int reservationId, int amenityId, int quantity)
+        {
+            var result = await _reservationService.AddAmenityToReservationAsync(reservationId, amenityId, quantity);
+
+            if (!result.Succeeded)
+            {
+                // Se houve um erro no serviço, guarda a mensagem de erro para ser exibida
+                // na página de detalhes e redireciona de volta.
+                TempData["ErrorMessage"] = result.Error;
+            }
+            else
+            {
+                TempData["SuccessMessage"] = "Amenity added successfully!";
+            }
+
+            // Redireciona de volta para a página de detalhes da mesma reserva
+            return RedirectToAction(nameof(Details), new { id = reservationId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Employee, Admin")]
+        public async Task<IActionResult> RemoveAmenityFromReservation(int reservationId, int reservationAmenityId)
+        {
+            var result = await _reservationService.RemoveAmenityFromReservationAsync(reservationId, reservationAmenityId);
+
+            if (!result.Succeeded)
+            {
+                TempData["ErrorMessage"] = result.Error;
+            }
+            else
+            {
+                TempData["SuccessMessage"] = "Amenity removed successfully!";
+            }
+
+            return RedirectToAction(nameof(Details), new { id = reservationId });
+        }
 
     }
 }

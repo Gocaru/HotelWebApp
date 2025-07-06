@@ -46,5 +46,10 @@ namespace HotelWebApp.Data.Repositories
             return await _context.Amenities.AnyAsync(e => e.Id == id);
         }
 
+        public async Task<bool> IsInUseAsync(int id)
+        {
+            return await _context.ReservationAmenities.AnyAsync(ra => ra.AmenityId == id);
+        }
+
     }
 }

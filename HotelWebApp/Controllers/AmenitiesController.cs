@@ -128,10 +128,18 @@ namespace HotelWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            // VERIFICAÇÃO ANTES DE APAGAR
+            if (await _amenityRepository.IsInUseAsync(id))
+            {
+                TempData["ErrorMessage"] = "This amenity cannot be deleted as it is linked to one or more reservations.";
+                return RedirectToAction(nameof(Index));
+            }
+
             var amenity = await _amenityRepository.GetByIdAsync(id);
             if (amenity != null)
             {
                 await _amenityRepository.DeleteAsync(amenity);
+                TempData["SuccessMessage"] = "Amenity deleted successfully.";
             }
 
             return RedirectToAction(nameof(Index));

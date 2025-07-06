@@ -1,21 +1,24 @@
 ﻿using HotelWebApp.Data.Entities;
+using HotelWebApp.Data.Repositories;
 using HotelWebApp.Models;
-using HotelWebApp.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.EntityFrameworkCore;
 
-namespace HotelWebApp.Data.Repositories
+namespace HotelWebApp.Services
 {
     public class ReservationService : IReservationService
     {
         private readonly IReservationRepository _reservationRepo;
+        private readonly IAmenityRepository _amenityRepo;
         private readonly IRoomRepository _roomRepo;
         private readonly IEmailSender _emailSender;
 
-        public ReservationService(IReservationRepository reservationRepo, IRoomRepository roomRepo, IEmailSender emailSender)
+        public ReservationService(IReservationRepository reservationRepo, IRoomRepository roomRepo, IEmailSender emailSender, IAmenityRepository amenityRepo)
         {
             _reservationRepo = reservationRepo;
             _roomRepo = roomRepo;
             _emailSender = emailSender;
+            _amenityRepo = amenityRepo;
         }
 
         public async Task<Result> CreateReservationAsync(ReservationViewModel model, string guestId)
@@ -291,5 +294,82 @@ namespace HotelWebApp.Data.Repositories
             await _reservationRepo.UpdateAsync(reservation);
         }
 
+        public async Task<Result> AddAmenityToReservationAsync(int reservationId, int amenityId, int quantity)
+        {
+            if (quantity <= 0)
+            {
+                return Result.Failure("Quantity must be greater than zero."); // CORRIGIDO
+            }
+
+            var reservation = await _reservationRepo.GetByIdAsync(reservationId);
+            if (reservation == null)
+            {
+                return Result.Failure("Reservation not found."); // CORRIGIDO
+            }
+
+            var amenity = await _amenityRepo.GetByIdAsync(amenityId);
+            if (amenity == null)
+            {
+                return Result.Failure("Amenity not found."); // CORRIGIDO
+            }
+
+            // Criar a nova entidade de junção
+            var reservationAmenity = new ReservationAmenity
+            {
+                ReservationId = reservation.Id,
+                AmenityId = amenity.Id,
+                Quantity = quantity,
+                PriceAtTimeOfBooking = amenity.Price,
+                DateAdded = DateTime.UtcNow
+            };
+
+            reservation.ReservationAmenities.Add(reservationAmenity);
+
+            // Recalcula o preço total da reserva
+            decimal amenityCost = amenity.Price * quantity;
+            reservation.TotalPrice += amenityCost;
+
+            try
+            {
+                await _reservationRepo.UpdateAsync(reservation);
+                return Result.Success(); // CORRIGIDO
+            }
+            catch (DbUpdateException ex)
+            {
+                // TODO: Log do erro 'ex'
+                return Result.Failure("An error occurred while saving to the database."); // CORRIGIDO
+            }
+        }
+
+        public async Task<Result> RemoveAmenityFromReservationAsync(int reservationId, int reservationAmenityId)
+        {
+            var reservation = await _reservationRepo.GetByIdWithDetailsAsync(reservationId);
+            if (reservation == null)
+            {
+                return Result.Failure("Reservation not found.");
+            }
+
+            var reservationAmenity = reservation.ReservationAmenities.FirstOrDefault(ra => ra.Id == reservationAmenityId);
+            if (reservationAmenity == null)
+            {
+                return Result.Failure("Amenity link not found for this reservation.");
+            }
+
+            // Subtrai o custo da amenity do preço total
+            decimal amenityCost = reservationAmenity.PriceAtTimeOfBooking * reservationAmenity.Quantity;
+            reservation.TotalPrice -= amenityCost;
+
+            reservation.ReservationAmenities.Remove(reservationAmenity);
+
+            try
+            {
+                await _reservationRepo.UpdateAsync(reservation);
+                return Result.Success();
+            }
+            catch (DbUpdateException ex)
+            {
+                return Result.Failure("An error occurred while removing the amenity.");
+            }
+        }
     }
 }
