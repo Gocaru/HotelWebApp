@@ -17,14 +17,16 @@ namespace HotelWebApp.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IReservationService _reservationService;
         private readonly IAmenityRepository _amenityRepository;
+        private readonly IPaymentService _paymentService;
 
-        public ReservationsController(IReservationRepository reservationRepo, IRoomRepository roomRepo, UserManager<ApplicationUser> userManager, IReservationService reservationService, IAmenityRepository amenityRepository)
+        public ReservationsController(IReservationRepository reservationRepo, IRoomRepository roomRepo, UserManager<ApplicationUser> userManager, IReservationService reservationService, IAmenityRepository amenityRepository, IPaymentService paymentService)
         {
             _reservationRepo = reservationRepo;
             _roomRepo = roomRepo;
             _userManager = userManager;
             _reservationService = reservationService;
             _amenityRepository = amenityRepository;
+            _paymentService = paymentService;
         }
 
         // GET: Reservations
@@ -168,7 +170,39 @@ namespace HotelWebApp.Controllers
                 return NotFound();
             }
 
-            // Mapeia a entidade para o ViewModel para edição
+            // Lógica de segurança para garantir que um Guest só edita as suas próprias reservas
+            if (User.IsInRole("Guest") && reservation.GuestId != _userManager.GetUserId(User))
+            {
+                return Forbid();
+            }
+
+            // Regra de negócio: Não permitir edição se a reserva já foi concluída ou cancelada.
+            // Isto impede o acesso à página de edição através do URL.
+            if (reservation.Status == ReservationStatus.CheckedOut || reservation.Status == ReservationStatus.Cancelled)
+            {
+                TempData["ErrorMessage"] = $"Cannot edit a reservation with status '{reservation.Status}'.";
+                return RedirectToAction(nameof(Index)); // Ou para a página de detalhes da reserva
+            }
+
+            // 1. Obter as listas completas de Hóspedes e Quartos
+            var allGuestsList = await GetGuestListItems();
+            var allRoomsList = await GetRoomListItems();
+
+            // 2. Pré-selecionar o Hóspede correto na lista
+            var selectedGuests = allGuestsList.Select(g =>
+            {
+                g.Selected = (g.Value == reservation.GuestId);
+                return g;
+            });
+
+            // 3. Pré-selecionar o Quarto correto na lista
+            var selectedRooms = allRoomsList.Select(r =>
+            {
+                r.Selected = (r.Value == reservation.RoomId.ToString());
+                return r;
+            });
+
+            // 4. Mapear a entidade para o ViewModel com as listas já pré-selecionadas
             var model = new ReservationViewModel
             {
                 Id = reservation.Id,
@@ -178,8 +212,8 @@ namespace HotelWebApp.Controllers
                 CheckOutDate = reservation.CheckOutDate,
                 Status = reservation.Status,
                 NumberOfGuests = reservation.NumberOfGuests,
-                Guests = await GetGuestListItems(),
-                Rooms = await GetRoomListItems()
+                Guests = selectedGuests, // Usar a lista com o item selecionado
+                Rooms = selectedRooms     // Usar a lista com o item selecionado
             };
 
             return View(model);
@@ -293,6 +327,12 @@ namespace HotelWebApp.Controllers
 
         private async Task ValidateReservationModel(ReservationViewModel model, int? reservationId = null)
         {
+
+            if (reservationId == null && model.CheckInDate.Date < DateTime.Today.Date)
+            {
+                ModelState.AddModelError("CheckInDate", "Check-in date cannot be in the past.");
+            }
+
             if (model.CheckOutDate <= model.CheckInDate)
             {
                 ModelState.AddModelError("CheckOutDate", "Check-out date must be after the check-in date.");
@@ -443,28 +483,32 @@ namespace HotelWebApp.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            // Chamamos o serviço para gerar a fatura.
+            var invoiceResult = await _paymentService.CreateInvoiceForReservationAsync(id);
+
+            // Verificamos se a criação da fatura correu bem
+            if (!invoiceResult.Succeeded)
+            {
+                // Se algo correu mal
+                // mostramos o erro ao funcionário.
+                TempData["ErrorMessage"] = invoiceResult.Error;
+                return RedirectToAction(nameof(Index));
+            }
+
             // Atualiza os status da Reserva para "CheckedOut" e do Quarto para "Available"
             reservation.Status = ReservationStatus.CheckedOut;
             if (reservation.Room != null)
             {
                 reservation.Room.Status = RoomStatus.Available;
             }
-            else
-            {
-                // Medida de segurança
-                TempData["ErrorMessage"] = "Error: The reservation is not linked to a room.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            // TODO (Conforme o enunciado):
-            // Neste ponto, seria implementada a lógica de "Cálculo automático do valor total" e "Geração de faturas".
-            // Por exemplo: reservation.FinalPrice = CalculateFinalPrice(reservation);
-
-            // Salva as alterações na base de dados
+            
             await _reservationRepo.UpdateAsync(reservation);
 
-            TempData["SuccessMessage"] = $"Check-out for guest '{reservation.ApplicationUser.FullName}' completed successfully!";
-            return RedirectToAction(nameof(Index));
+
+            TempData["SuccessMessage"] = $"Check-out for guest '{reservation.ApplicationUser.FullName}' completed. Please process the payment.";
+
+            //Redirecionamos o funcionário para a página de detalhes da fatura que acabámos de criar.
+            return RedirectToAction("Details", "Invoices", new { id = invoiceResult.Data.Id });
         }
 
         [HttpPost]
@@ -472,6 +516,15 @@ namespace HotelWebApp.Controllers
         [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> AddAmenityToReservation(int reservationId, int amenityId, int quantity)
         {
+            var reservation = await _reservationRepo.GetByIdAsync(reservationId);
+            if (reservation == null) return NotFound();
+
+            if (reservation.Status != ReservationStatus.Confirmed && reservation.Status != ReservationStatus.CheckedIn)
+            {
+                TempData["ErrorMessage"] = $"Cannot add services to a reservation with status '{reservation.Status}'.";
+                return RedirectToAction(nameof(Details), new { id = reservationId });
+            }
+
             var result = await _reservationService.AddAmenityToReservationAsync(reservationId, amenityId, quantity);
 
             if (!result.Succeeded)
@@ -494,6 +547,15 @@ namespace HotelWebApp.Controllers
         [Authorize(Roles = "Employee, Admin")]
         public async Task<IActionResult> RemoveAmenityFromReservation(int reservationId, int reservationAmenityId)
         {
+            var reservation = await _reservationRepo.GetByIdAsync(reservationId);
+            if (reservation == null) return NotFound();
+
+            if (reservation.Status != ReservationStatus.Confirmed && reservation.Status != ReservationStatus.CheckedIn)
+            {
+                TempData["ErrorMessage"] = $"Cannot remove services from a reservation with status '{reservation.Status}'.";
+                return RedirectToAction(nameof(Details), new { id = reservationId });
+            }
+
             var result = await _reservationService.RemoveAmenityFromReservationAsync(reservationId, reservationAmenityId);
 
             if (!result.Succeeded)

@@ -45,5 +45,7 @@ namespace HotelWebApp.Data.Entities
         public virtual ApplicationUser? ApplicationUser { get; set ; }
 
         public ICollection<ReservationAmenity> ReservationAmenities { get; set; } = new HashSet<ReservationAmenity>();
+
+        public virtual Invoice? Invoice { get; set; }
     }
 }

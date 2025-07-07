@@ -290,7 +290,6 @@ namespace HotelWebApp.Services
             {
                 reservation.Room.Status = RoomStatus.Available;
             }
-            // O UpdateAsync deve ser inteligente o suficiente para salvar a entidade Reservation e a sua entidade Room relacionada.
             await _reservationRepo.UpdateAsync(reservation);
         }
 
@@ -298,19 +297,19 @@ namespace HotelWebApp.Services
         {
             if (quantity <= 0)
             {
-                return Result.Failure("Quantity must be greater than zero."); // CORRIGIDO
+                return Result.Failure("Quantity must be greater than zero."); 
             }
 
             var reservation = await _reservationRepo.GetByIdAsync(reservationId);
             if (reservation == null)
             {
-                return Result.Failure("Reservation not found."); // CORRIGIDO
+                return Result.Failure("Reservation not found."); 
             }
 
             var amenity = await _amenityRepo.GetByIdAsync(amenityId);
             if (amenity == null)
             {
-                return Result.Failure("Amenity not found."); // CORRIGIDO
+                return Result.Failure("Amenity not found."); 
             }
 
             // Criar a nova entidade de junção
@@ -332,12 +331,12 @@ namespace HotelWebApp.Services
             try
             {
                 await _reservationRepo.UpdateAsync(reservation);
-                return Result.Success(); // CORRIGIDO
+                return Result.Success(); 
             }
             catch (DbUpdateException ex)
             {
                 // TODO: Log do erro 'ex'
-                return Result.Failure("An error occurred while saving to the database."); // CORRIGIDO
+                return Result.Failure("An error occurred while saving to the database.");
             }
         }
 

@@ -36,11 +36,16 @@
             </div>
 
             @* CAMPO DE DATA DE CHECK-IN *@
-            <div class="form-group mb-3">
+            <div class="form-group">
                 <label asp-for="CheckInDate" class="control-label"></label>
-                <input asp-for="CheckInDate" class="form-control" />
+                <input asp-for="CheckInDate"
+                       class="form-control"
+                       type="date"
+                       min="@DateTime.Today.ToString("yyyy-MM-dd")" />
                 <span asp-validation-for="CheckInDate" class="text-danger"></span>
             </div>
+
+
 
             @* CAMPO DE DATA DE CHECK-OUT *@
             <div class="form-group mb-3">

@@ -19,7 +19,7 @@ namespace HotelWebApp.Data.Entities
 
         public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
 
-        //public ICollection<Invoice> Invoices { get; set; }
+        public virtual ICollection<Invoice> Invoices { get; set; } = new HashSet<Invoice>();
 
         ///// <summary>
         ///// Constructor to initialize collections and prevent null reference exceptions.
