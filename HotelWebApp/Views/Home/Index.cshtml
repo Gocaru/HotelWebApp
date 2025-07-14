@@ -1,8 +1,85 @@
-﻿@{
+﻿@using HotelWebApp.Models
+@model HomeDashboardViewModel
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@if (User.IsInRole("Employee") && Model != null)
+{
+    <div class="container-fluid">
+        <div class="text-center mb-4">
+            <h1 class="display-4">Dashboard</h1>
+            <p class="lead text-muted">Activity summary for today, @DateTime.Today.ToShortDateString()</p>
+        </div>
+
+        <div class="row">
+            @* Column for Check-ins *@
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h3 class="card-title mb-0"><i class="fas fa-calendar-check"></i> Today's Check-ins</h3>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.CheckInsToday.Any())
+                        {
+                            <ul class="list-group list-group-flush">
+                                @foreach (var reservation in Model.CheckInsToday)
+                                {
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <strong>@reservation.ApplicationUser.FullName</strong> - Room @reservation.Room.RoomNumber
+                                        </span>
+                                        <a asp-controller="Reservations" asp-action="Details" asp-route-id="@reservation.Id" class="btn btn-sm btn-outline-primary">View Details</a>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p class="text-center text-muted mt-3">No check-ins scheduled for today.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @* Column for Check-outs *@
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-danger text-white">
+                        <h3 class="card-title mb-0"><i class="fas fa-calendar-times"></i> Today's Check-outs</h3>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.CheckOutsToday.Any())
+                        {
+                            <ul class="list-group list-group-flush">
+                                @foreach (var reservation in Model.CheckOutsToday)
+                                {
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <strong>@reservation.ApplicationUser.FullName</strong> - Room @reservation.Room.RoomNumber
+                                        </span>
+                                        <a asp-controller="Reservations" asp-action="Details" asp-route-id="@reservation.Id" class="btn btn-sm btn-outline-secondary">View Details</a>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p class="text-center text-muted mt-3">No check-outs scheduled for today.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    @* Original content for guests, anonymous users, etc. *@
+    <div class="text-center">
+        <h1 class="display-4">Welcome to the Hotel</h1>
+        <p>Your dream stay begins here. Explore our rooms and make your reservation.</p>
+        <a class="btn btn-primary btn-lg mt-3" asp-controller="Rooms" asp-action="Index">View Rooms</a>
+    </div>
+}

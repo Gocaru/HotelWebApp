@@ -21,13 +21,5 @@ namespace HotelWebApp.Data.Entities
 
         public virtual ICollection<Invoice> Invoices { get; set; } = new HashSet<Invoice>();
 
-        ///// <summary>
-        ///// Constructor to initialize collections and prevent null reference exceptions.
-        ///// </summary>
-        //public ApplicationUser()
-        //{
-        //    Reservations = new HashSet<Reservation>();
-        //    Invoices = new HashSet<Invoice>();
-        //}
     }
 }

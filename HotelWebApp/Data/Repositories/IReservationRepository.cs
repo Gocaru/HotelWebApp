@@ -20,5 +20,9 @@ namespace HotelWebApp.Data.Repositories
 
         Task<Reservation?> GetByIdAsync(int id);
 
+        Task<IEnumerable<Reservation>> GetReservationsForCheckInOnDateAsync(DateTime date);
+
+        Task<IEnumerable<Reservation>> GetReservationsForCheckOutOnDateAsync(DateTime date);
+
     }
 }

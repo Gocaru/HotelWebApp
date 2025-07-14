@@ -147,5 +147,37 @@ namespace HotelWebApp.Data.Repositories
         {
             return await _context.Reservations.FindAsync(id);
         }
+
+        /// <summary>
+        /// Asynchronously retrieves all reservations scheduled for check-in on a specific date.
+        /// Includes related guest and room details. It filters out cancelled reservations.
+        /// </summary>
+        /// <param name="date">The specific date to check for check-ins.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a collection of reservations for check-in on the given date.</returns>
+        public async Task<IEnumerable<Reservation>> GetReservationsForCheckInOnDateAsync(DateTime date)
+        {
+            return await _context.Reservations
+                .Where(r => r.CheckInDate.Date == date.Date && r.Status != ReservationStatus.Cancelled)
+                .Include(r => r.ApplicationUser)
+                .Include(r => r.Room)
+                .ToListAsync();
+        }
+
+        // NOVO MÉTODO - IMPLEMENTAÇÃO
+        /// <summary>
+        /// Asynchronously retrieves all reservations scheduled for check-out on a specific date.
+        /// Includes related guest and room details. It filters out cancelled reservations.
+        /// </summary>
+        /// <param name="date">The specific date to check for check-outs.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a collection of reservations for check-out on the given date.</returns>
+        public async Task<IEnumerable<Reservation>> GetReservationsForCheckOutOnDateAsync(DateTime date)
+        {
+            return await _context.Reservations
+                .Where(r => r.CheckOutDate.Date == date.Date && r.Status != ReservationStatus.Cancelled)
+                .Include(r => r.ApplicationUser)
+                .Include(r => r.Room)
+                .ToListAsync();
+        }
+
     }
 }
