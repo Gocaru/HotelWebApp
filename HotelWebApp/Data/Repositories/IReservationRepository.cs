@@ -24,5 +24,7 @@ namespace HotelWebApp.Data.Repositories
 
         Task<IEnumerable<Reservation>> GetReservationsForCheckOutOnDateAsync(DateTime date);
 
+        Task<bool> HasFutureReservationsAsync(int roomId);
+
     }
 }

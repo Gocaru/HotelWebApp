@@ -179,5 +179,24 @@ namespace HotelWebApp.Data.Repositories
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Checks if a specific room has any active reservations scheduled for the future.
+        /// </summary>
+        /// <param name="roomId">The ID of the room to check.</param>
+        /// <returns>True if there are future reservations; otherwise, false.</returns>
+        public async Task<bool> HasFutureReservationsAsync(int roomId)
+        {
+            // A data de hoje, ignorando a hora, para uma comparação segura.
+            var today = DateTime.Today;
+
+            // A consulta procura por qualquer reserva para o quarto especificado que:
+            // 1. Não esteja cancelada.
+            // 2. Tenha uma data de check-in a partir de hoje.
+            return await _context.Reservations
+                .AnyAsync(r => r.RoomId == roomId &&
+                               r.Status != ReservationStatus.Cancelled &&
+                               r.CheckInDate >= today);
+        }
+
     }
 }

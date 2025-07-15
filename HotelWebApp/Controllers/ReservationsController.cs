@@ -420,7 +420,7 @@ namespace HotelWebApp.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Employee")]
-        public async Task<IActionResult> CheckIn(int id)
+        public async Task<IActionResult> CheckIn(int id, string source = null)
         {
             // Obtem a reserva com os detalhes necessários (incluindo o quarto)
             var reservation = await _reservationRepo.GetByIdWithDetailsAsync(id);
@@ -434,13 +434,13 @@ namespace HotelWebApp.Controllers
             // Só se pode fazer check-in de uma reserva 'Confirmed' e na data de entrada.
             if (reservation.Status != ReservationStatus.Confirmed)
             {
-                TempData["ErrorMessage"] = "Apenas reservas confirmadas podem fazer check-in.";
-                return RedirectToAction(nameof(Index));
+                TempData["ErrorMessage"] = "Only confirmed reservations can be checked in.";
+                return source == "dashboard" ? RedirectToAction("Index", "Home") : RedirectToAction(nameof(Index));
             }
 
             if (reservation.CheckInDate.Date != DateTime.Today.Date)
             {
-                TempData["ErrorMessage"] = "O check-in só pode ser realizado na data de entrada da reserva.";
+                TempData["ErrorMessage"] = "Check-in can only be done on or after the reservation date.";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -453,21 +453,28 @@ namespace HotelWebApp.Controllers
             else
             {
                 // Se por algum motivo o quarto não estiver associado, não podemos continuar.
-                TempData["ErrorMessage"] = "Erro: A reserva não tem um quarto associado.";
-                return RedirectToAction(nameof(Index));
+                TempData["ErrorMessage"] = "Error: The reservation does not have an associated room.";
+                return source == "dashboard" ? RedirectToAction("Index", "Home") : RedirectToAction(nameof(Index));
             }
 
             // Salva as alterações
             await _reservationRepo.UpdateAsync(reservation);
 
-            TempData["SuccessMessage"] = $"Check-in para o hóspede {reservation.ApplicationUser.FullName} realizado com sucesso!";
+            TempData["SuccessMessage"] = $"Check-in for guest {reservation.ApplicationUser.FullName} completed successfully!";
+            return RedirectToAction(nameof(Index));
+
+            //lógica de redirecionamento inteligente:
+            if (source == "dashboard")
+            {
+                return RedirectToAction("Index", "Home");
+            }
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Employee")]
-        public async Task<IActionResult> CheckOut(int id)
+        public async Task<IActionResult> CheckOut(int id, string source = null)
         {
             var reservation = await _reservationRepo.GetByIdWithDetailsAsync(id);
 
@@ -480,7 +487,7 @@ namespace HotelWebApp.Controllers
             if (reservation.Status != ReservationStatus.CheckedIn)
             {
                 TempData["ErrorMessage"] = "This action is only available for currently checked-in reservations.";
-                return RedirectToAction(nameof(Index));
+                return source == "dashboard" ? RedirectToAction("Index", "Home") : RedirectToAction(nameof(Index));
             }
 
             // Chamamos o serviço para gerar a fatura.
@@ -492,7 +499,7 @@ namespace HotelWebApp.Controllers
                 // Se algo correu mal
                 // mostramos o erro ao funcionário.
                 TempData["ErrorMessage"] = invoiceResult.Error;
-                return RedirectToAction(nameof(Index));
+                return source == "dashboard" ? RedirectToAction("Index", "Home") : RedirectToAction(nameof(Index));
             }
 
             // Atualiza os status da Reserva para "CheckedOut" e do Quarto para "Available"

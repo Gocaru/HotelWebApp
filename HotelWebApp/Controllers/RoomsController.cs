@@ -11,10 +11,12 @@ namespace HotelWebApp.Controllers
     public class RoomsController : Controller
     {
         private readonly IRoomRepository _roomRepository;
+        private readonly IReservationRepository _reservationRepository;
 
-        public RoomsController(IRoomRepository roomRepository)
+        public RoomsController(IRoomRepository roomRepository, IReservationRepository reservationRepository)
         {
             _roomRepository = roomRepository;
+            _reservationRepository = reservationRepository;
         }
 
         // GET: RoomsController
@@ -66,17 +68,31 @@ namespace HotelWebApp.Controllers
         // GET: RoomsController/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
-            var room = await _roomRepository.GetByIdAsync(id);
-            if (room == null) return NotFound();
+            var roomToEdit = await _roomRepository.GetByIdAsync(id);
+
+            if (roomToEdit == null)
+            {
+                return NotFound();
+            }
+
+            // Verifica se o quarto tem reservas futuras ou ativas.
+            bool hasActiveOrFutureReservations = await _reservationRepository.HasFutureReservationsAsync(id);
+
+            // Se tiver, bloquear a edição e informar o admin.
+            if (hasActiveOrFutureReservations)
+            {
+                TempData["ErrorMessage"] = $"The Room '{roomToEdit.RoomNumber}' cannot be edited because it has active or future reservations.";
+                return RedirectToAction(nameof(Index));
+            }
 
             var viewModel = new RoomViewModel
             {
-                Id = room.Id,
-                RoomNumber = room.RoomNumber,
-                Capacity = room.Capacity,
-                PricePerNight = room.PricePerNight,
-                Type = room.Type,
-                Status = room.Status
+                Id = roomToEdit.Id,
+                RoomNumber = roomToEdit.RoomNumber,
+                Capacity = roomToEdit.Capacity,
+                PricePerNight = roomToEdit.PricePerNight,
+                Type = roomToEdit.Type,
+                Status = roomToEdit.Status
             };
 
             PopulateDropdowns();
@@ -122,7 +138,25 @@ namespace HotelWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            bool hasFutureReservations = await _reservationRepository.HasFutureReservationsAsync(id);
+
+            // 2. Se tiver, bloquear a exclusão e informar o admin.
+            if (hasFutureReservations)
+            {
+                // Pega os detalhes do quarto para usar na mensagem de erro.
+                var room = await _roomRepository.GetByIdAsync(id);
+
+                // Adiciona uma mensagem de erro clara ao TempData para ser exibida na página Index.
+                TempData["ErrorMessage"] = $"The Room '{room?.RoomNumber}' cannot be deleted because it has future reservations scheduled.";
+
+                // Redireciona de volta para a lista de quartos.
+                return RedirectToAction(nameof(Index));
+            }
+
             await _roomRepository.DeleteAsync(id);
+
+            TempData["SuccessMessage"] = "Room deleted successfully.";
+
             return RedirectToAction(nameof(Index));
         }
 

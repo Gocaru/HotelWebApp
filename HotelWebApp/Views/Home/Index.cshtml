@@ -1,4 +1,5 @@
-﻿@using HotelWebApp.Models
+﻿@using HotelWebApp.Data.Entities
+@using HotelWebApp.Models
 @model HomeDashboardViewModel
 
 @{
@@ -30,7 +31,16 @@
                                         <span>
                                             <strong>@reservation.ApplicationUser.FullName</strong> - Room @reservation.Room.RoomNumber
                                         </span>
+                                        <div>
+                                            @if (reservation.Status == ReservationStatus.Confirmed)
+                                            {
+                                                <form asp-controller="Reservations" asp-action="CheckIn" asp-route-id="@reservation.Id" method="post" class="d-inline">
+                                                    <input type="hidden" name="source" value="dashboard" />
+                                                    <button type="submit" class="btn btn-sm btn-success">Check-in</button>
+                                                </form>
+                                            }
                                         <a asp-controller="Reservations" asp-action="Details" asp-route-id="@reservation.Id" class="btn btn-sm btn-outline-primary">View Details</a>
+                                        </div>
                                     </li>
                                 }
                             </ul>
@@ -59,7 +69,16 @@
                                         <span>
                                             <strong>@reservation.ApplicationUser.FullName</strong> - Room @reservation.Room.RoomNumber
                                         </span>
+                                        <div>
+                                            @if (reservation.Status == ReservationStatus.CheckedIn)
+                                            {
+                                                <form asp-controller="Reservations" asp-action="CheckOut" asp-route-id="@reservation.Id" method="post" class="d-inline">
+                                                    <input type="hidden" name="source" value="dashboard" />
+                                                    <button type="submit" class="btn btn-sm btn-warning">Check-out</button>
+                                                </form>
+                                            }
                                         <a asp-controller="Reservations" asp-action="Details" asp-route-id="@reservation.Id" class="btn btn-sm btn-outline-secondary">View Details</a>
+                                        </div>
                                     </li>
                                 }
                             </ul>
