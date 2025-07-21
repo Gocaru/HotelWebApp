@@ -30,6 +30,8 @@ namespace HotelWebApp.Data.Repositories
             return await _context.Reservations
                 .Include(r => r.ApplicationUser)
                 .Include(r => r.Room)
+                .Include(r => r.ReservationAmenities)
+                    .ThenInclude(ra => ra.Amenity)
                 .OrderByDescending(r => r.CheckInDate)
                 .ToListAsync();
         }

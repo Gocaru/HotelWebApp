@@ -33,8 +33,60 @@ namespace HotelWebApp.Controllers
         [Authorize(Roles = "Employee")]
         public async Task<IActionResult> Index()
         {
-            var reservations = await _reservationRepo.GetAllWithDetailsAsync(); // Inclui User e Room
-            return View(reservations);
+            var reservations = await _reservationRepo.GetAllWithDetailsAsync(); // Inclui User, Room e amenities
+
+            var viewModelList = reservations.Select(res =>
+            {
+                // 1. Calcular o custo base da estadia
+                // Garante que estadias de 0 dias (ex: check-in e out no mesmo dia) contam como 1 noite.
+                int numberOfNights = (res.CheckOutDate.Date - res.CheckInDate.Date).Days;
+                if (numberOfNights <= 0)
+                {
+                    numberOfNights = 1;
+                }
+
+                decimal stayCost = numberOfNights * (res.Room?.PricePerNight ?? 0);
+
+                // 2. Calcular o custo total dos amenities
+                // A propriedade res.ReservationAmenities vem preenchida graças ao .Include() no repositório
+                decimal amenitiesCost = res.ReservationAmenities?.Sum(ra => (ra.Amenity?.Price ?? 0) * ra.Quantity) ?? 0;
+
+                // 3. Retornar o ViewModel preenchido
+                return new ReservationListViewModel
+                {
+                    Id = res.Id,
+                    GuestName = res.ApplicationUser?.FullName ?? "N/A",
+                    RoomNumber = res.Room?.RoomNumber ?? "N/A",
+                    CheckInDate = res.CheckInDate,
+                    CheckOutDate = res.CheckOutDate,
+                    StatusText = res.Status.ToString(),
+                    StatusBadgeClass = GetBadgeClassForStatus(res.Status),
+                    NumberOfGuests = res.NumberOfGuests,
+                    RoomDetails = $"{res.Room?.RoomNumber} ({res.Room?.Type})",
+                    TotalCost = stayCost + amenitiesCost,
+
+                    // Lógica para os botões de ação (inalterada)
+                    CanCheckIn = (res.Status == ReservationStatus.Confirmed && res.CheckInDate.Date <= DateTime.Today.Date),
+                    CanCheckOut = (res.Status == ReservationStatus.CheckedIn),
+                    CanEdit = (res.Status == ReservationStatus.Confirmed || res.Status == ReservationStatus.CheckedIn),
+                    CanDelete = (res.Status == ReservationStatus.Confirmed)
+                };
+            }).OrderBy(r => r.CheckInDate).ToList();
+
+            return View(viewModelList);
+        }
+
+        // Método helper privado para a lógica das cores
+        private string GetBadgeClassForStatus(ReservationStatus status)
+        {
+            return status switch
+            {
+                ReservationStatus.Confirmed => "bg-primary",
+                ReservationStatus.CheckedIn => "bg-success",
+                ReservationStatus.Cancelled => "bg-danger",
+                ReservationStatus.CheckedOut => "bg-dark",
+                _ => "bg-secondary"
+            };
         }
 
         // GET: Reservations/Details/5

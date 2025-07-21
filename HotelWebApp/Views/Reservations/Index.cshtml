@@ -1,9 +1,8 @@
-﻿@model IEnumerable<HotelWebApp.Data.Entities.Reservation>
+﻿@model IEnumerable<HotelWebApp.Models.ReservationListViewModel>
 @using HotelWebApp.Data.Entities
 
 @{
     ViewData["Title"] = "Reservations Management";
-    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -24,91 +23,61 @@
     <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
 }
 
-<table class="table table-striped table-hover">
-    <thead class="thead-dark">
-        <tr>
-            <th>Guest</th>
-            <th>Room</th>
-            <th>Check-in Date</th>
-            <th>Check-out Date</th>
-            <th>Status</th>
-            <th style="width: 250px;">Actions</th>
-        </tr>
-    </thead>
+<!-- PASSO 1: DEFINIÇÃO DOS TEMPLATES FORA DO GRID -->
+<script id="statusTemplate" type="text/x-template">
+    <span class="badge ${StatusBadgeClass}">${StatusText}</span>
+</script>
 
-    <tbody>
-        @foreach (var item in Model.OrderBy(r => r.CheckInDate))
-        {
-            <tr>
-                <td>@Html.DisplayFor(modelItem => item.ApplicationUser.FullName)</td>
-                <td>@Html.DisplayFor(modelItem => item.Room.RoomNumber)</td>
-                <td>@item.CheckInDate.ToShortDateString()</td>
-                <td>@item.CheckOutDate.ToShortDateString()</td>
-                <td>
-                    @{
-                        // Lógica para definir a cor do badge com base no status
-                        var badgeClass = "bg-secondary"; // Cor padrão
-                        switch (item.Status)
-                        {
-                            case ReservationStatus.Confirmed:
-                                badgeClass = "bg-primary";
-                                break;
-                            case ReservationStatus.CheckedIn:
-                                badgeClass = "bg-success";
-                                break;
-                            case ReservationStatus.Cancelled:
-                                badgeClass = "bg-danger";
-                                break;
-                            case ReservationStatus.CheckedOut:
-                                badgeClass = "bg-dark";
-                                break;
-                        }
-                    }
-                    <span class="badge @badgeClass">@Html.DisplayFor(modelItem => item.Status)</span>
-                </td>
-                <td>
-                    @* Botão de Check-in *@
-                    @if (item.Status == ReservationStatus.Confirmed && item.CheckInDate.Date == DateTime.Today.Date)
-                    {
-                        <form asp-action="CheckIn" asp-route-id="@item.Id" method="post" class="d-inline">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-success btn-sm" title="Perform Check-in">
-                                <i class="fas fa-sign-in-alt"></i> Check-in
-                            </button>
-                        </form>
-                    }
+<script id="actionsTemplate" type="text/x-template">
+    <div>
+        ${if(CanCheckIn)}
+            <form action="/Reservations/CheckIn/${Id}" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-success btn-sm" title="Check-in"><i class="fas fa-sign-in-alt"></i></button>
+            </form>
+        ${/if}
 
-                    @* Botão de Check-out *@
-                    @if (item.Status == ReservationStatus.CheckedIn)
-                    {
-                        <form asp-action="CheckOut" asp-route-id="@item.Id" method="post" class="d-inline">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-primary btn-sm" title="Perform Check-out">
-                                <i class="fas fa-sign-out-alt"></i> Check-out
-                            </button>
-                        </form>
-                    }
+        ${if(CanCheckOut)}
+            <form action="/Reservations/CheckOut/${Id}" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-primary btn-sm" title="Check-out"><i class="fas fa-sign-out-alt"></i></button>
+            </form>
+        ${/if}
 
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm" title="Edit Reservation">
-                        <i class="fas fa-edit"></i> Edit
-                    </a>
+        ${if(CanEdit)}
+            <a href="/Reservations/Edit/${Id}" class="btn btn-warning btn-sm" title="Edit"><i class="fas fa-edit"></i></a>
+        ${/if}
 
-                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm" title="View Details">
-                        <i class="fas fa-info-circle"></i> Details
-                    </a>
+        <a href="/Reservations/Details/${Id}" class="btn btn-info btn-sm" title="Details"><i class="fas fa-info-circle"></i></a>
 
-                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline"
-                          onsubmit="return confirm('Are you sure you want to delete this reservation?');">
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-danger btn-sm" title="Delete Reservation">
-                            <i class="fas fa-trash"></i> Delete
-                        </button>
-                    </form>
+        ${if(CanDelete)}
+            <a href="/Reservations/Delete/${Id}" class="btn btn-danger btn-sm" title="Delete"><i class="fas fa-trash"></i></a>
+        ${/if}
+    </div>
+</script>
 
-                </td>
-            </tr>
-        }
-    </tbody>
+<!-- PASSO 2: O GRID QUE USA OS TEMPLATES POR ID -->
+<ejs-grid id="reservationsGrid"
+          dataSource="@Model"
+          allowPaging="true"
+          allowSorting="true"
+          toolbar="@(new List<string>() { "Search" })"
+          height="500">
+    <e-grid-columns>
+        <e-grid-column field="Id" isPrimaryKey="true" visible="false"></e-grid-column>
+        <e-grid-column field="GuestName" headerText="Guest" width="180"></e-grid-column>
+        <e-grid-column field="RoomNumber" headerText="Room" width="100" textAlign="Right"></e-grid-column>
+        <e-grid-column field="CheckInDate" headerText="Check-in Date" format="dd/MM/yyyy" type="date" width="140"></e-grid-column>
+        <e-grid-column field="CheckOutDate" headerText="Check-out Date" format="dd/MM/yyyy" type="date" width="140"></e-grid-column>
 
+        <e-grid-column headerText="Status" template="#statusTemplate" width="130" textAlign="Center"></e-grid-column>
 
-</table>
+        <e-grid-column field="NumberOfGuests" headerText="Number of guests" textAlign="Right" width="120"></e-grid-column>
+
+        <e-grid-column field="RoomDetails" headerText="Room" width="150"></e-grid-column>
+
+        <e-grid-column field="TotalCost" headerText="Total Cost" format="C2" textAlign="Right" width="130"></e-grid-column>
+
+        <e-grid-column headerText="Actions" template="#actionsTemplate" width="280" textAlign="Center"></e-grid-column>
+    </e-grid-columns>
+</ejs-grid>
