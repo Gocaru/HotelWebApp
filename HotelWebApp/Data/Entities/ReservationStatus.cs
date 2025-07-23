@@ -14,7 +14,10 @@ namespace HotelWebApp.Data.Entities
         CheckedOut = 2,
 
         [Display(Name = "Cancelled")]
-        Cancelled = 3
+        Cancelled = 3,
+
+        [Display(Name = "No-Show")]
+        NoShow = 4
 
     }
 }

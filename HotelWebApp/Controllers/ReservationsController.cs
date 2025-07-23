@@ -124,7 +124,7 @@ namespace HotelWebApp.Controllers
 
         // GET: Reservations/Create
         [Authorize(Roles = "Employee, Guest")]
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create(DateTime? checkInDate, DateTime? checkOutDate)
         {
             var model = new ReservationViewModel();
 
@@ -142,8 +142,8 @@ namespace HotelWebApp.Controllers
             }
 
 
-            model.CheckInDate = DateTime.Today.AddDays(1);
-            model.CheckOutDate = DateTime.Today.AddDays(2);
+            model.CheckInDate = checkInDate ?? DateTime.Today.AddDays(1);
+            model.CheckOutDate = checkOutDate ?? DateTime.Today.AddDays(2);
 
             return View(model);
         }
@@ -627,6 +627,105 @@ namespace HotelWebApp.Controllers
             }
 
             return RedirectToAction(nameof(Details), new { id = reservationId });
+        }
+
+
+        [Authorize(Roles = "Employee, Admin")]
+        public IActionResult Schedule()
+        {
+            return View();
+        }
+
+        [Authorize(Roles = "Employee, Admin")]
+        public async Task<IActionResult> LoadSchedulerData()
+        {
+            // 1. Obter todas as reservas com os detalhes necessários (Hóspede, Quarto)
+            var reservations = await _reservationRepo.GetAllWithDetailsAsync();
+
+            // 2. Mapear a lista de Reservas para uma lista do nosso novo ViewModel
+            var schedulerData = reservations.Select(r => new SchedulerEventViewModel
+            {
+                Id = r.Id,
+                Subject = $"Quarto {r.Room?.RoomNumber}: {r.ApplicationUser?.FullName}", // Texto que aparece no evento
+                StartTime = r.CheckInDate,
+                EndTime = r.CheckOutDate,
+                IsAllDay = false, // Reservas de hotel não são "all day events"
+                Description = $"Reserva para {r.NumberOfGuests} hóspede(s). Status: {r.Status}.", // Detalhes extra
+                Location = r.Room?.RoomNumber, // O número do quarto pode ser a localização
+                CategoryColor = GetColorForRoomStatus(r.Status) // Usar o status para a cor
+            }).ToList();
+
+            // 3. Retornar os dados em formato JSON
+            return Json(schedulerData);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Employee, Admin")]
+        public async Task<IActionResult> DeleteEvent([FromBody] SchedulerBatchUpdateViewModel batchData)
+        {
+            if (batchData?.Deleted == null || !batchData.Deleted.Any())
+            {
+                return BadRequest("No items to delete.");
+            }
+
+            // Numa operação de delete do popup, só vem um item.
+            var eventToDelete = batchData.Deleted.First();
+
+            if (eventToDelete == null || eventToDelete.Id == 0)
+            {
+                return BadRequest("Invalid event ID.");
+            }
+
+            // O ID da reserva que queremos apagar
+            int reservationId = eventToDelete.Id;
+
+            // Chamamos a nossa lógica de negócio já existente
+            var success = await PerformDeleteReservation(reservationId);
+
+            if (success)
+            {
+                // IMPORTANTE: O Scheduler espera receber de volta os dados que foram processados.
+                // Retornamos um objeto que tem uma propriedade "deleted" com os itens que foram apagados.
+                return Json(new { deleted = batchData.Deleted });
+            }
+            else
+            {
+                return StatusCode(500, "Error deleting the reservation.");
+            }
+        }
+
+        private async Task<bool> PerformDeleteReservation(int id)
+        {
+            var reservation = await _reservationRepo.GetByIdWithDetailsAsync(id);
+            if (reservation == null)
+            {
+                return false; // Falhou, reserva não encontrada
+            }
+
+            await _reservationRepo.DeleteAsync(id);
+
+            var room = await _roomRepo.GetByIdAsync(reservation.RoomId);
+            if (room != null && room.Status == RoomStatus.Reserved)
+            {
+                room.Status = RoomStatus.Available;
+                await _roomRepo.UpdateAsync(room);
+            }
+
+            return true; // Sucesso
+        }
+
+        // Método helper privado para atribuir cores com base no STATUS da reserva
+        private string GetColorForRoomStatus(ReservationStatus status)
+        {
+            return status switch
+            {
+                ReservationStatus.Confirmed => "#0d6efd",  // Azul (Bootstrap Primary)
+                ReservationStatus.CheckedIn => "#198754",   // Verde (Bootstrap Success)
+                ReservationStatus.CheckedOut => "#212529",  // Preto/Cinzento Escuro (Bootstrap Dark)
+                ReservationStatus.Cancelled => "#dc3545",  // Vermelho (Bootstrap Danger)
+                ReservationStatus.NoShow => "#ffc107",      // Amarelo (Bootstrap Warning)
+                _ => "#6c757d"                              // Cinzento (Bootstrap Secondary)
+            };
         }
 
     }
