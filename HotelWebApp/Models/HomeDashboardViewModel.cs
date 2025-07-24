@@ -6,5 +6,7 @@ namespace HotelWebApp.Models
     {
         public IEnumerable<Reservation> CheckInsToday { get; set; }
         public IEnumerable<Reservation> CheckOutsToday { get; set; }
+
+        public IEnumerable<ChangeRequest> PendingChangeRequests { get; set; }
     }
 }

@@ -1,6 +1,6 @@
 ﻿@using HotelWebApp.Data.Entities
 @using HotelWebApp.Models
-@model HomeDashboardViewModel
+@model HomeDashboardViewModel?
 
 @{
     ViewData["Title"] = "Home Page";
@@ -90,6 +90,77 @@
                     </div>
                 </div>
             </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title mb-0"><i class="fas fa-cogs"></i> Administrative Tasks</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text text-muted">Run periodic tasks to keep the hotel system up-to-date.</p>
+
+                            <!-- Formulário para o botão "Process No-Shows" -->
+                            <form asp-controller="Reservations" asp-action="ProcessNoShows" method="post"
+                                  onsubmit="return confirm('This will mark all past-due reservations as No-Show and free up their rooms. Are you sure you want to proceed?');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-user-clock"></i> Process Past-Due "No-Shows"
+                                </button>
+                            </form>
+
+                            <small class="form-text text-muted d-block mt-2">
+                                This task should be run once daily to handle reservations that were not checked in on their arrival date.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h3 class="card-title mb-0">
+                                <i class="fas fa-exclamation-triangle"></i> Pending Change Requests
+                                <span class="badge bg-danger ms-2">@Model.PendingChangeRequests.Count()</span>
+                            </h3>
+                        </div>
+
+                        @if (Model.PendingChangeRequests.Any())
+                        {
+                            <ul class="list-group list-group-flush">
+                                @foreach (var request in Model.PendingChangeRequests)
+                                {
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <p class="mb-1">
+                                                Guest <strong>@request.Reservation.ApplicationUser.FullName</strong> requested a change for reservation <strong>#@request.ReservationId</strong>.
+                                            </p>
+                                            <p class="mb-0 fst-italic text-muted">
+                                                <strong>Request:</strong> "@request.RequestDetails"
+                                            </p>
+                                            <small>Requested on: @request.RequestedOn.ToShortDateString()</small>
+                                        </div>
+
+                                        <!-- O funcionário clica aqui para ir para a página de detalhes da reserva e agir -->
+                                        <a asp-controller="Reservations" asp-action="Details" asp-route-id="@request.ReservationId" class="btn btn-primary btn-sm">
+                                            Process
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <div class="card-body">
+                                <p class="card-text text-muted">There are no pending change requests at the moment.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 }
