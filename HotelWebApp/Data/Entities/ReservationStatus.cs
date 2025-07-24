@@ -17,7 +17,10 @@ namespace HotelWebApp.Data.Entities
         Cancelled = 3,
 
         [Display(Name = "No-Show")]
-        NoShow = 4
+        NoShow = 4,
+
+        [Display(Name = "Completed")]
+        Completed = 5
 
     }
 }

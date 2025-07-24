@@ -50,5 +50,57 @@ namespace HotelWebApp.Services
 
             return Result<Invoice>.Success(invoice);
         }
+
+        public async Task<Result> ProcessPaymentAsync(int invoiceId, decimal amount, PaymentMethod paymentMethod)
+        {
+            // 1. Encontrar a fatura e incluir a Reserva e os Pagamentos existentes
+            var invoice = await _context.Invoices
+                .Include(i => i.Reservation)
+                .Include(i => i.Payments)
+                .FirstOrDefaultAsync(i => i.Id == invoiceId);
+
+            if (invoice == null) return Result.Failure("Invoice not found.");
+            if (invoice.Status == InvoiceStatus.Paid) return Result.Failure("Invoice is already fully paid.");
+            if (amount <= 0) return Result.Failure("Payment amount must be positive.");
+
+            var totalPaidSoFar = invoice.Payments.Sum(p => p.Amount);
+            var balanceDue = invoice.TotalAmount - totalPaidSoFar;
+
+            if (amount > balanceDue)
+            {
+                return Result.Failure($"Payment of {amount:C} exceeds the balance due of {balanceDue:C}.");
+            }
+
+            // 2. Criar o novo registo de pagamento
+            var newPayment = new Payment
+            {
+                InvoiceId = invoiceId,
+                Amount = amount,
+                PaymentMethod = paymentMethod,
+                PaymentDate = DateTime.UtcNow
+            };
+            _context.Payments.Add(newPayment);
+
+            // 3. Atualizar o status da Fatura com base no novo total pago
+            var newTotalPaid = totalPaidSoFar + amount;
+            if (newTotalPaid >= invoice.TotalAmount)
+            {
+                invoice.Status = InvoiceStatus.Paid;
+                // 4. Se a fatura foi totalmente paga, complete a reserva
+                if (invoice.Reservation != null)
+                {
+                    invoice.Reservation.Status = ReservationStatus.Completed;
+                }
+            }
+            else
+            {
+                invoice.Status = InvoiceStatus.PartiallyPaid;
+            }
+
+            // 5. Salvar tudo
+            await _context.SaveChangesAsync();
+
+            return Result.Success("Payment registered successfully.");
+        }
     }
 }

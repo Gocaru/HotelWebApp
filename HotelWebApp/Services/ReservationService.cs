@@ -1,4 +1,5 @@
-﻿using HotelWebApp.Data.Entities;
+﻿using HotelWebApp.Data;
+using HotelWebApp.Data.Entities;
 using HotelWebApp.Data.Repositories;
 using HotelWebApp.Models;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -8,13 +9,15 @@ namespace HotelWebApp.Services
 {
     public class ReservationService : IReservationService
     {
+        private readonly HotelWebAppContext _context;
         private readonly IReservationRepository _reservationRepo;
         private readonly IAmenityRepository _amenityRepo;
         private readonly IRoomRepository _roomRepo;
         private readonly IEmailSender _emailSender;
 
-        public ReservationService(IReservationRepository reservationRepo, IRoomRepository roomRepo, IEmailSender emailSender, IAmenityRepository amenityRepo)
+        public ReservationService(HotelWebAppContext context, IReservationRepository reservationRepo, IRoomRepository roomRepo, IEmailSender emailSender, IAmenityRepository amenityRepo)
         {
+            _context = context;
             _reservationRepo = reservationRepo;
             _roomRepo = roomRepo;
             _emailSender = emailSender;
@@ -368,6 +371,52 @@ namespace HotelWebApp.Services
             catch (DbUpdateException ex)
             {
                 return Result.Failure("An error occurred while removing the amenity.");
+            }
+        }
+
+        public async Task<Result> MarkPastReservationsAsNoShowAsync()
+        {
+            try
+            {
+                var today = DateTime.Today;
+
+                // 1. Encontrar todas as reservas 'Confirmed' cuja data de check-in é anterior a hoje
+                var reservationsToUpdate = await _context.Reservations
+                    .Include(r => r.Room) // Incluir o quarto para podermos atualizá-lo
+                    .Where(r => r.Status == ReservationStatus.Confirmed && r.CheckInDate.Date < today)
+                    .ToListAsync();
+
+                if (!reservationsToUpdate.Any())
+                {
+                    return Result.Success("No past-due reservations found to process.");
+                }
+
+                foreach (var reservation in reservationsToUpdate)
+                {
+                    // 2. Mudar o status da reserva para NoShow
+                    reservation.Status = ReservationStatus.NoShow;
+
+                    // 3. Libertar o quarto se ele ainda estava como 'Reservado'
+                    if (reservation.Room != null && reservation.Room.Status == RoomStatus.Reserved)
+                    {
+                        reservation.Room.Status = RoomStatus.Available;
+                    }
+                }
+
+                // 4. Salvar todas as alterações de uma só vez na base de dados
+                await _context.SaveChangesAsync();
+
+                string successMessage = reservationsToUpdate.Count == 1
+                    ? "1 reservation was successfully marked as No-Show."
+                    : $"{reservationsToUpdate.Count} reservations were successfully marked as No-Show.";
+
+                return Result.Success(successMessage);
+            }
+            catch (Exception ex)
+            {
+                // Em caso de um erro inesperado na base de dados, retorna uma mensagem de falha
+                // Opcional: Logar o erro 'ex' para fins de depuração
+                return Result.Failure("An error occurred while processing no-show reservations. Please try again.");
             }
         }
     }

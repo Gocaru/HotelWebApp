@@ -1,5 +1,6 @@
 ﻿using HotelWebApp.Data;
 using HotelWebApp.Data.Entities;
+using HotelWebApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +11,12 @@ namespace HotelWebApp.Controllers
     [Authorize(Roles = "Employee, Admin")]
     public class InvoicesController : Controller
     {
+        private readonly IPaymentService _paymentService;
         private readonly HotelWebAppContext _context;
 
-        public InvoicesController(HotelWebAppContext context)
+        public InvoicesController(IPaymentService paymentService, HotelWebAppContext context)
         {
+            _paymentService = paymentService;
             _context = context;
         }
 
@@ -46,43 +49,19 @@ namespace HotelWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddPayment(int invoiceId, decimal amount, PaymentMethod paymentMethod)
         {
-            var invoice = await _context.Invoices.Include(i => i.Payments).FirstOrDefaultAsync(i => i.Id == invoiceId);
-            if (invoice == null)
-            {
-                return NotFound();
-            }
+            // A única responsabilidade do Controller é chamar o serviço
+            var result = await _paymentService.ProcessPaymentAsync(invoiceId, amount, paymentMethod);
 
-            if (amount <= 0)
+            // E depois mostrar o resultado
+            if (result.Succeeded)
             {
-                TempData["ErrorMessage"] = "Payment amount must be positive.";
-                return RedirectToAction(nameof(Details), new { id = invoiceId });
-            }
-
-            // Cria um novo registo de pagamento
-            var payment = new Payment
-            {
-                InvoiceId = invoiceId,
-                Amount = amount,
-                PaymentMethod = paymentMethod,
-                PaymentDate = DateTime.UtcNow
-            };
-
-            _context.Payments.Add(payment);
-
-            // Atualiza o status da fatura com base no total pago
-            var totalPaid = invoice.Payments.Sum(p => p.Amount) + amount;
-            if (totalPaid >= invoice.TotalAmount)
-            {
-                invoice.Status = InvoiceStatus.Paid;
+                TempData["SuccessMessage"] = result.Message;
             }
             else
             {
-                invoice.Status = InvoiceStatus.PartiallyPaid;
+                TempData["ErrorMessage"] = result.Error;
             }
 
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = "Payment registered successfully!";
             return RedirectToAction(nameof(Details), new { id = invoiceId });
         }
     }

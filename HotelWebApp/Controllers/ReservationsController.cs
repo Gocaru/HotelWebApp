@@ -18,8 +18,9 @@ namespace HotelWebApp.Controllers
         private readonly IReservationService _reservationService;
         private readonly IAmenityRepository _amenityRepository;
         private readonly IPaymentService _paymentService;
+        private readonly IChangeRequestRepository _changeRequestRepo;
 
-        public ReservationsController(IReservationRepository reservationRepo, IRoomRepository roomRepo, UserManager<ApplicationUser> userManager, IReservationService reservationService, IAmenityRepository amenityRepository, IPaymentService paymentService)
+        public ReservationsController(IReservationRepository reservationRepo, IRoomRepository roomRepo, UserManager<ApplicationUser> userManager, IReservationService reservationService, IAmenityRepository amenityRepository, IPaymentService paymentService, IChangeRequestRepository changeRequestRepo)
         {
             _reservationRepo = reservationRepo;
             _roomRepo = roomRepo;
@@ -27,11 +28,12 @@ namespace HotelWebApp.Controllers
             _reservationService = reservationService;
             _amenityRepository = amenityRepository;
             _paymentService = paymentService;
+            _changeRequestRepo = changeRequestRepo;
         }
 
         // GET: Reservations
         [Authorize(Roles = "Employee")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult>  Index()
         {
             var reservations = await _reservationRepo.GetAllWithDetailsAsync(); // Inclui User, Room e amenities
 
@@ -85,6 +87,8 @@ namespace HotelWebApp.Controllers
                 ReservationStatus.CheckedIn => "bg-success",
                 ReservationStatus.Cancelled => "bg-danger",
                 ReservationStatus.CheckedOut => "bg-dark",
+                ReservationStatus.Completed => "bg-info",  
+                ReservationStatus.NoShow => "bg-warning",
                 _ => "bg-secondary"
             };
         }
@@ -113,13 +117,23 @@ namespace HotelWebApp.Controllers
                 }
             }
 
+            //Prepara o ViewModel para a View
+            var model = new ReservationDetailsViewModel
+            {
+                Reservation = reservation,
+                // Por defeito, não há pedido pendente
+                PendingChangeRequest = null
+            };
+
             if (User.IsInRole("Employee") || User.IsInRole("Admin"))
             {
                 var allAmenities = await _amenityRepository.GetAllAsync();
                 ViewBag.Amenities = new SelectList(allAmenities, "Id", "Name");
+
+                model.PendingChangeRequest = await _changeRequestRepo.GetPendingRequestForReservationAsync(id.Value);
             }
 
-            return View(reservation);
+            return View(model);
         }
 
         // GET: Reservations/Create
@@ -228,13 +242,16 @@ namespace HotelWebApp.Controllers
                 return Forbid();
             }
 
-            // Regra de negócio: Não permitir edição se a reserva já foi concluída ou cancelada.
-            // Isto impede o acesso à página de edição através do URL.
-            if (reservation.Status == ReservationStatus.CheckedOut || reservation.Status == ReservationStatus.Cancelled)
+            bool isEditable = (reservation.Status == ReservationStatus.Confirmed ||
+                       reservation.Status == ReservationStatus.CheckedIn);
+
+            ViewBag.IsEditable = isEditable;
+
+            if (!isEditable)
             {
-                TempData["ErrorMessage"] = $"Cannot edit a reservation with status '{reservation.Status}'.";
-                return RedirectToAction(nameof(Index)); // Ou para a página de detalhes da reserva
+                ModelState.AddModelError(string.Empty, $"Cannot edit a reservation with status '{reservation.Status.GetDisplayName()}'.");
             }
+
 
             // 1. Obter as listas completas de Hóspedes e Quartos
             var allGuestsList = await GetGuestListItems();
@@ -726,6 +743,126 @@ namespace HotelWebApp.Controllers
                 ReservationStatus.NoShow => "#ffc107",      // Amarelo (Bootstrap Warning)
                 _ => "#6c757d"                              // Cinzento (Bootstrap Secondary)
             };
+        }
+
+        [Authorize(Roles = "Guest")]
+        public async Task<IActionResult> RequestChange(int id)
+        {
+            // 1. Validações de segurança e negócio
+            var reservation = await _reservationRepo.GetByIdAsync(id);
+
+            // A reserva existe?
+            if (reservation == null)
+            {
+                return NotFound();
+            }
+
+            // A reserva pertence ao utilizador logado?
+            if (reservation.GuestId != _userManager.GetUserId(User))
+            {
+                return Forbid(); // Proibido - não é a sua reserva
+            }
+
+            // A reserva ainda pode ser alterada? (a mesma lógica do botão)
+            if (reservation.Status != ReservationStatus.Confirmed || reservation.CheckInDate <= DateTime.Today)
+            {
+                TempData["ErrorMessage"] = "This reservation can no longer be changed.";
+                return RedirectToAction(nameof(MyReservations));
+            }
+
+            // 2. Prepara o ViewModel para a View
+            var model = new ChangeRequestViewModel
+            {
+                ReservationId = id
+            };
+
+            // 3. Retorna a View com o formulário
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Guest")]
+        public async Task<IActionResult> RequestChange(ChangeRequestViewModel model)
+        {
+            // Validações de segurança para garantir que o utilizador não está a submeter um pedido para a reserva de outra pessoa
+            var reservation = await _reservationRepo.GetByIdAsync(model.ReservationId);
+            if (reservation == null || reservation.GuestId != _userManager.GetUserId(User))
+            {
+                return Forbid();
+            }
+
+            if (ModelState.IsValid)
+            {
+                var changeRequest = new ChangeRequest
+                {
+                    ReservationId = model.ReservationId,
+                    RequestDetails = model.RequestDetails,
+                    RequestedOn = DateTime.UtcNow,
+                    Status = RequestStatus.Pending
+                };
+
+                await _changeRequestRepo.CreateAsync(changeRequest);
+
+                TempData["SuccessMessage"] = "Your change request has been submitted successfully. You will be notified once it has been reviewed.";
+                return RedirectToAction(nameof(MyReservations));
+            }
+
+            // Se o modelo for inválido, retorna para a mesma View para mostrar os erros.
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Employee, Admin")]
+        public async Task<IActionResult> ProcessChangeRequest(int requestId, RequestStatus newStatus)
+        {
+            // 1. Obter o pedido de alteração da base de dados
+            var request = await _changeRequestRepo.GetByIdAsync(requestId);
+            if (request == null)
+            {
+                return NotFound();
+            }
+
+            // 2. Atualizar as propriedades do pedido
+            request.Status = newStatus;
+            request.ProcessedOn = DateTime.UtcNow;
+
+            // Opcional: Guardar quem processou o pedido
+            // request.ProcessedByUserId = _userManager.GetUserId(User);
+
+            // 3. Salvar as alterações na base de dados
+            await _changeRequestRepo.UpdateAsync(request);
+
+            // 4. Preparar uma mensagem de sucesso para o utilizador
+            TempData["SuccessMessage"] = $"The request has been successfully marked as '{newStatus.GetDisplayName()}'.";
+
+            // 5. Redirecionar o funcionário de volta para o Dashboard principal
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Employee, Admin")]
+        public async Task<IActionResult> ProcessNoShows()
+        {
+            // 1. Delegar a tarefa complexa para o serviço de negócio
+            var result = await _reservationService.MarkPastReservationsAsNoShowAsync();
+
+            // 2. Usar o objeto Result do serviço para mostrar uma mensagem ao utilizador
+            if (result.Succeeded)
+            {
+                // Se a operação foi bem-sucedida, usa a mensagem de sucesso do serviço
+                TempData["SuccessMessage"] = result.Message;
+            }
+            else
+            {
+                // Se falhou, usa a mensagem de erro do serviço
+                TempData["ErrorMessage"] = result.Error;
+            }
+
+            // 3. Redirecionar o utilizador de volta para o dashboard
+            return RedirectToAction("Index", "Home");
         }
 
     }

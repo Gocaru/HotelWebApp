@@ -20,5 +20,7 @@ namespace HotelWebApp.Services
 
         Task<Result> RemoveAmenityFromReservationAsync(int reservationId, int reservationAmenityId);
 
+        Task<Result> MarkPastReservationsAsNoShowAsync();
+
     }
 }

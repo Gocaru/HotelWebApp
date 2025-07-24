@@ -4,6 +4,7 @@ using HotelWebApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelWebApp.Migrations
 {
     [DbContext(typeof(HotelWebAppContext))]
-    partial class HotelWebAppContextModelSnapshot : ModelSnapshot
+    [Migration("20250723153625_Add_NoShow_To_ReservationStatus")]
+    partial class Add_NoShow_To_ReservationStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -122,40 +125,6 @@ namespace HotelWebApp.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("HotelWebApp.Data.Entities.ChangeRequest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("EmployeeNotes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ProcessedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("RequestDetails")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("RequestedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("ReservationId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReservationId");
-
-                    b.ToTable("ChangeRequests");
                 });
 
             modelBuilder.Entity("HotelWebApp.Data.Entities.Invoice", b =>
@@ -457,17 +426,6 @@ namespace HotelWebApp.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("HotelWebApp.Data.Entities.ChangeRequest", b =>
-                {
-                    b.HasOne("HotelWebApp.Data.Entities.Reservation", "Reservation")
-                        .WithMany()
-                        .HasForeignKey("ReservationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Reservation");
                 });
 
             modelBuilder.Entity("HotelWebApp.Data.Entities.Invoice", b =>

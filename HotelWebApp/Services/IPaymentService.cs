@@ -6,5 +6,7 @@ namespace HotelWebApp.Services
     public interface IPaymentService
     {
         Task<Result<Invoice>> CreateInvoiceForReservationAsync(int reservationId);
+
+        Task<Result> ProcessPaymentAsync(int invoiceId, decimal amount, PaymentMethod paymentMethod);
     }
 }
