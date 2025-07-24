@@ -1,8 +1,10 @@
-﻿@using HotelWebApp.Data.Entities
-@model HotelWebApp.Models.ReservationViewModel
+﻿@model HotelWebApp.Models.ReservationViewModel
+@using HotelWebApp.Data.Entities
+@using HotelWebApp.Services
 
 @{
     ViewData["Title"] = "Edit Reservation";
+    var isEditable = ViewBag.IsEditable ?? false;
 }
 
 <h1>Edit Reservation</h1>
@@ -12,49 +14,55 @@
 <div class="row">
     <div class="col-md-6">
         <form asp-action="Edit">
-            <div asp-validation-summary="All" class="text-danger"></div>
+            @* Este ValidationSummary irá mostrar a mensagem "Cannot edit..." que definimos no Controller *@
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
             <input type="hidden" asp-for="Id" />
 
             <div class="form-group mb-3">
                 <label class="control-label">Guest</label>
+                @* O campo Guest é sempre readonly, o que está correto *@
                 <input type="text" class="form-control" value="@Model.Guests.FirstOrDefault(g => g.Selected)?.Text" readonly />
                 <input type="hidden" asp-for="GuestId" />
             </div>
 
             <div class="form-group mb-3">
                 <label asp-for="CheckInDate" class="control-label"></label>
-                <input asp-for="CheckInDate" class="form-control" type="date" />
+                @* Adicionar o atributo 'disabled' condicional *@
+                <input asp-for="CheckInDate" class="form-control" type="date" disabled="@(!isEditable)" />
                 <span asp-validation-for="CheckInDate" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-3">
                 <label asp-for="CheckOutDate" class="control-label"></label>
-                <input asp-for="CheckOutDate" class="form-control" type="date" />
+                <input asp-for="CheckOutDate" class="form-control" type="date" disabled="@(!isEditable)" />
                 <span asp-validation-for="CheckOutDate" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-3">
                 <label asp-for="NumberOfGuests" class="control-label"></label>
-                <input asp-for="NumberOfGuests" class="form-control" type="number" min="1" />
+                <input asp-for="NumberOfGuests" class="form-control" type="number" min="1" disabled="@(!isEditable)" />
                 <span asp-validation-for="NumberOfGuests" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-3">
                 <label asp-for="RoomId" class="control-label">Room</label>
-                <select asp-for="RoomId" class="form-control" asp-items="Model.Rooms">
-                </select>
+                <select asp-for="RoomId" class="form-control" asp-items="Model.Rooms" disabled="@(!isEditable)"></select>
                 <span asp-validation-for="RoomId" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-3">
                 <label asp-for="Status" class="control-label"></label>
-                <p><strong>Current Status: @Model.Status.ToString()</strong></p>
-                <p><small>Status can only be changed via the Check-In/Check-Out/Cancel buttons on the main list.</small></p>
+                <p><strong>Current Status: @Model.Status.GetDisplayName()</strong></p>
+               
                 <input type="hidden" asp-for="Status" />
             </div>
 
             <div class="form-group mt-4">
-                <input type="submit" value="Save Changes" class="btn btn-primary" />
+                @* Ocultar o botão "Save Changes" se não for editável *@
+                @if (isEditable)
+                {
+                    <input type="submit" value="Save Changes" class="btn btn-primary" />
+                }
                 <a asp-action="Index" class="btn btn-secondary">Back to List</a>
             </div>
         </form>
@@ -62,5 +70,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
