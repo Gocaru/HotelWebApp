@@ -23,6 +23,8 @@ public class HotelWebAppContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<Payment> Payments { get; set; }
 
+    public DbSet<ChangeRequest> ChangeRequests { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

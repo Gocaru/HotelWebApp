@@ -48,6 +48,7 @@ namespace HotelWebApp.Data.Repositories
                 .Include(r => r.Room)
                 .Include(r => r.ReservationAmenities)
                     .ThenInclude(ra => ra.Amenity)
+                .Include(r => r.Invoice)
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
