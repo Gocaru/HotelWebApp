@@ -40,6 +40,7 @@ namespace HotelWebApp
             builder.Services.AddScoped<IReservationService, ReservationService>();
             builder.Services.AddScoped<IAmenityRepository, AmenityRepository>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
+            builder.Services.AddScoped<IChangeRequestRepository, ChangeRequestRepository>();
 
 
             builder.Services.AddTransient<SeedDb>();
