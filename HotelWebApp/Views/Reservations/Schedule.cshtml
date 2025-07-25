@@ -5,6 +5,7 @@
 <h2>@ViewData["Title"]</h2>
 <p>Reservation Schedule Overview</p>
 
+@Html.AntiForgeryToken()
 
 <div id="reservationScheduler"></div>
 
@@ -12,39 +13,49 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            // O DataManager vai buscar os dados ao nosso Controller
+            var antiForgeryToken = document.getElementsByName("__RequestVerificationToken")[0].value;
+
             var dataManager = new ej.data.DataManager({
                 url: '@Url.Action("LoadSchedulerData", "Reservations")',
                 removeUrl: '@Url.Action("DeleteEvent", "Reservations")',
-                adaptor: new ej.data.UrlAdaptor()
+                adaptor: new ej.data.UrlAdaptor(),
+                headers: [{ "RequestVerificationToken": antiForgeryToken }]
             });
 
-            // Cria e configura o Scheduler
             var schedule = new ej.schedule.Schedule({
                 height: '650px',
                 currentView: 'Month',
 
-                // Configurações dos eventos (reservas)
                 eventSettings: {
                     dataSource: dataManager,
-                    // Mapeia os campos do nosso ViewModel para os campos que o Scheduler espera
                     fields: {
-                            id: { name: 'id' },
-                            subject: { name: 'subject' },
-                            startTime: { name: 'startTime' },
-                            endTime: { name: 'endTime' },
-                            location: { name: 'location' },
-                            description: { name: 'description' }
+                        id: 'id',
+                        subject: { name: 'subject' },
+                        startTime: { name: 'startTime' },
+                        endTime: { name: 'endTime' },
+                        location: { name: 'location' },
+                        description: { name: 'description' }
                     },
-                    // Diz ao scheduler para usar a nossa propriedade de cor
                     colorField: 'categoryColor'
                 },
 
+                // 1. Interceta o clique para ir para a página de Detalhes
+                eventClick: function(args) {
+                    args.cancel = true; // Impede o popup padrão de abrir
+
+                    var reservationId = args.event.id;
+                    var detailsUrl = '@Url.Action("Details", "Reservations")' +
+                                     '/' + reservationId +
+                                     '?source=schedule'; // <-- Passa a origem
+
+                    window.location.href = detailsUrl;
+                },
+
+                // 2. Interceta a criação para ir para a página Create
                 popupOpen: function(args) {
-                // Verifica se a ação é a de criar um novo evento
-                    if (args.type === 'Editor') {
-                        // --- LÓGICA PARA CRIAR NOVO EVENTO (a sua lógica, inalterada) ---
+                    if (args.type === 'Editor') { // 'Editor' é para criar novos eventos
                         args.cancel = true; // Cancela o popup padrão
+
                         var startDate = args.data.startTime || args.data.StartTime;
                         var endDate = args.data.endTime || args.data.EndTime;
 
@@ -53,56 +64,20 @@
 
                         var createUrl = '@Url.Action("Create", "Reservations")' +
                                         '?checkInDate=' + formattedStartDate +
-                                        '&checkOutDate=' + formattedEndDate;
+                                        '&checkOutDate=' + formattedEndDate +
+                                        '&source=schedule'; // <-- Passa a origem
+
                         window.location.href = createUrl;
-                    }
-                    else if (args.type === 'QuickInfo') {
-
-                        // O Scheduler cria os botões do popup na memória, mesmo que o cancelemos.
-                        // Vamos usar isso a nosso favor.
-                        var eventData = args.data;
-                        var reservationId = eventData.id || eventData.Id;
-
-                        // Se não houver ID, não fazemos nada (isto não deve acontecer)
-                        if (!reservationId) return;
-
-                        // Adicionamos os nossos próprios botões personalizados ao popup
-                        args.element.innerHTML = ''; // Limpa o conteúdo padrão
-
-                        // Botão Editar
-                        var editButton = document.createElement('button');
-                        editButton.className = 'e-btn e-flat'; // Classes do Syncfusion para o estilo
-                        editButton.innerHTML = '<i class="fas fa-edit"></i> Edit Reservation';
-                        editButton.onclick = function() {
-                            var editUrl = '@Url.Action("Edit", "Reservations")' + '/' + reservationId;
-                            window.location.href = editUrl;
-                        };
-
-                        // Botão Apagar
-                        var deleteButton = document.createElement('button');
-                        deleteButton.className = 'e-btn e-flat';
-                        deleteButton.innerHTML = '<i class="fas fa-trash"></i> Delete Reservation';
-                        deleteButton.onclick = function() {
-                            var deleteUrl = '@Url.Action("Delete", "Reservations")' + '/' + reservationId;
-                            window.location.href = deleteUrl;
-                        };
-
-                        // Adicionar os nossos botões ao elemento do popup
-                        args.element.appendChild(editButton);
-                        args.element.appendChild(deleteButton);
                     }
                 },
 
-                // Define as vistas disponíveis
-                 views: ['Day', 'Week', 'Month', 'Agenda']
+                views: ['Day', 'Week', 'Month', 'Agenda']
             });
 
-            // "Desenha" o calendário dentro do nosso div
             schedule.appendTo('#reservationScheduler');
         });
     </script>
 }
-
 
 
 

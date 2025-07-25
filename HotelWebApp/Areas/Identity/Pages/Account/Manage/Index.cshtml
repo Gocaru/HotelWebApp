@@ -11,18 +11,49 @@
     <div class="col-md-6">
         <form id="profile-form" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+            
             <div class="form-floating mb-3">
                 <input asp-for="Username" class="form-control" placeholder="Please choose your username." disabled />
                 <label asp-for="Username" class="form-label"></label>
             </div>
+            
             <div class="form-floating mb-3">
                 <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Please enter your phone number."/>
                 <label asp-for="Input.PhoneNumber" class="form-label"></label>
                 <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
             </div>
+            
             <button id="update-profile-button" type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
         </form>
     </div>
+
+    <div class="col-md-6">
+        <div class="text-center">
+            <h4>Profile Picture</h4>
+
+            @* 1. Mostrar a imagem atual ou uma imagem padrão *@
+            @{
+                // O caminho para a foto é construído a partir da propriedade do InputModel
+                var photoPath = "~/images/profiles/" + (Model.Input.ProfilePictureUrl ?? "default.png");
+            }
+            <img src="@photoPath" class="img-fluid rounded-circle mb-3 shadow-sm"
+                 style="width: 150px; height: 150px; object-fit: cover;" alt="Profile Picture" asp-append-version="true" />
+
+            @* 2. Formulário específico para o upload da imagem *@
+            <form id="upload-picture-form" method="post" enctype="multipart/form-data"
+                asp-page-handler="UploadPicture">
+
+                <div class="form-group">
+                    <label for="profilePictureFile" class="form-label visually-hidden">Change Picture</label>
+                    <input name="profilePictureFile" type="file" class="form-control" accept=".png,.jpg,.jpeg" required />
+                </div>
+                <button type="submit" class="btn btn-secondary mt-2">
+                    <i class="fas fa-upload"></i> Upload New Picture
+                </button>
+            </form>
+        </div>
+    </div>
+
 </div>
 
 @section Scripts {

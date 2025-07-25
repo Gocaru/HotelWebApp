@@ -1,5 +1,6 @@
 ﻿@model HotelWebApp.Models.ReservationDetailsViewModel
 @using HotelWebApp.Data.Entities
+@using HotelWebApp.Services
 
 @{
     ViewData["Title"] = "Reservation Details";
@@ -66,8 +67,19 @@
         <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Reservation.ReservationDate)</dt>
         <dd class="col-sm-10">@Model.Reservation.ReservationDate.ToString("dd/MM/yyyy HH:mm:ss")</dd>
 
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Reservation.TotalPrice)</dt>
-        <dd class="col-sm-10">@Model.Reservation.TotalPrice.ToString("C")</dd>
+        @if (Model.Reservation.Status == ReservationStatus.NoShow)
+        {
+            <dt class="col-sm-2">Original Price</dt>
+            <dd class="col-sm-10"><del>@Model.Reservation.TotalPrice.ToString("C")</del></dd>
+
+            <dt class="col-sm-2 text-danger"><strong>No-Show Fee</strong></dt>
+            <dd class="col-sm-10 text-danger"><strong>@Model.Reservation.Room.PricePerNight.ToString("C")</strong></dd>
+        }
+        else
+        {
+            <dt class="col-sm-2">Total Price</dt>
+            <dd class="col-sm-10">@Model.Reservation.TotalPrice.ToString("C")</dd>
+        }
 
         <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Reservation.Status)</dt>
         <dd class="col-sm-10">@Html.DisplayFor(model => model.Reservation.Status)</dd>
@@ -75,68 +87,124 @@
 </div>
 
 <hr />
+
 <h4 class="mt-4">Associated Services</h4>
 
-@if (Model.Reservation.Status == ReservationStatus.Confirmed || Model.Reservation.Status == ReservationStatus.CheckedIn)
+@if (User.IsInRole("Employee"))
 {
-    <div class="card shadow-sm">
-        <div class="card-body">
-            @if (Model.Reservation.ReservationAmenities != null && Model.Reservation.ReservationAmenities.Any())
-            {
-                <table class="table table-hover mb-0">
-                    <tbody>
-                        @foreach (var item in Model.Reservation.ReservationAmenities)
-                        {
+    @if (Model.Reservation.Status == ReservationStatus.Confirmed || Model.Reservation.Status == ReservationStatus.CheckedIn)
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
+                @if (Model.Reservation.ReservationAmenities != null && Model.Reservation.ReservationAmenities.Any())
+                {
+                    <h5>Current Services</h5>
+                    <table class="table table-hover mb-4">
+                        <thead>
                             <tr>
-                                <td>@Html.DisplayFor(modelItem => item.Amenity.Name)</td>
-                                <td class="text-center">@Html.DisplayFor(modelItem => item.Quantity)</td>
-                                <td class="text-end">@item.PriceAtTimeOfBooking.ToString("C")</td>
-                                <td class="text-end">@((item.Quantity * item.PriceAtTimeOfBooking).ToString("C"))</td>
-                                <td class="text-end">
-                                    @if (User.IsInRole("Employee") || User.IsInRole("Admin"))
-                                    {
-                                        <form asp-action="RemoveAmenityFromReservation" method="post" onsubmit="return confirm('Are you sure you want to remove this amenity?');">
+                                <th>Service</th>
+                                <th class="text-center">Quantity</th>
+                                <th class="text-end">Price (Unit)</th>
+                                <th class="text-end">Price (Total)</th>
+                                <th></th> <!-- Coluna para o botão de apagar -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Reservation.ReservationAmenities)
+                            {
+                                <tr>
+                                    <td>@item.Amenity.Name</td>
+                                    <td class="text-center">@item.Quantity</td>
+                                    <td class="text-end">@item.PriceAtTimeOfBooking.ToString("C")</td>
+                                    <td class="text-end">@((item.Quantity * item.PriceAtTimeOfBooking).ToString("C"))</td>
+                                    <td class="text-end">
+                                        <form asp-action="RemoveAmenityFromReservation" method="post" onsubmit="return confirm('Are you sure?');">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="reservationId" value="@Model.Reservation.Id" />
                                             <input type="hidden" name="reservationAmenityId" value="@item.Id" />
-                                            <button type="submit" class="btn btn-danger btn-sm" title="Remove"><i class="fas fa-trash-alt"></i></button>
+                                            <input type="hidden" name="source" value="@ViewBag.Source" />
+                                            <button type="submit" class="btn btn-danger btn-sm" title="Remove">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
                                         </form>
-                                    }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" class="text-end fw-bold">Amenities Total:</td>
+                                <td class="text-end fw-bold">
+                                    @Model.Reservation.ReservationAmenities.Sum(a => a.Quantity * a.PriceAtTimeOfBooking).ToString("C")
                                 </td>
                             </tr>
-                        }
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="4" class="text-end fw-bold">Amenities Total:</td>
-                            <td class="text-end fw-bold">@Model.Reservation.ReservationAmenities.Sum(a => a.Quantity * a.PriceAtTimeOfBooking).ToString("C")</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            }
-            else
-            {
-                <p class="mb-0">No extra services have been added to this reservation yet.</p>
-            }
-
-            @if (User.IsInRole("Employee") || User.IsInRole("Admin"))
-            {
+                        </tfoot>
+                    </table>
+                }
+                else
+                {
+                    <p class="mb-0">No extra services have been added to this reservation yet.</p>
+                }
                 <hr />
+
                 <h5>Add a New Service</h5>
                 <form asp-action="AddAmenityToReservation" method="post" class="row gx-3 gy-2 align-items-center">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="reservationId" value="@Model.Reservation.Id" />
+                    <input type="hidden" name="source" value="@ViewBag.Source" />
+
+                    <div class="col-sm-6">
+                        <label class="visually-hidden" for="amenityId">Service</label>
+                        <select name="amenityId" class="form-select" asp-items="ViewBag.Amenities" required>
+                            <option value="">-- Select a Service --</option>
+                        </select>
+                    </div>
+
+                    <div class="col-sm-3">
+                        <label class="visually-hidden" for="quantity">Quantity</label>
+                        <input type="number" name="quantity" class="form-control" placeholder="Quantity" value="1" min="1" required />
+                    </div>
+
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Add Service</button>
+                    </div>
                 </form>
-            }
+            </div>
         </div>
-    </div>
+    }
+    else
+    {
+        <div class="alert alert-info" role="alert">
+            <h5 class="alert-heading">Services Locked</h5>
+            <p>Service management is disabled because the reservation status is '<strong>@Model.Reservation.Status.GetDisplayName()</strong>'.</p>
+        </div>
+    }
 }
-else
+
+@if (User.IsInRole("Guest"))
 {
-    <div class="alert alert-info" role="alert">
-        <h5 class="alert-heading">Services Locked</h5>
-        <p>Service management is disabled because the reservation status is '<strong>@Model.Reservation.Status</strong>'.</p>
-    </div>
+    @if (Model.Reservation.Status != ReservationStatus.NoShow && Model.Reservation.Status != ReservationStatus.Cancelled)
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
+                @if (Model.Reservation.ReservationAmenities != null && Model.Reservation.ReservationAmenities.Any())
+                {
+                    <p>The following services are included in your reservation:</p>
+                    <ul class="list-group list-group-flush">...</ul>
+                }
+                else
+                {
+                    <p>No extra services have been added to this reservation.</p>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            Associated services are not applicable for a reservation with status '<strong>@Model.Reservation.Status.GetDisplayName()</strong>'.
+        </div>
+    }
 }
 
 
@@ -145,22 +213,34 @@ else
     {
         @if (Model.Reservation.Status == ReservationStatus.Confirmed || Model.Reservation.Status == ReservationStatus.CheckedIn)
         {
-            <a asp-action="Edit" asp-route-id="@Model.Reservation.Id" class="btn btn-warning">Edit Reservation</a>
+            <a asp-action="Edit" asp-route-id="@Model.Reservation.Id" asp-route-source="@ViewBag.Source" class="btn btn-warning">Edit Reservation</a>
         }
-
-        // Botão para ir diretamente para a fatura.
-        // Isto dá ao funcionário a ação correta a tomar quando a reserva está CheckedOut.
         @if (Model.Reservation.Status == ReservationStatus.CheckedOut && Model.Reservation.Invoice != null)
         {
             <a asp-controller="Invoices" asp-action="Details" asp-route-id="@Model.Reservation.Invoice.Id" class="btn btn-primary">
                 Process Payment
             </a>
         }
-
-        <a asp-action="Index" class="btn btn-secondary">Back to Reservations List</a>
+        @if (ViewBag.Source == "dashboard")
+        {
+            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Back to Dashboard</a>
+        }
+        else if (ViewBag.Source == "schedule")
+        {
+            <a asp-controller="Reservations" asp-action="Schedule" class="btn btn-secondary">Back to Schedule</a>
+        }
+        else
+        {
+            <a asp-action="Index" class="btn btn-secondary">Back to Reservations List</a>
+        }
     }
-    else if (User.IsInRole("Guest"))
+
+    @if (User.IsInRole("Guest"))
     {
+        @if (Model.Reservation.Status == ReservationStatus.Confirmed)
+        {
+            <a asp-action="RequestChange" asp-route-id="@Model.Reservation.Id" class="btn btn-info">Request Change</a>
+        }
         <a asp-action="MyReservations" class="btn btn-secondary">Back to My Reservations</a>
     }
 </div>

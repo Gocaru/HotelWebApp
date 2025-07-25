@@ -2,11 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
+using System.ComponentModel.DataAnnotations;
+using System.IO;
 using HotelWebApp.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.ComponentModel.DataAnnotations;
 
 namespace HotelWebApp.Areas.Identity.Pages.Account.Manage
 {
@@ -14,13 +15,16 @@ namespace HotelWebApp.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
         public IndexModel(
             UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager)
+            SignInManager<ApplicationUser> signInManager,
+            IWebHostEnvironment webHostEnvironment)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         /// <summary>
@@ -56,6 +60,9 @@ namespace HotelWebApp.Areas.Identity.Pages.Account.Manage
             [Phone]
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
+
+            [Display(Name = "Profile Picture")]
+            public string ProfilePictureUrl { get; set; }
         }
 
         private async Task LoadAsync(ApplicationUser user)
@@ -67,7 +74,8 @@ namespace HotelWebApp.Areas.Identity.Pages.Account.Manage
 
             Input = new InputModel
             {
-                PhoneNumber = phoneNumber
+                PhoneNumber = phoneNumber,
+                ProfilePictureUrl = user.ProfilePictureUrl
             };
         }
 
@@ -110,6 +118,56 @@ namespace HotelWebApp.Areas.Identity.Pages.Account.Manage
 
             await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your profile has been updated";
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostUploadPicture(IFormFile profilePictureFile)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            }
+
+            if (profilePictureFile == null || profilePictureFile.Length == 0)
+            {
+                StatusMessage = "Error: Please select a file to upload.";
+                return RedirectToPage();
+            }
+
+            // Define o caminho para a pasta wwwroot/images/profiles
+            string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images/profiles");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            // (Opcional) Apaga a imagem antiga para não acumular lixo
+            if (!string.IsNullOrEmpty(user.ProfilePictureUrl))
+            {
+                var oldImagePath = Path.Combine(uploadsFolder, user.ProfilePictureUrl);
+                if (System.IO.File.Exists(oldImagePath))
+                {
+                    System.IO.File.Delete(oldImagePath);
+                }
+            }
+
+            // Cria um nome único para o ficheiro para evitar colisões
+            var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(profilePictureFile.FileName);
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            // Guarda o ficheiro no disco
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await profilePictureFile.CopyToAsync(fileStream);
+            }
+
+            // Guarda o nome do ficheiro na base de dados do utilizador
+            user.ProfilePictureUrl = uniqueFileName;
+            await _userManager.UpdateAsync(user);
+
+            await _signInManager.RefreshSignInAsync(user);
+            StatusMessage = "Your profile picture has been updated";
             return RedirectToPage();
         }
     }

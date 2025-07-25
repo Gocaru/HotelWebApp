@@ -100,7 +100,7 @@ namespace HotelWebApp.Controllers
 
         // GET: Reservations/Details/5
         [Authorize(Roles = "Employee, Guest")]
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int? id, string source)
         {
             if (id == null)
             {
@@ -130,13 +130,15 @@ namespace HotelWebApp.Controllers
                 PendingChangeRequest = null
             };
 
-            if (User.IsInRole("Employee") || User.IsInRole("Admin"))
+            if (User.IsInRole("Employee"))
             {
                 var allAmenities = await _amenityRepository.GetAllAsync();
                 ViewBag.Amenities = new SelectList(allAmenities, "Id", "Name");
 
                 model.PendingChangeRequest = await _changeRequestRepo.GetPendingRequestForReservationAsync(id.Value);
             }
+
+            ViewBag.Source = source;
 
             return View(model);
         }
@@ -228,7 +230,7 @@ namespace HotelWebApp.Controllers
 
         // GET: Reservations/Edit/5
         [Authorize(Roles = "Employee, Guest")]
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int? id, string source)
         {
             if (id == null)
             {
@@ -251,6 +253,7 @@ namespace HotelWebApp.Controllers
                        reservation.Status == ReservationStatus.CheckedIn);
 
             ViewBag.IsEditable = isEditable;
+            ViewBag.Source = source;
 
             if (!isEditable)
             {
@@ -393,7 +396,7 @@ namespace HotelWebApp.Controllers
             return availableRooms.Select(r => new SelectListItem
             {
                 //formata o texto para ser mais útil para o hóspede
-                Text = $"Quarto {r.RoomNumber} ({r.Type}) - {r.PricePerNight:C}",
+                Text = $"Room {r.RoomNumber} ({r.Type}) - {r.PricePerNight:C}",
                 Value = r.Id.ToString()
             });
         }
@@ -594,8 +597,8 @@ namespace HotelWebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Employee, Admin")]
-        public async Task<IActionResult> AddAmenityToReservation(int reservationId, int amenityId, int quantity)
+        [Authorize(Roles = "Employee")]
+        public async Task<IActionResult> AddAmenityToReservation(int reservationId, int amenityId, int quantity, string source)
         {
             var reservation = await _reservationRepo.GetByIdAsync(reservationId);
             if (reservation == null) return NotFound();
@@ -620,13 +623,13 @@ namespace HotelWebApp.Controllers
             }
 
             // Redireciona de volta para a página de detalhes da mesma reserva
-            return RedirectToAction(nameof(Details), new { id = reservationId });
+            return RedirectToAction(nameof(Details), new { id = reservationId, source = source });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Employee, Admin")]
-        public async Task<IActionResult> RemoveAmenityFromReservation(int reservationId, int reservationAmenityId)
+        [Authorize(Roles = "Employee")]
+        public async Task<IActionResult> RemoveAmenityFromReservation(int reservationId, int reservationAmenityId, string source)
         {
             var reservation = await _reservationRepo.GetByIdAsync(reservationId);
             if (reservation == null) return NotFound();
@@ -648,7 +651,7 @@ namespace HotelWebApp.Controllers
                 TempData["SuccessMessage"] = "Amenity removed successfully!";
             }
 
-            return RedirectToAction(nameof(Details), new { id = reservationId });
+            return RedirectToAction(nameof(Details), new { id = reservationId, source = source });
         }
 
 

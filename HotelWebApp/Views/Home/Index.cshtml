@@ -39,7 +39,7 @@
                                                     <button type="submit" class="btn btn-sm btn-success">Check-in</button>
                                                 </form>
                                             }
-                                        <a asp-controller="Reservations" asp-action="Details" asp-route-id="@reservation.Id" class="btn btn-sm btn-outline-primary">View Details</a>
+                                            <a asp-controller="Reservations" asp-action="Details" asp-route-id="@reservation.Id" asp-route-source="dashboard" class="btn btn-sm btn-outline-primary">View Details</a>
                                         </div>
                                     </li>
                                 }
@@ -77,7 +77,7 @@
                                                     <button type="submit" class="btn btn-sm btn-warning">Check-out</button>
                                                 </form>
                                             }
-                                        <a asp-controller="Reservations" asp-action="Details" asp-route-id="@reservation.Id" class="btn btn-sm btn-outline-secondary">View Details</a>
+                                            <a asp-controller="Reservations" asp-action="Details" asp-route-id="@reservation.Id" asp-route-source="dashboard" class="btn btn-sm btn-outline-secondary">View Details</a>
                                         </div>
                                     </li>
                                 }
