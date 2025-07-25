@@ -833,8 +833,8 @@ namespace HotelWebApp.Controllers
             request.Status = newStatus;
             request.ProcessedOn = DateTime.UtcNow;
 
-            // Opcional: Guardar quem processou o pedido
-            // request.ProcessedByUserId = _userManager.GetUserId(User);
+            // Guardar quem processou o pedido
+            request.ProcessedByUserId = _userManager.GetUserId(User);
 
             // 3. Salvar as alterações na base de dados
             await _changeRequestRepo.UpdateAsync(request);
