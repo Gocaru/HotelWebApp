@@ -6,10 +6,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 
 namespace HotelWebApp.Controllers
-{ 
+{
     public class ReservationsController : Controller
     {
         private readonly IReservationRepository _reservationRepo;
@@ -20,7 +19,13 @@ namespace HotelWebApp.Controllers
         private readonly IPaymentService _paymentService;
         private readonly IChangeRequestRepository _changeRequestRepo;
 
-        public ReservationsController(IReservationRepository reservationRepo, IRoomRepository roomRepo, UserManager<ApplicationUser> userManager, IReservationService reservationService, IAmenityRepository amenityRepository, IPaymentService paymentService, IChangeRequestRepository changeRequestRepo)
+        public ReservationsController(IReservationRepository reservationRepo,
+                                        IRoomRepository roomRepo,
+                                        UserManager<ApplicationUser> userManager,
+                                        IReservationService reservationService,
+                                        IAmenityRepository amenityRepository,
+                                        IPaymentService paymentService,
+                                        IChangeRequestRepository changeRequestRepo)
         {
             _reservationRepo = reservationRepo;
             _roomRepo = roomRepo;
@@ -33,7 +38,7 @@ namespace HotelWebApp.Controllers
 
         // GET: Reservations
         [Authorize(Roles = "Employee")]
-        public async Task<IActionResult>  Index()
+        public async Task<IActionResult> Index()
         {
             var reservations = await _reservationRepo.GetAllWithDetailsAsync(); // Inclui User, Room e amenities
 
@@ -87,7 +92,7 @@ namespace HotelWebApp.Controllers
                 ReservationStatus.CheckedIn => "bg-success",
                 ReservationStatus.Cancelled => "bg-danger",
                 ReservationStatus.CheckedOut => "bg-dark",
-                ReservationStatus.Completed => "bg-info",  
+                ReservationStatus.Completed => "bg-info",
                 ReservationStatus.NoShow => "bg-warning",
                 _ => "bg-secondary"
             };
@@ -577,7 +582,7 @@ namespace HotelWebApp.Controllers
             {
                 reservation.Room.Status = RoomStatus.Available;
             }
-            
+
             await _reservationRepo.UpdateAsync(reservation);
 
 

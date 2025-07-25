@@ -1,10 +1,14 @@
 ﻿@model IEnumerable<HotelWebApp.Data.Entities.Room>
+@using HotelWebApp.Data.Entities
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Our Rooms";
 }
 
-<h1>Index</h1>
+<div class="text-center">
+    <h1>@ViewData["Title"]</h1>
+    <p class="lead text-muted">Discover the perfect space for your stay.</p>
+</div>
 
 @if (TempData["SuccessMessage"] != null)
 {
@@ -21,54 +25,49 @@
 }
 
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.RoomNumber)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Type)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Capacity)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PricePerNight)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.RoomNumber)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Type)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Capacity)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PricePerNight)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+@if (User.IsInRole("Admin"))
+{
+    <p>
+        <a asp-action="Create" class="btn btn-primary my-3">
+            <i class="fas fa-plus"></i> Create New Room
+        </a>
+    </p>
 }
-    </tbody>
-</table>
+
+<div class="row">
+    @foreach (var room in Model)
+    {
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Room @room.RoomNumber - @room.Type.ToString()</h5>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li><i class="fas fa-users me-2"></i> Capacity: @room.Capacity people</li>
+                        <li><i class="fas fa-bed me-2"></i> Type: @room.Type.ToString()</li>
+                    </ul>
+                    <h4 class="card-title pricing-card-title mt-auto">@room.PricePerNight.ToString("C") <small class="text-muted fw-light">/ night</small></h4>
+
+                    @* O botão "Reserve Now" aparece para todos, mas só se o quarto estiver disponível *@
+                    @if (room.Status == RoomStatus.Available)
+                    {
+                        <a asp-controller="Reservations" asp-action="Create" asp-route-roomId="@room.Id" class="btn btn-lg btn-block btn-success">Reserve Now</a>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-lg btn-block btn-secondary" disabled>Not Available</button>
+                    }
+                </div>
+
+                @* Rodapé do cartão com os botões de gestão, que só aparecem para o Admin *@
+                @if (User.IsInRole("Admin"))
+                {
+                    <div class="card-footer text-center">
+                        <a asp-action="Edit" asp-route-id="@room.Id" class="btn btn-sm btn-outline-warning">Edit</a>
+                        <a asp-action="Details" asp-route-id="@room.Id" class="btn btn-sm btn-outline-info">Details</a>
+                        <a asp-action="Delete" asp-route-id="@room.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>

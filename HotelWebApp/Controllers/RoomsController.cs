@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace HotelWebApp.Controllers
 {
-    [Authorize(Roles = "Admin")]
     public class RoomsController : Controller
     {
         private readonly IRoomRepository _roomRepository;
@@ -20,6 +19,7 @@ namespace HotelWebApp.Controllers
         }
 
         // GET: RoomsController
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
             var rooms = await _roomRepository.GetAllAsync();
@@ -27,6 +27,7 @@ namespace HotelWebApp.Controllers
         }
 
         // GET: RoomsController/Details/5
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
             var room = await _roomRepository.GetByIdAsync(id);
@@ -35,16 +36,18 @@ namespace HotelWebApp.Controllers
         }
 
         // GET: RoomsController/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             var viewModel = new RoomViewModel();
             PopulateDropdowns();
-            return View();
+            return View(viewModel);
         }
 
         // POST: RoomsController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(RoomViewModel viewModel)
         {
             if (ModelState.IsValid)
@@ -66,6 +69,7 @@ namespace HotelWebApp.Controllers
         }
 
         // GET: RoomsController/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
             var roomToEdit = await _roomRepository.GetByIdAsync(id);
@@ -102,6 +106,7 @@ namespace HotelWebApp.Controllers
         // POST: RoomsController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, RoomViewModel viewModel)
         {
             if (id != viewModel.Id) return NotFound();
@@ -126,6 +131,7 @@ namespace HotelWebApp.Controllers
         }
 
         // GET: RoomsController/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var room = await _roomRepository.GetByIdAsync(id);
@@ -136,11 +142,12 @@ namespace HotelWebApp.Controllers
         // POST: RoomsController/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             bool hasFutureReservations = await _reservationRepository.HasFutureReservationsAsync(id);
 
-            // 2. Se tiver, bloquear a exclusão e informar o admin.
+            // Se tiver, bloquear a exclusão e informar o admin.
             if (hasFutureReservations)
             {
                 // Pega os detalhes do quarto para usar na mensagem de erro.
@@ -160,6 +167,7 @@ namespace HotelWebApp.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin")]
         private void PopulateDropdowns()
         {
             ViewBag.RoomTypes = Enum.GetValues(typeof(RoomType));
