@@ -70,6 +70,7 @@ namespace HotelWebApp.Controllers
                     StatusBadgeClass = GetBadgeClassForStatus(res.Status),
                     NumberOfGuests = res.NumberOfGuests,
                     RoomDetails = $"{res.Room?.RoomNumber} ({res.Room?.Type})",
+                    GuestDetails = $"{res.ApplicationUser?.FullName ?? "N/A"} ({res.NumberOfGuests} pax)",
                     TotalCost = stayCost + amenitiesCost,
 
                     // Lógica para os botões de ação (inalterada)
@@ -126,16 +127,13 @@ namespace HotelWebApp.Controllers
             var model = new ReservationDetailsViewModel
             {
                 Reservation = reservation,
-                // Por defeito, não há pedido pendente
-                PendingChangeRequest = null
+                ChangeRequests = await _changeRequestRepo.GetRequestsForReservationAsync(id.Value)
             };
 
             if (User.IsInRole("Employee"))
             {
                 var allAmenities = await _amenityRepository.GetAllAsync();
                 ViewBag.Amenities = new SelectList(allAmenities, "Id", "Name");
-
-                model.PendingChangeRequest = await _changeRequestRepo.GetPendingRequestForReservationAsync(id.Value);
             }
 
             ViewBag.Source = source;
@@ -145,37 +143,81 @@ namespace HotelWebApp.Controllers
 
         // GET: Reservations/Create
         [Authorize(Roles = "Employee, Guest")]
-        public async Task<IActionResult> Create(DateTime? checkInDate, DateTime? checkOutDate)
+        public async Task<IActionResult> Create(int? roomId, DateTime? checkInDate, DateTime? checkOutDate, string source)
         {
             var model = new ReservationViewModel();
 
+            if (checkInDate.HasValue && checkOutDate.HasValue)
+            {
+                if (checkOutDate.Value <= checkInDate.Value)
+                {
+                    // Se as datas são inválidas, adiciona um erro ao ModelState
+                    ModelState.AddModelError("CheckOutDate", "Check-out date must be after the check-in date.");
+
+                    // Define as datas no modelo para que o utilizador as veja nos campos
+                    model.CheckInDate = checkInDate.Value;
+                    model.CheckOutDate = checkOutDate.Value;
+
+                    // Retorna a View imediatamente, sem pesquisar quartos. O erro será mostrado.
+                    return View(model);
+                }
+            }
+
+            // Se um roomId foi passado, pré-seleciona-o
+            if (roomId.HasValue)
+            {
+                model.RoomId = roomId.Value;
+                var selectedRoom = await _roomRepo.GetByIdAsync(roomId.Value);
+                if (selectedRoom != null)
+                {
+                    model.Rooms = new List<SelectListItem>
+            {
+                new SelectListItem { Text = $"Room {selectedRoom.RoomNumber} ({selectedRoom.Type}) - {selectedRoom.PricePerNight:C}", Value = selectedRoom.Id.ToString() }
+            };
+                }
+            }
+            // Se não há quarto, mas há datas, pesquisa os quartos disponíveis
+            else if (checkInDate.HasValue && checkOutDate.HasValue)
+            {
+                var availableRooms = await _roomRepo.GetAvailableRoomsAsync(checkInDate.Value, checkOutDate.Value);
+                model.Rooms = availableRooms.Select(r => new SelectListItem
+                {
+                    Text = $"Room {r.RoomNumber} ({r.Type}) - {r.PricePerNight:C}",
+                    Value = r.Id.ToString()
+                });
+            }
+
+            // Se for funcionário, carrega a lista de hóspedes e a lista completa de quartos se necessário
             if (User.IsInRole("Employee"))
             {
-                // Funcionário vê todos os quartos e todos os hóspedes
-                model.Rooms = await GetRoomListItems();
                 model.Guests = await GetGuestListItems();
-            }
-            else // É um Guest
-            {
-                // Hóspede só vê os quartos disponíveis.
-                // método que retorna apenas quartos livres.
-                model.Rooms = await GetAvailableRoomListItems();
+                if (model.Rooms == null || !model.Rooms.Any())
+                {
+                    model.Rooms = await GetRoomListItems();
+                }
             }
 
-
+            // Define as datas (as que vieram do URL ou as padrão)
             model.CheckInDate = checkInDate ?? DateTime.Today.AddDays(1);
             model.CheckOutDate = checkOutDate ?? DateTime.Today.AddDays(2);
+
+            // Preserva o 'source'
+            ViewBag.Source = source;
+
+            if (model.CheckInDate > DateTime.MinValue)
+            {
+                ViewBag.TriedSearch = true;
+            }
 
             return View(model);
         }
 
+
         // POST: Reservations/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [Authorize(Roles = "Employee, Guest")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(ReservationViewModel model)
+        [Authorize(Roles = "Employee, Guest")]
+        public async Task<IActionResult> Create(ReservationViewModel model) 
         {
 
             if (User.IsInRole("Guest"))
@@ -184,13 +226,28 @@ namespace HotelWebApp.Controllers
             }
             else if (User.IsInRole("Employee"))
             {
-                // Se for um funcionário e não selecionou um hóspede, adicionamos um erro ao ModelState.
                 if (string.IsNullOrEmpty(model.GuestId))
                 {
                     ModelState.AddModelError("GuestId", "Please select a guest for the reservation.");
                 }
             }
 
+            if (!ModelState.IsValid)
+            {
+                // Se a validação falhar, precisamos de recarregar as listas para a dropdown
+                if (model.RoomId > 0 && (model.Rooms == null || !model.Rooms.Any()))
+                {
+                    // recarrega os dados do quarto pré-selecionado
+                }
+                else if (User.IsInRole("Employee"))
+                {
+                    model.Rooms = await GetRoomListItems();
+                }
+                // Os Guests para o Employee precisam sempre de ser recarregados
+                if (User.IsInRole("Employee")) model.Guests = await GetGuestListItems();
+
+                return View(model);
+            }
 
             await ValidateReservationModel(model);
 
@@ -200,29 +257,31 @@ namespace HotelWebApp.Controllers
 
                 if (result.Succeeded)
                 {
-                    // Redireciona com base no role do utilizador
-                    if (User.IsInRole("Guest"))
-                    {
-                        return RedirectToAction(nameof(MyReservations));
-                    }
-                    return RedirectToAction(nameof(Index));
+                    return User.IsInRole("Guest") ? RedirectToAction(nameof(MyReservations)) : RedirectToAction(nameof(Index));
                 }
                 else
                 {
-                    // Se o serviço retornou um erro, mostre-o ao utilizador
                     ModelState.AddModelError(string.Empty, result.Error);
                 }
             }
 
+            // Recarrega os dados necessários para a View.
             if (User.IsInRole("Employee"))
             {
                 model.Rooms = await GetRoomListItems();
                 model.Guests = await GetGuestListItems();
             }
-
-            else
+            else // Guest
             {
-                model.Rooms = await GetAvailableRoomListItems();
+                if (model.CheckInDate > DateTime.MinValue && model.CheckOutDate > model.CheckInDate)
+                {
+                    var availableRooms = await _roomRepo.GetAvailableRoomsAsync(model.CheckInDate, model.CheckOutDate);
+                    model.Rooms = availableRooms.Select(r => new SelectListItem
+                    {
+                        Text = $"Room {r.RoomNumber} ({r.Type}) - {r.PricePerNight:C}",
+                        Value = r.Id.ToString()
+                    });
+                }
             }
 
             return View(model);
@@ -385,20 +444,6 @@ namespace HotelWebApp.Controllers
         {
             var rooms = await _roomRepo.GetAllAsync();
             return rooms.Select(r => new SelectListItem { Value = r.Id.ToString(), Text = r.RoomNumber });
-        }
-
-        private async Task<IEnumerable<SelectListItem>> GetAvailableRoomListItems()
-        {
-            // Usa o novo método do repositório
-            var availableRooms = await _roomRepo.GetAvailableRoomsAsync();
-
-            // Transforma a lista de quartos numa lista de itens para o dropdown
-            return availableRooms.Select(r => new SelectListItem
-            {
-                //formata o texto para ser mais útil para o hóspede
-                Text = $"Room {r.RoomNumber} ({r.Type}) - {r.PricePerNight:C}",
-                Value = r.Id.ToString()
-            });
         }
 
 
@@ -656,9 +701,27 @@ namespace HotelWebApp.Controllers
 
 
         [Authorize(Roles = "Employee, Admin")]
-        public IActionResult Schedule()
+        public async Task<IActionResult> Schedule()
         {
+            var rooms = await _roomRepo.GetAllAsync();
+            // A propriedade "Text" inclui o tipo de quarto
+            ViewBag.Rooms = rooms.Select(r => new {
+                Id = r.Id,
+                Text = $"Room {r.RoomNumber} ({r.Type})",
+                Color = GetColorForRoomType(r.Type)
+            }).ToList();
             return View();
+        }
+
+        private string GetColorForRoomType(RoomType type)
+        {
+            return type switch
+            {
+                RoomType.Standard => "#5D6D7E",
+                RoomType.Suite => "#AF601A",
+                RoomType.Luxury => "#6C3483",
+                _ => "#17202A"
+            };
         }
 
         [Authorize(Roles = "Employee, Admin")]
@@ -671,13 +734,12 @@ namespace HotelWebApp.Controllers
             var schedulerData = reservations.Select(r => new SchedulerEventViewModel
             {
                 Id = r.Id,
-                Subject = $"Quarto {r.Room?.RoomNumber}: {r.ApplicationUser?.FullName}", // Texto que aparece no evento
+                Subject = r.ApplicationUser?.FullName ?? "Unknown Guest",
                 StartTime = r.CheckInDate,
                 EndTime = r.CheckOutDate,
-                IsAllDay = false, // Reservas de hotel não são "all day events"
-                Description = $"Reserva para {r.NumberOfGuests} hóspede(s). Status: {r.Status}.", // Detalhes extra
-                Location = r.Room?.RoomNumber, // O número do quarto pode ser a localização
-                CategoryColor = GetColorForRoomStatus(r.Status) // Usar o status para a cor
+                RoomId = r.RoomId,
+                Description = $"Status: {r.Status.GetDisplayName()}<br>Guests: {r.NumberOfGuests}",
+                CategoryColor = GetColorForRoomStatus(r.Status)
             }).ToList();
 
             // 3. Retornar os dados em formato JSON
@@ -778,10 +840,23 @@ namespace HotelWebApp.Controllers
                 return RedirectToAction(nameof(MyReservations));
             }
 
-            // 2. Prepara o ViewModel para a View
+            var allAmenities = await _amenityRepository.GetAllAsync();
+
+            var requestHistory = await _changeRequestRepo.GetRequestsForReservationAsync(id);
+
+
+            // Prepara o ViewModel para a View
             var model = new ChangeRequestViewModel
             {
-                ReservationId = id
+                ReservationId = id,
+                // Converter a lista de amenities para o formato que a dropdown precisa
+                AvailableAmenities = allAmenities.Select(a => new SelectListItem
+                {
+                    Value = a.Id.ToString(),
+                    Text = $"{a.Name} - {a.Price:C}"
+                }),
+
+                ExistingRequests = requestHistory
             };
 
             // 3. Retorna a View com o formulário
@@ -800,30 +875,60 @@ namespace HotelWebApp.Controllers
                 return Forbid();
             }
 
+            var requestParts = new List<string>();
+
+            if (model.SelectedAmenityId.HasValue && model.SelectedAmenityId > 0)
+            {
+                var amenity = await _amenityRepository.GetByIdAsync(model.SelectedAmenityId.Value);
+                if (amenity != null)
+                {
+                    // Adiciona a informação estruturada à lista, com o marcador [SERVICE]
+                    requestParts.Add($"[SERVICE] Amenity: '{amenity.Name}', Quantity: {model.AmenityQuantity}");
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(model.RequestDetails))
+            {
+                // Adiciona o texto livre do utilizador à lista
+                requestParts.Add(model.RequestDetails);
+            }
+
+            if (!requestParts.Any())
+            {
+                ModelState.AddModelError(string.Empty, "Please select a service or write a request in the details box.");
+            }
+
+
             if (ModelState.IsValid)
             {
                 var changeRequest = new ChangeRequest
                 {
                     ReservationId = model.ReservationId,
-                    RequestDetails = model.RequestDetails,
+                    RequestDetails = string.Join(" ||| ", requestParts),
                     RequestedOn = DateTime.UtcNow,
                     Status = RequestStatus.Pending
                 };
 
                 await _changeRequestRepo.CreateAsync(changeRequest);
 
-                TempData["SuccessMessage"] = "Your change request has been submitted successfully. You will be notified once it has been reviewed.";
-                return RedirectToAction(nameof(MyReservations));
+                return RedirectToAction(nameof(RequestChange), new { id = model.ReservationId });
             }
 
-            // Se o modelo for inválido, retorna para a mesma View para mostrar os erros.
+            // Se a validação falhar, repopula a dropdown de amenities antes de retornar a View
+            var allAmenities = await _amenityRepository.GetAllAsync();
+            model.AvailableAmenities = allAmenities.Select(a => new SelectListItem
+            {
+                Value = a.Id.ToString(),
+                Text = $"{a.Name} - {a.Price:C}"
+            });
+
             return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Employee, Admin")]
-        public async Task<IActionResult> ProcessChangeRequest(int requestId, RequestStatus newStatus)
+        [Authorize(Roles = "Employee")]
+        public async Task<IActionResult> ProcessChangeRequest(int requestId, RequestStatus newStatus, string employeeNotes)
         {
             // 1. Obter o pedido de alteração da base de dados
             var request = await _changeRequestRepo.GetByIdAsync(requestId);
@@ -839,19 +944,18 @@ namespace HotelWebApp.Controllers
             // Guardar quem processou o pedido
             request.ProcessedByUserId = _userManager.GetUserId(User);
 
+            request.EmployeeNotes = employeeNotes;
+
             // 3. Salvar as alterações na base de dados
             await _changeRequestRepo.UpdateAsync(request);
 
-            // 4. Preparar uma mensagem de sucesso para o utilizador
-            TempData["SuccessMessage"] = $"The request has been successfully marked as '{newStatus.GetDisplayName()}'.";
-
-            // 5. Redirecionar o funcionário de volta para o Dashboard principal
-            return RedirectToAction("Index", "Home");
+            // Redireciona de volta para a mesma página de detalhes para ver o resultado
+            return RedirectToAction("Details", new { id = request.ReservationId });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Employee, Admin")]
+        [Authorize(Roles = "Employee")]
         public async Task<IActionResult> ProcessNoShows()
         {
             // 1. Delegar a tarefa complexa para o serviço de negócio

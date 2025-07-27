@@ -16,6 +16,6 @@ namespace HotelWebApp.Data.Repositories
 
         Task<bool> ExistsAsync(int id);
 
-        Task<IEnumerable<Room>> GetAvailableRoomsAsync();
+        Task<IEnumerable<Room>> GetAvailableRoomsAsync(DateTime checkIn, DateTime checkOut);
     }
 }
