@@ -7,12 +7,6 @@
 
 <h1>@ViewData["Title"]</h1>
 
-@if (User.IsInRole("Employee"))
-{
-    <p>
-        <a asp-action="Create" class="btn btn-primary mb-3">Create New Reservation</a>
-    </p>
-}
 
 @if (TempData["SuccessMessage"] != null)
 {
@@ -56,28 +50,49 @@
     </div>
 </script>
 
+<div class="alert alert-light border-0 shadow-sm mb-3">
+    <h6 class="alert-heading"><i class="fas fa-info-circle"></i> Actions Legend</h6>
+    <hr>
+    <div class="d-flex flex-wrap">
+        <span class="me-4"><button class="btn btn-sm btn-success disabled"><i class="fas fa-sign-in-alt"></i></button> Check-in</span>
+        <span class="me-4"><button class="btn btn-sm btn-primary disabled"><i class="fas fa-sign-out-alt"></i></button> Check-out</span>
+        <span class="me-4"><button class="btn btn-sm btn-warning disabled"><i class="fas fa-edit"></i></button> Edit</span>
+        <span class="me-4"><button class="btn btn-sm btn-info disabled"><i class="fas fa-info-circle"></i></button> Details</span>
+        <span class="me-4"><button class="btn btn-sm btn-danger disabled"><i class="fas fa-trash"></i></button> Delete</span>
+    </div>
+</div>
+
 <!-- PASSO 2: O GRID QUE USA OS TEMPLATES POR ID -->
 <ejs-grid id="reservationsGrid"
           dataSource="@Model"
           allowPaging="true"
           allowSorting="true"
-          toolbar="@(new List<string>() { "Search" })"
-          height="500">
+          toolbar="@(new List<string>() { "Add", "Search" })"
+          toolbarClick="toolbarClickHandler">
+
+    <e-grid-editSettings allowAdding="true"></e-grid-editSettings>
+    <e-grid-pagesettings pageSize="7"></e-grid-pagesettings>
     <e-grid-columns>
         <e-grid-column field="Id" isPrimaryKey="true" visible="false"></e-grid-column>
-        <e-grid-column field="GuestName" headerText="Guest" width="180"></e-grid-column>
-        <e-grid-column field="RoomNumber" headerText="Room" width="100" textAlign="Right"></e-grid-column>
-        <e-grid-column field="CheckInDate" headerText="Check-in Date" format="dd/MM/yyyy" type="date" width="140"></e-grid-column>
-        <e-grid-column field="CheckOutDate" headerText="Check-out Date" format="dd/MM/yyyy" type="date" width="140"></e-grid-column>
-
-        <e-grid-column headerText="Status" template="#statusTemplate" width="130" textAlign="Center"></e-grid-column>
-
-        <e-grid-column field="NumberOfGuests" headerText="Number of guests" textAlign="Right" width="120"></e-grid-column>
-
-        <e-grid-column field="RoomDetails" headerText="Room" width="150"></e-grid-column>
-
-        <e-grid-column field="TotalCost" headerText="Total Cost" format="C2" textAlign="Right" width="130"></e-grid-column>
-
-        <e-grid-column headerText="Actions" template="#actionsTemplate" width="280" textAlign="Center"></e-grid-column>
+        <e-grid-column field="GuestDetails" headerText="Guest (Pax)" width="180"></e-grid-column>
+        <e-grid-column field="RoomDetails" headerText="Room" width="140"></e-grid-column>
+        <e-grid-column field="CheckInDate" headerText="Check-in" format="dd/MM/yyyy" type="date" width="110"></e-grid-column>
+        <e-grid-column field="CheckOutDate" headerText="Check-out" format="dd/MM/yyyy" type="date" width="110"></e-grid-column>
+        <e-grid-column headerText="Status" template="#statusTemplate" width="120" textAlign="Center"></e-grid-column>
+        <e-grid-column field="TotalCost" headerText="Total" format="C2" textAlign="Right" width="120"></e-grid-column>
+        <e-grid-column headerText="Actions" template="#actionsTemplate" width="150" textAlign="Center"></e-grid-column>
     </e-grid-columns>
 </ejs-grid>
+
+@section Scripts {
+    <script>
+        function toolbarClickHandler(args) {
+            if (args.item.id === 'reservationsGrid_add') {
+                args.cancel = true;
+                window.location.href = '@Url.Action("Create", "Reservations")';
+            }
+        }
+
+        // Se tiver outros scripts, como os templates, eles também ficam aqui
+    </script>
+}

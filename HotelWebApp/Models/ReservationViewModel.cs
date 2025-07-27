@@ -30,6 +30,8 @@ namespace HotelWebApp.Models
         [Display(Name = "Number of Guests")]
         public int NumberOfGuests { get; set; }
 
+        public string? Source { get; set; }
+
         public ReservationStatus? Status { get; set; }
 
         public IEnumerable<SelectListItem>? Guests { get; set; }

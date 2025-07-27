@@ -166,7 +166,6 @@ namespace HotelWebApp.Data.Repositories
                 .ToListAsync();
         }
 
-        // NOVO MÉTODO - IMPLEMENTAÇÃO
         /// <summary>
         /// Asynchronously retrieves all reservations scheduled for check-out on a specific date.
         /// Includes related guest and room details. It filters out cancelled reservations.
@@ -176,7 +175,8 @@ namespace HotelWebApp.Data.Repositories
         public async Task<IEnumerable<Reservation>> GetReservationsForCheckOutOnDateAsync(DateTime date)
         {
             return await _context.Reservations
-                .Where(r => r.CheckOutDate.Date == date.Date && r.Status != ReservationStatus.Cancelled)
+                .Where(r => r.CheckOutDate.Date == date.Date && 
+                                r.Status == ReservationStatus.CheckedIn)
                 .Include(r => r.ApplicationUser)
                 .Include(r => r.Room)
                 .ToListAsync();

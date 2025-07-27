@@ -21,5 +21,7 @@
         // Propriedade para dar cor aos eventos
         public string? CategoryColor { get; set; }
 
+        public int RoomId { get; set; }
+
     }
 }

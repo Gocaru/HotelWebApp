@@ -5,7 +5,9 @@
         public int Id { get; set; }
 
         public string GuestName { get; set; }
-        
+
+        public string GuestDetails { get; set; }
+
         public string RoomNumber { get; set; }
 
         public string RoomDetails { get; set; }

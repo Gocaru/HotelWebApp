@@ -45,5 +45,13 @@ namespace HotelWebApp.Data.Repositories
             _context.ChangeRequests.Update(changeRequest);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<ChangeRequest>> GetRequestsForReservationAsync(int reservationId)
+        {
+            return await _context.ChangeRequests
+                                 .Where(r => r.ReservationId == reservationId)
+                                 .OrderByDescending(r => r.RequestedOn)
+                                 .ToListAsync();
+        }
     }
 }

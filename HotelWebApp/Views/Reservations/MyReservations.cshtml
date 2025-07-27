@@ -69,13 +69,18 @@ else
                         <span class="badge @badgeClass">@item.Status</span>
                     </td>
                     <td>
-                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-secondary btn-sm">Details</a>
-                        @if (item.Status == ReservationStatus.Confirmed && item.CheckInDate > DateTime.Today)
-                        {
-                            <a asp-action="Cancel" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm">Cancel</a>
+                        <div class="btn-group btn-group-sm" role="group">
 
-                            <a asp-action="RequestChange" asp-route-id="@item.Id" class="btn btn-outline-info btn-sm">Request Change</a>
-                        }
+                            @* O botão "Details" está sempre visível *@
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary">Details</a>
+
+                            @* Os botões de gestão só aparecem para reservas futuras e confirmadas *@
+                            @if (item.Status == ReservationStatus.Confirmed && item.CheckInDate.Date > DateTime.Today.Date)
+                            {
+                                <a asp-action="RequestChange" asp-route-id="@item.Id" class="btn btn-outline-warning">Manage</a>
+                                <a asp-action="Cancel" asp-route-id="@item.Id" class="btn btn-outline-danger">Cancel</a>
+                            }
+                        </div>
                     </td>
                 </tr>
             }

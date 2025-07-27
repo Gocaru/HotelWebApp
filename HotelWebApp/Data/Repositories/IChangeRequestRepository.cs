@@ -13,5 +13,7 @@ namespace HotelWebApp.Data.Repositories
         Task<ChangeRequest?> GetByIdAsync(int id);
         
         Task UpdateAsync(ChangeRequest changeRequest);
+
+        Task<IEnumerable<ChangeRequest>> GetRequestsForReservationAsync(int reservationId);
     }
 }

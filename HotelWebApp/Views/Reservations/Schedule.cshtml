@@ -1,60 +1,112 @@
-﻿@{
+﻿@using HotelWebApp.Data.Entities
+@using HotelWebApp.Services
+
+@{
     ViewData["Title"] = "Reservation Schedule";
 }
 
-<h2>@ViewData["Title"]</h2>
-<p>Reservation Schedule Overview</p>
+<div class="text-center mb-4">
+    <h1>@ViewData["Title"]</h1>
+    <p class="lead text-muted">Timeline view of room occupancy.</p>
+</div>
 
 @Html.AntiForgeryToken()
 
 <div id="reservationScheduler"></div>
 
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <h6 class="card-title mb-2"><i class="fas fa-palette me-2"></i>Status Legend</h6>
+        <div class="d-flex flex-wrap" style="gap: 1rem;">
+
+            <span><span class="badge" style="background-color: #0d6efd;"> </span> @ReservationStatus.Confirmed.GetDisplayName()</span>
+            <span><span class="badge" style="background-color: #198754;"> </span> @ReservationStatus.CheckedIn.GetDisplayName()</span>
+            <span><span class="badge" style="background-color: #212529;"> </span> @ReservationStatus.CheckedOut.GetDisplayName()</span>
+            <span><span class="badge" style="background-color: #dc3545;"> </span> @ReservationStatus.Cancelled.GetDisplayName()</span>
+            <span><span class="badge" style="background-color: #ffc107;"> </span> @ReservationStatus.NoShow.GetDisplayName()</span>
+            <span><span class="badge" style="background-color: #6c757d;"> </span> @ReservationStatus.Completed.GetDisplayName()</span>
+
+        </div>
+    </div>
+</div>
+
+<script id="eventTemplate" type="text/x-template">
+    <div class="event-wrap" style="background-color: ${categoryColor};">
+        <div class="event-subject">${subject}</div>
+    </div>
+</script>
+
+<style>
+    .event-wrap {
+        width: 100%;
+        height: 100%;
+        padding: 2px 5px;
+        color: white;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+</style>
+
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            var antiForgeryToken = document.getElementsByName("__RequestVerificationToken")[0].value;
-
             var dataManager = new ej.data.DataManager({
                 url: '@Url.Action("LoadSchedulerData", "Reservations")',
-                removeUrl: '@Url.Action("DeleteEvent", "Reservations")',
-                adaptor: new ej.data.UrlAdaptor(),
-                headers: [{ "RequestVerificationToken": antiForgeryToken }]
+                adaptor: new ej.data.UrlAdaptor()
             });
+            var roomResources = @Html.Raw(Json.Serialize(ViewBag.Rooms));
 
             var schedule = new ej.schedule.Schedule({
-                height: '650px',
+                height: 'auto',
+                width: '100%',
                 currentView: 'Month',
+
+                group: { byDate: true, resources: ['Rooms'] },
+                resources: [{
+                    field: 'roomId',
+                    title: 'Room',
+                    name: 'Rooms',
+                    dataSource: roomResources,
+                    textField: 'text',
+                    idField: 'id',
+                    colorField: 'color'
+                }],
 
                 eventSettings: {
                     dataSource: dataManager,
+                    enableTooltip: true,
+                    tooltipTemplate: '<div><strong>${subject}</strong></div><hr><div>${description}</div>',
+
+                    template: '#eventTemplate',
+
                     fields: {
                         id: 'id',
                         subject: { name: 'subject' },
                         startTime: { name: 'startTime' },
                         endTime: { name: 'endTime' },
+                        description: { name: 'description' },
                         location: { name: 'location' },
-                        description: { name: 'description' }
-                    },
-                    colorField: 'categoryColor'
+                        resourceId: { name: 'roomId' },
+                        cssClass: { name: 'categoryColor' }
+                    }
                 },
 
-                // 1. Interceta o clique para ir para a página de Detalhes
                 eventClick: function(args) {
-                    args.cancel = true; // Impede o popup padrão de abrir
+                args.cancel = true; 
 
                     var reservationId = args.event.id;
                     var detailsUrl = '@Url.Action("Details", "Reservations")' +
                                      '/' + reservationId +
-                                     '?source=schedule'; // <-- Passa a origem
+                                     '?source=schedule'; 
 
                     window.location.href = detailsUrl;
                 },
 
-                // 2. Interceta a criação para ir para a página Create
                 popupOpen: function(args) {
-                    if (args.type === 'Editor') { // 'Editor' é para criar novos eventos
-                        args.cancel = true; // Cancela o popup padrão
+                    if (args.type === 'Editor') { 
+                        args.cancel = true;
 
                         var startDate = args.data.startTime || args.data.StartTime;
                         var endDate = args.data.endTime || args.data.EndTime;
@@ -65,21 +117,16 @@
                         var createUrl = '@Url.Action("Create", "Reservations")' +
                                         '?checkInDate=' + formattedStartDate +
                                         '&checkOutDate=' + formattedEndDate +
-                                        '&source=schedule'; // <-- Passa a origem
+                                        '&source=schedule';
 
                         window.location.href = createUrl;
                     }
                 },
 
-                views: ['Day', 'Week', 'Month', 'Agenda']
+                views: ['TimelineDay', 'TimelineWeek', 'Month', 'Agenda']
             });
 
             schedule.appendTo('#reservationScheduler');
         });
     </script>
 }
-
-
-
-
-

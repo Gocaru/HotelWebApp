@@ -9,158 +9,135 @@
 @if (User.IsInRole("Employee") && Model != null)
 {
     <div class="container-fluid">
-        <div class="text-center mb-4">
+        <div class="text-center mb-5">
             <h1 class="display-4">Dashboard</h1>
-            <p class="lead text-muted">Activity summary for today, @DateTime.Today.ToShortDateString()</p>
+            <p class="lead text-muted">Activity summary for today, @DateTime.Today.ToLongDateString()</p>
         </div>
 
-        <div class="row">
+        <!-- Linha 1: Check-ins e Check-outs -->
+        <div class="row g-4">
             @* Column for Check-ins *@
-            <div class="col-md-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-header bg-success text-white">
-                        <h3 class="card-title mb-0"><i class="fas fa-calendar-check"></i> Today's Check-ins</h3>
+            <div class="col-lg-6 d-flex">
+                <div class="card shadow-sm w-100">
+                    <div class="card-header bg-success bg-gradient text-white">
+                        <h4 class="card-title mb-0"><i class="fas fa-calendar-check me-2"></i> Today's Check-ins</h4>
                     </div>
-                    <div class="card-body">
-                        @if (Model.CheckInsToday.Any())
-                        {
-                            <ul class="list-group list-group-flush">
-                                @foreach (var reservation in Model.CheckInsToday)
-                                {
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>
-                                            <strong>@reservation.ApplicationUser.FullName</strong> - Room @reservation.Room.RoomNumber
-                                        </span>
-                                        <div>
-                                            @if (reservation.Status == ReservationStatus.Confirmed)
-                                            {
-                                                <form asp-controller="Reservations" asp-action="CheckIn" asp-route-id="@reservation.Id" method="post" class="d-inline">
-                                                    <input type="hidden" name="source" value="dashboard" />
-                                                    <button type="submit" class="btn btn-sm btn-success">Check-in</button>
-                                                </form>
-                                            }
-                                            <a asp-controller="Reservations" asp-action="Details" asp-route-id="@reservation.Id" asp-route-source="dashboard" class="btn btn-sm btn-outline-primary">View Details</a>
-                                        </div>
-                                    </li>
-                                }
-                            </ul>
-                        }
-                        else
-                        {
-                            <p class="text-center text-muted mt-3">No check-ins scheduled for today.</p>
-                        }
-                    </div>
+                    @if (Model.CheckInsToday.Any())
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var reservation in Model.CheckInsToday)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center @(reservation.Status != ReservationStatus.Confirmed ? "bg-light text-muted" : "")">
+                                    <span>
+                                        <strong>@reservation.ApplicationUser.FullName</strong> - Room @reservation.Room.RoomNumber
+
+                                        @if (reservation.Status == ReservationStatus.CheckedIn)
+                                        {
+                                            <span class="badge bg-success ms-2">Checked-In</span>
+                                        }
+                                    </span>
+                                    <div>
+                                        @if (reservation.Status == ReservationStatus.Confirmed)
+                                        {
+                                            <form asp-controller="Reservations" asp-action="CheckIn" asp-route-id="@reservation.Id" asp-route-source="dashboard" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-success">Check-in</button>
+                                            </form>
+                                        }
+                                        <a asp-controller="Reservations" asp-action="Details" asp-route-id="@reservation.Id" asp-route-source="dashboard" class="btn btn-sm btn-outline-secondary">Details</a>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="card-body text-center text-muted">
+                            <p class="mb-0">No check-ins scheduled for today.</p>
+                        </div>
+                    }
                 </div>
             </div>
 
             @* Column for Check-outs *@
-            <div class="col-md-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-header bg-danger text-white">
-                        <h3 class="card-title mb-0"><i class="fas fa-calendar-times"></i> Today's Check-outs</h3>
+            <div class="col-lg-6 d-flex">
+                <div class="card shadow-sm w-100">
+                    <div class="card-header bg-danger bg-gradient text-white">
+                        <h4 class="card-title mb-0"><i class="fas fa-calendar-times me-2"></i> Today's Check-outs</h4>
+                    </div>
+                    @if (Model.CheckOutsToday.Any())
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var reservation in Model.CheckOutsToday)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span><strong>@reservation.ApplicationUser.FullName</strong> - Room @reservation.Room.RoomNumber</span>
+                                    @if (reservation.Status == ReservationStatus.CheckedIn)
+                                    {
+                                        <form asp-controller="Reservations" asp-action="CheckOut" asp-route-id="@reservation.Id" asp-route-source="dashboard" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-danger">Check-out</button>
+                                        </form>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="card-body text-center text-muted">
+                            <p class="mb-0">No check-outs scheduled for today.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Linha 2: Tarefas Administrativas e Pedidos Pendentes -->
+        <div class="row g-4 mt-4">
+            <div class="col-lg-6 d-flex">
+                <div class="card shadow-sm w-100">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0"><i class="fas fa-cogs me-2"></i> Administrative Tasks</h4>
                     </div>
                     <div class="card-body">
-                        @if (Model.CheckOutsToday.Any())
-                        {
-                            <ul class="list-group list-group-flush">
-                                @foreach (var reservation in Model.CheckOutsToday)
-                                {
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>
-                                            <strong>@reservation.ApplicationUser.FullName</strong> - Room @reservation.Room.RoomNumber
-                                        </span>
-                                        <div>
-                                            @if (reservation.Status == ReservationStatus.CheckedIn)
-                                            {
-                                                <form asp-controller="Reservations" asp-action="CheckOut" asp-route-id="@reservation.Id" method="post" class="d-inline">
-                                                    <input type="hidden" name="source" value="dashboard" />
-                                                    <button type="submit" class="btn btn-sm btn-warning">Check-out</button>
-                                                </form>
-                                            }
-                                            <a asp-controller="Reservations" asp-action="Details" asp-route-id="@reservation.Id" asp-route-source="dashboard" class="btn btn-sm btn-outline-secondary">View Details</a>
-                                        </div>
-                                    </li>
-                                }
-                            </ul>
-                        }
-                        else
-                        {
-                            <p class="text-center text-muted mt-3">No check-outs scheduled for today.</p>
-                        }
+                        <p class="card-text text-muted">Run periodic tasks to keep the hotel system up-to-date.</p>
+                        <form asp-controller="Reservations" asp-action="ProcessNoShows" method="post" onsubmit="return confirm('Are you sure?');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-warning"><i class="fas fa-user-clock me-2"></i>Process "No-Shows"</button>
+                        </form>
                     </div>
                 </div>
             </div>
 
-            <div class="row mt-4">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title mb-0"><i class="fas fa-cogs"></i> Administrative Tasks</h3>
-                        </div>
-                        <div class="card-body">
-                            <p class="card-text text-muted">Run periodic tasks to keep the hotel system up-to-date.</p>
-
-                            <!-- Formulário para o botão "Process No-Shows" -->
-                            <form asp-controller="Reservations" asp-action="ProcessNoShows" method="post"
-                                  onsubmit="return confirm('This will mark all past-due reservations as No-Show and free up their rooms. Are you sure you want to proceed?');">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-warning">
-                                    <i class="fas fa-user-clock"></i> Process Past-Due "No-Shows"
-                                </button>
-                            </form>
-
-                            <small class="form-text text-muted d-block mt-2">
-                                This task should be run once daily to handle reservations that were not checked in on their arrival date.
-                            </small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row mt-4">
-                <div class="col-12">
-                    <div class="card border-warning">
-                        <div class="card-header bg-warning text-dark">
-                            <h3 class="card-title mb-0">
-                                <i class="fas fa-exclamation-triangle"></i> Pending Change Requests
+            <div class="col-lg-6 d-flex">
+                <div class="card shadow-sm w-100 @(Model.PendingChangeRequests.Any() ? "border-warning" : "")">
+                    <div class="card-header @(Model.PendingChangeRequests.Any() ? "bg-warning bg-gradient text-dark" : "")">
+                        <h4 class="card-title mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i> Pending Change Requests
+                            @if (Model.PendingChangeRequests.Any())
+                            {
                                 <span class="badge bg-danger ms-2">@Model.PendingChangeRequests.Count()</span>
-                            </h3>
-                        </div>
-
+                            }
+                        </h4>
+                    </div>
+                    <ul class="list-group list-group-flush">
                         @if (Model.PendingChangeRequests.Any())
                         {
-                            <ul class="list-group list-group-flush">
-                                @foreach (var request in Model.PendingChangeRequests)
-                                {
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <p class="mb-1">
-                                                Guest <strong>@request.Reservation.ApplicationUser.FullName</strong> requested a change for reservation <strong>#@request.ReservationId</strong>.
-                                            </p>
-                                            <p class="mb-0 fst-italic text-muted">
-                                                <strong>Request:</strong> "@request.RequestDetails"
-                                            </p>
-                                            <small>Requested on: @request.RequestedOn.ToShortDateString()</small>
-                                        </div>
-
-                                        <!-- O funcionário clica aqui para ir para a página de detalhes da reserva e agir -->
-                                        <a asp-controller="Reservations" asp-action="Details" asp-route-id="@request.ReservationId" class="btn btn-primary btn-sm">
-                                            Process
-                                        </a>
-                                    </li>
-                                }
-                            </ul>
+                            @foreach (var request in Model.PendingChangeRequests)
+                            {
+                                <li class="list-group-item">
+                                    <p class="mb-1">Guest <strong>@request.Reservation.ApplicationUser.FullName</strong></p>
+                                    <p class="mb-1 fst-italic text-muted">"@request.RequestDetails"</p>
+                                    <a asp-controller="Reservations" asp-action="Details" asp-route-id="@request.ReservationId" asp-route-source="dashboard" class="btn btn-primary btn-sm mt-2">Process Request</a>
+                                </li>
+                            }
                         }
                         else
                         {
-                            <div class="card-body">
-                                <p class="card-text text-muted">There are no pending change requests at the moment.</p>
-                            </div>
+                            <li class="list-group-item text-center text-muted p-4">There are no pending requests.</li>
                         }
-                    </div>
+                    </ul>
                 </div>
             </div>
-
         </div>
     </div>
 }

@@ -5,6 +5,6 @@ namespace HotelWebApp.Models
     public class ReservationDetailsViewModel
     {
         public Reservation Reservation { get; set; }
-        public ChangeRequest? PendingChangeRequest { get; set; }
+        public IEnumerable<ChangeRequest> ChangeRequests { get; set; } = new List<ChangeRequest>();
     }
 }

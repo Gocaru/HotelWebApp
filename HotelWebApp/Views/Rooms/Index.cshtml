@@ -47,15 +47,7 @@
                     </ul>
                     <h4 class="card-title pricing-card-title mt-auto">@room.PricePerNight.ToString("C") <small class="text-muted fw-light">/ night</small></h4>
 
-                    @* O botão "Reserve Now" aparece para todos, mas só se o quarto estiver disponível *@
-                    @if (room.Status == RoomStatus.Available)
-                    {
-                        <a asp-controller="Reservations" asp-action="Create" asp-route-roomId="@room.Id" class="btn btn-lg btn-block btn-success">Reserve Now</a>
-                    }
-                    else
-                    {
-                        <button type="button" class="btn btn-lg btn-block btn-secondary" disabled>Not Available</button>
-                    }
+                    <a asp-controller="Reservations" asp-action="Create" asp-route-roomId="@room.Id" class="btn btn-lg btn-block btn-success">Reserve Now</a>
                 </div>
 
                 @* Rodapé do cartão com os botões de gestão, que só aparecem para o Admin *@
