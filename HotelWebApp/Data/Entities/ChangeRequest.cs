@@ -1,4 +1,6 @@
-﻿namespace HotelWebApp.Data.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace HotelWebApp.Data.Entities
 {
     public class ChangeRequest : IEntity
     {
@@ -19,5 +21,6 @@
         public DateTime? ProcessedOn { get; set; }
 
         public string? ProcessedByUserId { get; set; }
+
     }
 }

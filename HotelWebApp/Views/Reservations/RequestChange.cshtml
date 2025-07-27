@@ -1,31 +1,119 @@
 ﻿@model HotelWebApp.Models.ChangeRequestViewModel
+@using HotelWebApp.Data.Entities
 
 @{
-    ViewData["Title"] = "Request a Change to Your Reservation";
+    ViewData["Title"] = "Manage your reservation";
 }
-
-<h1>@ViewData["Title"]</h1>
-<h4>Reservation ID: @Model.ReservationId</h4>
-<hr />
 
 <div class="row">
     <div class="col-md-8">
+        <h1>@ViewData["Title"]</h1>
+        <p class="lead">
+            We're happy to help you customize your stay. Use the options below to add services to your reservation <strong>#@Model.ReservationId</strong>,
+            or to send us a special request.
+        </p>
+        <hr />
+
+        @if (Model.ExistingRequests.Any())
+        {
+            <h4 class="mt-4">Your Requests History</h4>
+            <div class="list-group mb-4">
+                @foreach (var request in Model.ExistingRequests)
+                {
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">
+                                Status:
+                                @if (request.Status == RequestStatus.Pending)
+                                {
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                }
+                                @if (request.Status == RequestStatus.Approved)
+                                {
+                                    <span class="badge bg-success">Approved</span>
+                                }
+                                @if (request.Status == RequestStatus.Rejected)
+                                {
+                                    <span class="badge bg-danger">Rejected</span>
+                                }
+                            </h6>
+                            <small>Requested on @request.RequestedOn.ToShortDateString()</small>
+                        </div>
+
+                        @{
+                            // Separar a string de detalhes nas suas partes constituintes
+                            var detailsParts = request.RequestDetails.Split(new[] { " ||| " }, StringSplitOptions.RemoveEmptyEntries);
+                            var serviceRequestPart = detailsParts.FirstOrDefault(p => p.StartsWith("[SERVICE]"));
+                            var textRequestPart = detailsParts.FirstOrDefault(p => !p.StartsWith("[SERVICE]"));
+                        }
+
+                        @if (!string.IsNullOrEmpty(serviceRequestPart))
+                        {
+                            // Formata o pedido de serviço de forma amigável
+                            var serviceInfo = serviceRequestPart.Replace("[SERVICE] ", "");
+                            <p class="mb-1 mt-2"><strong>Service Request:</strong> <em>@serviceInfo</em></p>
+                        }
+
+                        @if (!string.IsNullOrEmpty(textRequestPart))
+                        {
+                            // Mostra o pedido de texto livre
+                            <p class="mb-1 mt-2"><strong>Your Message:</strong> <em>"@textRequestPart"</em></p>
+                        }
+
+                        @if (!string.IsNullOrEmpty(request.EmployeeNotes))
+                        {
+                            <p class="mt-2 mb-1 border-start border-4 border-info ps-2">
+                                <strong>Staff Response:</strong> @request.EmployeeNotes
+                            </p>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
         <form asp-action="RequestChange" method="post">
-
-            @* Mostra os erros de validação do ModelState *@
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-            @* Campo escondido para enviar o ID da reserva de volta para o Controller *@
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
             <input type="hidden" asp-for="ReservationId" />
 
-            <div class="form-group">
-                <label asp-for="RequestDetails" class="control-label"></label>
-                <textarea asp-for="RequestDetails" class="form-control" rows="5" placeholder="e.g., 'We would like to postpone our stay by one week.'"></textarea>
-                <span asp-validation-for="RequestDetails" class="text-danger"></span>
+            @* Secção para adicionar um serviço *@
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h4>Add a Service</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-end">
+                        <div class="form-group col-md-8">
+                            <label asp-for="SelectedAmenityId"></label>
+                            <select asp-for="SelectedAmenityId" class="form-select" asp-items="@Model.AvailableAmenities">
+                                <option value="">-- No service, just a written request --</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label asp-for="AmenityQuantity"></label>
+                            <input asp-for="AmenityQuantity" type="number" class="form-control" min="1" />
+                            <span asp-validation-for="AmenityQuantity" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
+            @* Secção para outros pedidos *@
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h4>Other Requests</h4>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label asp-for="RequestDetails">If you have other requests (e.g., change dates, special requirements), please describe them here.</label>
+                        <textarea asp-for="RequestDetails" class="form-control" rows="4" placeholder="e.g., 'We would like to postpone our stay by one week.'"></textarea>
+                        <span asp-validation-for="RequestDetails" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            @* Botões de Ação *@
             <div class="form-group mt-4">
-                <input type="submit" value="Submit Request" class="btn btn-primary" />
+                <button type="submit" class="btn btn-primary">Submit Request</button>
                 <a asp-action="MyReservations" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
