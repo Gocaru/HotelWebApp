@@ -45,8 +45,21 @@ namespace HotelWebApp.Areas.Identity.Pages.Account
 
             code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
             var result = await _userManager.ConfirmEmailAsync(user, code);
-            StatusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
-            return Page();
+
+            if (result.Succeeded)
+            {
+                // Se a confirmação foi bem-sucedida, define a mensagem no TempData
+                TempData["SuccessMessage"] = "Thank you for confirming your email. You may now log in.";
+
+                // E redireciona para a página de Login
+                return RedirectToPage("/Account/Login", new { area = "Identity" });
+            }
+            else
+            {
+                // Se falhou, mostra a mensagem de erro na página de confirmação atual
+                StatusMessage = "Error confirming your email.";
+                return Page();
+            }
         }
     }
 }
