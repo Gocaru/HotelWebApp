@@ -18,7 +18,6 @@ namespace HotelWebApp.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // Pede ao UserManager a lista de utilizadores que pertencem à role "Employee".
             var employees = await _userManager.GetUsersInRoleAsync("Employee");
             return View(employees);
         }
@@ -26,7 +25,6 @@ namespace HotelWebApp.Controllers
 
         public IActionResult CreateEmployee()
         {
-            // Apenas mostra o formulário vazio
             return View();
         }
 
@@ -42,31 +40,120 @@ namespace HotelWebApp.Controllers
                     UserName = model.Email,
                     Email = model.Email,
                     FullName = model.FullName,
-                    EmailConfirmed = true // Confirmamos o email do funcionário automaticamente
+                    EmailConfirmed = true
                 };
 
-                // Cria o utilizador com a password fornecida
                 var result = await _userManager.CreateAsync(user, model.Password);
 
                 if (result.Succeeded)
                 {
-                    // Se a criação for bem-sucedida, atribui o role "Employee"
                     await _userManager.AddToRoleAsync(user, "Employee");
-                    return RedirectToAction(nameof(Index)); // Redireciona para a lista de utilizadores
+                    return RedirectToAction(nameof(Index));
                 }
 
-                // Se houver erros (ex: email já existe), adiciona-os ao ModelState
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
 
-            // Se o modelo não for válido, devolve a view com os dados preenchidos
             return View(model);
         }
 
-        // TODO: Implementar ações de Details, Edit e Delete
-    }
+        public async Task<IActionResult> Details(string id)
+        {
+            if (id == null) return NotFound();
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
 
+            return View(user);
+        }
+
+        // GET: /UserManagement/Edit/{id}
+        public async Task<IActionResult> Edit(string id)
+        {
+            if (id == null) return NotFound();
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            var model = new EditEmployeeViewModel
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Email = user.Email
+            };
+            return View(model);
+        }
+
+        // POST: /UserManagement/Edit/{id}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(EditEmployeeViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            var user = await _userManager.FindByIdAsync(model.Id);
+            if (user == null) return NotFound();
+
+            user.FullName = model.FullName;
+            user.Email = model.Email;
+            user.UserName = model.Email;
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = "Employee details updated successfully.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return View(model);
+        }
+
+        // GET: /UserManagement/Delete/{id}
+        public async Task<IActionResult> Delete(string id)
+        {
+            if (id == null) return NotFound();
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            return View(user);
+        }
+
+        // POST: /UserManagement/Delete/{id}
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user != null)
+            {
+                var result = await _userManager.DeleteAsync(user);
+                if (result.Succeeded)
+                {
+                    TempData["SuccessMessage"] = "Employee deleted successfully.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                TempData["ErrorMessage"] = "Error deleting employee.";
+                foreach (var error in result.Errors)
+                {
+                    TempData["ErrorMessage"] += $" {error.Description}";
+                }
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "User not found.";
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+    }
 }
+
