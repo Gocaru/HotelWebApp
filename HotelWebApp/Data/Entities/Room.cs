@@ -31,6 +31,8 @@ namespace HotelWebApp.Data.Entities
         [Display(Name = "Room Status")]
         public RoomStatus Status { get; set; }
 
+        public string? ImageUrl { get; set; }
+
         public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
     }
 }

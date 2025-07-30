@@ -12,7 +12,7 @@ namespace HotelWebApp.Data.Entities
         public Reservation Reservation { get; set; }
 
         [Required]
-        public int AmenityId { get; set; } // Chave estrangeira para Amenity
+        public int AmenityId { get; set; } 
         public Amenity Amenity { get; set; }
 
         [Required]
