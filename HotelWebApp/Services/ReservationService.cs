@@ -380,9 +380,8 @@ namespace HotelWebApp.Services
             {
                 var today = DateTime.Today;
 
-                // 1. Encontrar todas as reservas 'Confirmed' cuja data de check-in é anterior a hoje
                 var reservationsToUpdate = await _context.Reservations
-                    .Include(r => r.Room) // Incluir o quarto para podermos atualizá-lo
+                    .Include(r => r.Room) 
                     .Where(r => r.Status == ReservationStatus.Confirmed && r.CheckInDate.Date < today)
                     .ToListAsync();
 
@@ -393,17 +392,14 @@ namespace HotelWebApp.Services
 
                 foreach (var reservation in reservationsToUpdate)
                 {
-                    // 2. Mudar o status da reserva para NoShow
                     reservation.Status = ReservationStatus.NoShow;
 
-                    // 3. Libertar o quarto se ele ainda estava como 'Reservado'
                     if (reservation.Room != null && reservation.Room.Status == RoomStatus.Reserved)
                     {
                         reservation.Room.Status = RoomStatus.Available;
                     }
                 }
 
-                // 4. Salvar todas as alterações de uma só vez na base de dados
                 await _context.SaveChangesAsync();
 
                 string successMessage = reservationsToUpdate.Count == 1
@@ -414,8 +410,6 @@ namespace HotelWebApp.Services
             }
             catch (Exception ex)
             {
-                // Em caso de um erro inesperado na base de dados, retorna uma mensagem de falha
-                // Opcional: Logar o erro 'ex' para fins de depuração
                 return Result.Failure("An error occurred while processing no-show reservations. Please try again.");
             }
         }

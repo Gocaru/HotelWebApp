@@ -10,13 +10,13 @@ namespace HotelWebApp.Data.Entities
         
         public virtual Reservation Reservation { get; set; }
 
-        public string RequestDetails { get; set; } // Mensagem do hóspede
+        public string RequestDetails { get; set; }
 
         public DateTime RequestedOn { get; set; }
 
-        public RequestStatus Status { get; set; } // Novo enum: Pending, Approved, Rejected
+        public RequestStatus Status { get; set; } 
 
-        public string? EmployeeNotes { get; set; } // Notas do funcionário ao processar o pedido
+        public string? EmployeeNotes { get; set; } 
         
         public DateTime? ProcessedOn { get; set; }
 

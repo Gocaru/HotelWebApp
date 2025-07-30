@@ -11,11 +11,15 @@ namespace HotelWebApp.Controllers
     {
         private readonly IRoomRepository _roomRepository;
         private readonly IReservationRepository _reservationRepository;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public RoomsController(IRoomRepository roomRepository, IReservationRepository reservationRepository)
+        public RoomsController(IRoomRepository roomRepository, 
+                               IReservationRepository reservationRepository, 
+                               IWebHostEnvironment webHostEnvironment)
         {
             _roomRepository = roomRepository;
             _reservationRepository = reservationRepository;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // GET: RoomsController
@@ -52,18 +56,23 @@ namespace HotelWebApp.Controllers
         {
             if (ModelState.IsValid)
             {
+                string uniqueFileName = await ProcessUploadedFile(viewModel);
+
                 var room = new Room
                 {
                     RoomNumber = viewModel.RoomNumber,
                     Capacity = viewModel.Capacity,
                     PricePerNight = viewModel.PricePerNight,
                     Type = viewModel.Type.Value,
-                    Status = viewModel.Status.Value
+                    Status = viewModel.Status.Value,
+                    ImageUrl = uniqueFileName // Atribuir o nome do ficheiro guardado
                 };
 
                 await _roomRepository.AddAsync(room);
+                TempData["SuccessMessage"] = "Room created successfully.";
                 return RedirectToAction(nameof(Index));
             }
+
             PopulateDropdowns();
             return View(viewModel);
         }
@@ -96,7 +105,8 @@ namespace HotelWebApp.Controllers
                 Capacity = roomToEdit.Capacity,
                 PricePerNight = roomToEdit.PricePerNight,
                 Type = roomToEdit.Type,
-                Status = roomToEdit.Status
+                Status = roomToEdit.Status,
+                ImageUrl = roomToEdit.ImageUrl
             };
 
             PopulateDropdowns();
@@ -111,23 +121,44 @@ namespace HotelWebApp.Controllers
         {
             if (id != viewModel.Id) return NotFound();
 
-            if (ModelState.IsValid)
+            // Passamos o ModelState para a action POST Create.
+            if (!ModelState.IsValid)
             {
-                var room = await _roomRepository.GetByIdAsync(id);
-
-                if (room == null) return NotFound();
-
-                room.RoomNumber = viewModel.RoomNumber;
-                room.Capacity = viewModel.Capacity;
-                room.PricePerNight = viewModel.PricePerNight;
-                room.Type = viewModel.Type.Value;
-                room.Status = viewModel.Status.Value;
-
-                await _roomRepository.UpdateAsync(room);
-                return RedirectToAction(nameof(Index));
+                PopulateDropdowns();
+                return View(viewModel);
             }
-            PopulateDropdowns();
-            return View(viewModel);
+
+            // Obter o quarto existente da base de dados
+            var room = await _roomRepository.GetByIdAsync(id);
+            if (room == null) return NotFound();
+
+            // Se um novo ficheiro de imagem foi enviado, processa-o
+            if (viewModel.ImageFile != null)
+            {
+                // Se já existia uma imagem antiga, apaga-a do disco
+                if (!string.IsNullOrEmpty(room.ImageUrl))
+                {
+                    string oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, "images/rooms", room.ImageUrl);
+                    if (System.IO.File.Exists(oldImagePath))
+                    {
+                        System.IO.File.Delete(oldImagePath);
+                    }
+                }
+
+                // Guarda o novo ficheiro e obtém o seu nome único
+                room.ImageUrl = await ProcessUploadedFile(viewModel);
+            }
+
+            // Atualiza as outras propriedades do quarto
+            room.RoomNumber = viewModel.RoomNumber;
+            room.Capacity = viewModel.Capacity;
+            room.PricePerNight = viewModel.PricePerNight;
+            room.Type = viewModel.Type.Value;
+            room.Status = viewModel.Status.Value;
+
+            await _roomRepository.UpdateAsync(room);
+            TempData["SuccessMessage"] = "Room updated successfully.";
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: RoomsController/Delete/5
@@ -172,6 +203,48 @@ namespace HotelWebApp.Controllers
         {
             ViewBag.RoomTypes = Enum.GetValues(typeof(RoomType));
             ViewBag.RoomStatuses = Enum.GetValues(typeof(RoomStatus));
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> SearchResults(DateTime checkInDate, DateTime checkOutDate)
+        {
+            if (checkOutDate <= checkInDate)
+            {
+                // Redirecionar de volta para a Home com uma mensagem de erro
+                TempData["ErrorMessage"] = "Check-out date must be after the check-in date.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            // Usar o repositório para encontrar os quartos disponíveis
+            var availableRooms = await _roomRepository.GetAvailableRoomsAsync(checkInDate, checkOutDate);
+
+            // Passar as datas para a View para que elas possam ser mostradas
+            ViewBag.CheckInDate = checkInDate;
+            ViewBag.CheckOutDate = checkOutDate;
+
+            return View(availableRooms);
+        }
+
+        private async Task<string> ProcessUploadedFile(RoomViewModel viewModel)
+        {
+            string uniqueFileName = null;
+
+            if (viewModel.ImageFile != null)
+            {
+                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images/rooms");
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                uniqueFileName = Guid.NewGuid().ToString() + "_" + viewModel.ImageFile.FileName;
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await viewModel.ImageFile.CopyToAsync(fileStream);
+                }
+            }
+            return uniqueFileName;
         }
     }
 }

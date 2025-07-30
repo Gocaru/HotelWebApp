@@ -44,7 +44,7 @@ namespace HotelWebApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Amenities");
+                    b.ToTable("Amenities", (string)null);
                 });
 
             modelBuilder.Entity("HotelWebApp.Data.Entities.ApplicationUser", b =>
@@ -158,7 +158,7 @@ namespace HotelWebApp.Migrations
 
                     b.HasIndex("ReservationId");
 
-                    b.ToTable("ChangeRequests");
+                    b.ToTable("ChangeRequests", (string)null);
                 });
 
             modelBuilder.Entity("HotelWebApp.Data.Entities.Invoice", b =>
@@ -192,7 +192,7 @@ namespace HotelWebApp.Migrations
                     b.HasIndex("ReservationId")
                         .IsUnique();
 
-                    b.ToTable("Invoices");
+                    b.ToTable("Invoices", (string)null);
                 });
 
             modelBuilder.Entity("HotelWebApp.Data.Entities.Payment", b =>
@@ -222,7 +222,7 @@ namespace HotelWebApp.Migrations
 
                     b.HasIndex("InvoiceId");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", (string)null);
                 });
 
             modelBuilder.Entity("HotelWebApp.Data.Entities.Reservation", b =>
@@ -264,7 +264,7 @@ namespace HotelWebApp.Migrations
 
                     b.HasIndex("RoomId");
 
-                    b.ToTable("Reservations");
+                    b.ToTable("Reservations", (string)null);
                 });
 
             modelBuilder.Entity("HotelWebApp.Data.Entities.ReservationAmenity", b =>
@@ -296,7 +296,7 @@ namespace HotelWebApp.Migrations
 
                     b.HasIndex("ReservationId");
 
-                    b.ToTable("ReservationAmenities");
+                    b.ToTable("ReservationAmenities", (string)null);
                 });
 
             modelBuilder.Entity("HotelWebApp.Data.Entities.Room", b =>
@@ -329,7 +329,7 @@ namespace HotelWebApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Rooms");
+                    b.ToTable("Rooms", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

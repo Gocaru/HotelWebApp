@@ -61,12 +61,13 @@
             var schedule = new ej.schedule.Schedule({
                 height: 'auto',
                 width: '100%',
-                currentView: 'Month',
+                currentView: 'TimelineWeek',
 
-                group: { byDate: true, resources: ['Rooms'] },
+                group: { allowGroupEditing: false, 
+                },
                 resources: [{
                     field: 'roomId',
-                    title: 'Room',
+                    title: 'Hotel Room',
                     name: 'Rooms',
                     dataSource: roomResources,
                     textField: 'text',
@@ -104,26 +105,63 @@
                     window.location.href = detailsUrl;
                 },
 
-                popupOpen: function(args) {
-                    if (args.type === 'Editor') { 
-                        args.cancel = true;
+                    popupOpen: function(args) {
+                        if (args.type === 'Editor' || args.type === 'QuickInfo') {
 
-                        var startDate = args.data.startTime || args.data.StartTime;
-                        var endDate = args.data.endTime || args.data.EndTime;
+                            args.cancel = true;
 
-                        var formattedStartDate = startDate.toISOString().split('T')[0];
-                        var formattedEndDate = endDate.toISOString().split('T')[0];
+                            var startDate = new Date(args.data.startTime || args.data.StartTime);
+                            startDate.setHours(0, 0, 0, 0);
 
-                        var createUrl = '@Url.Action("Create", "Reservations")' +
-                                        '?checkInDate=' + formattedStartDate +
-                                        '&checkOutDate=' + formattedEndDate +
-                                        '&source=schedule';
+                            var today = new Date();
+                            today.setHours(0, 0, 0, 0);
 
-                        window.location.href = createUrl;
-                    }
+                            if (startDate < today) {
+                                return;
+                            }
+
+                            var endDate = new Date(startDate.getTime());
+                            endDate.setDate(startDate.getDate() + 1);
+
+                            function formatDate(date) {
+                                var d = new Date(date),
+                                    month = '' + (d.getMonth() + 1),
+                                    day = '' + d.getDate(),
+                                    year = d.getFullYear();
+
+                                if (month.length < 2)
+                                    month = '0' + month;
+                                if (day.length < 2)
+                                    day = '0' + day;
+
+                                return [year, month, day].join('-');
+                            }
+
+                            var formattedStartDate = formatDate(startDate);
+                            var formattedEndDate = formatDate(endDate);
+
+
+                            var roomId = args.data.roomId || args.data.RoomId || (args.data.groupData && args.data.groupData.roomId);
+
+                            var createUrl = '@Url.Action("Create", "Reservations")' +
+                                            '?checkInDate=' + formattedStartDate +
+                                            '&checkOutDate=' + formattedEndDate +
+                                            '&source=schedule';
+
+                            if (roomId) {
+                                createUrl += '&roomId=' + roomId;
+                            }
+
+                            window.location.href = createUrl;
+                        }
                 },
 
-                views: ['TimelineDay', 'TimelineWeek', 'Month', 'Agenda']
+                    views: [
+                        { option: 'TimelineDay', allowVirtualScrolling: false, displayName: 'Daily Timeline', group: { byDate: true, resources: ['Rooms'] } },
+                        { option: 'TimelineWeek', allowVirtualScrolling: false, displayName: 'Weekly Timeline', group: { byDate: true, resources: ['Rooms'] } },
+                        { option: 'Month', displayName: 'Monthly Calendar' },
+                        { option: 'Agenda' }
+                    ],
             });
 
             schedule.appendTo('#reservationScheduler');

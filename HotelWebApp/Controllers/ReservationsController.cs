@@ -147,25 +147,36 @@ namespace HotelWebApp.Controllers
         {
             var model = new ReservationViewModel();
 
-            if (checkInDate.HasValue && checkOutDate.HasValue)
+            if (User.IsInRole("Employee"))
             {
-                if (checkOutDate.Value <= checkInDate.Value)
-                {
-                    // Se as datas são inválidas, adiciona um erro ao ModelState
-                    ModelState.AddModelError("CheckOutDate", "Check-out date must be after the check-in date.");
-
-                    // Define as datas no modelo para que o utilizador as veja nos campos
-                    model.CheckInDate = checkInDate.Value;
-                    model.CheckOutDate = checkOutDate.Value;
-
-                    // Retorna a View imediatamente, sem pesquisar quartos. O erro será mostrado.
-                    return View(model);
-                }
+                model.Guests = await GetGuestListItems();
             }
 
-            // Se um roomId foi passado, pré-seleciona-o
-            if (roomId.HasValue)
+            if (checkInDate.HasValue && checkOutDate.HasValue)
             {
+                ViewBag.TriedSearch = true;
+
+                if (checkOutDate.Value <= checkInDate.Value)
+                {
+                    ModelState.AddModelError("CheckOutDate", "Check-out date must be after the check-in date.");
+                    model.CheckInDate = checkInDate.Value;
+                    model.CheckOutDate = checkOutDate.Value;
+                    return View(model);
+                }
+
+                var availableRooms = await _roomRepo.GetAvailableRoomsAsync(checkInDate.Value, checkOutDate.Value);
+                model.Rooms = availableRooms.Select(r => new SelectListItem
+                {
+                    Text = $"Room {r.RoomNumber} ({r.Type}) - {r.PricePerNight:C}",
+                    Value = r.Id.ToString()
+                });
+
+                model.CheckInDate = checkInDate.Value;
+                model.CheckOutDate = checkOutDate.Value;
+            }
+            else if (roomId.HasValue)
+            {
+                ViewBag.TriedSearch = true;
                 model.RoomId = roomId.Value;
                 var selectedRoom = await _roomRepo.GetByIdAsync(roomId.Value);
                 if (selectedRoom != null)
@@ -175,40 +186,16 @@ namespace HotelWebApp.Controllers
                 new SelectListItem { Text = $"Room {selectedRoom.RoomNumber} ({selectedRoom.Type}) - {selectedRoom.PricePerNight:C}", Value = selectedRoom.Id.ToString() }
             };
                 }
+                model.CheckInDate = DateTime.Today.AddDays(1);
+                model.CheckOutDate = DateTime.Today.AddDays(2);
             }
-            // Se não há quarto, mas há datas, pesquisa os quartos disponíveis
-            else if (checkInDate.HasValue && checkOutDate.HasValue)
+            else
             {
-                var availableRooms = await _roomRepo.GetAvailableRoomsAsync(checkInDate.Value, checkOutDate.Value);
-                model.Rooms = availableRooms.Select(r => new SelectListItem
-                {
-                    Text = $"Room {r.RoomNumber} ({r.Type}) - {r.PricePerNight:C}",
-                    Value = r.Id.ToString()
-                });
+                model.CheckInDate = DateTime.Today.AddDays(1);
+                model.CheckOutDate = DateTime.Today.AddDays(2);
             }
 
-            // Se for funcionário, carrega a lista de hóspedes e a lista completa de quartos se necessário
-            if (User.IsInRole("Employee"))
-            {
-                model.Guests = await GetGuestListItems();
-                if (model.Rooms == null || !model.Rooms.Any())
-                {
-                    model.Rooms = await GetRoomListItems();
-                }
-            }
-
-            // Define as datas (as que vieram do URL ou as padrão)
-            model.CheckInDate = checkInDate ?? DateTime.Today.AddDays(1);
-            model.CheckOutDate = checkOutDate ?? DateTime.Today.AddDays(2);
-
-            // Preserva o 'source'
             ViewBag.Source = source;
-
-            if (model.CheckInDate > DateTime.MinValue)
-            {
-                ViewBag.TriedSearch = true;
-            }
-
             return View(model);
         }
 
@@ -234,7 +221,7 @@ namespace HotelWebApp.Controllers
 
             if (!ModelState.IsValid)
             {
-                // Se a validação falhar, precisamos de recarregar as listas para a dropdown
+
                 if (model.RoomId > 0 && (model.Rooms == null || !model.Rooms.Any()))
                 {
                     // recarrega os dados do quarto pré-selecionado
@@ -243,7 +230,6 @@ namespace HotelWebApp.Controllers
                 {
                     model.Rooms = await GetRoomListItems();
                 }
-                // Os Guests para o Employee precisam sempre de ser recarregados
                 if (User.IsInRole("Employee")) model.Guests = await GetGuestListItems();
 
                 return View(model);
@@ -265,13 +251,12 @@ namespace HotelWebApp.Controllers
                 }
             }
 
-            // Recarrega os dados necessários para a View.
             if (User.IsInRole("Employee"))
             {
                 model.Rooms = await GetRoomListItems();
                 model.Guests = await GetGuestListItems();
             }
-            else // Guest
+            else 
             {
                 if (model.CheckInDate > DateTime.MinValue && model.CheckOutDate > model.CheckInDate)
                 {

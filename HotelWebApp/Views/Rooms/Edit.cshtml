@@ -5,16 +5,14 @@
     ViewData["Title"] = "Edit Room";
 }
 
-<h1>Edit Room</h1>
-
+<h1>@ViewData["Title"]</h1>
 <h4>Room: @Model.RoomNumber</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
+    @* Coluna para o formulário de edição *@
+    <div class="col-md-6">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-            @* Campo escondido para manter o ID do quarto durante o post *@
             <input type="hidden" asp-for="Id" />
 
             <div class="form-group mb-3">
@@ -24,8 +22,7 @@
             </div>
             <div class="form-group mb-3">
                 <label asp-for="Type" class="control-label"></label>
-                <select asp-for="Type" class="form-control"
-                        asp-items="Html.GetEnumSelectList<RoomType>()">
+                <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<RoomType>()">
                     <option value="">-- Select --</option>
                 </select>
                 <span asp-validation-for="Type" class="text-danger"></span>
@@ -42,17 +39,37 @@
             </div>
             <div class="form-group mb-3">
                 <label asp-for="Status" class="control-label"></label>
-                <select asp-for="Status" class="form-control"
-                        asp-items="Html.GetEnumSelectList<RoomStatus>()">
+                <select asp-for="Status" class="form-control" asp-items="Html.GetEnumSelectList<RoomStatus>()">
                     <option value="">-- Select --</option>
                 </select>
                 <span asp-validation-for="Status" class="text-danger"></span>
             </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="ImageFile" class="control-label"></label>
+                <input asp-for="ImageFile" class="form-control" type="file" accept=".jpg,.jpeg,.png" />
+                <span asp-validation-for="ImageFile" class="text-danger"></span>
+            </div>
+
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Save Changes" class="btn btn-primary" />
                 <a asp-action="Index" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
+    </div>
+
+    @* Coluna para mostrar a imagem atual *@
+    <div class="col-md-6">
+        <h5>Current Image</h5>
+        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+        {
+            <img src="~/images/rooms/@Model.ImageUrl" class="img-fluid rounded shadow-sm"
+                 alt="Current image of room @Model.RoomNumber" asp-append-version="true" />
+        }
+        else
+        {
+            <div class="alert alert-info">No image has been uploaded for this room yet.</div>
+        }
     </div>
 </div>
 

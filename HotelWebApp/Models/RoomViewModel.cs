@@ -30,5 +30,12 @@ namespace HotelWebApp.Models
         [Display(Name = "Room Status")]
         public RoomStatus? Status { get; set; }
 
+        // Propriedade para mpstrar a imagem atual
+        public string? ImageUrl { get; set; }
+
+        // Propriedade para receber o novo ficheiro de imagem
+        [Display(Name = "Room Image")]
+        public IFormFile? ImageFile { get; set; }
+
     }
 }

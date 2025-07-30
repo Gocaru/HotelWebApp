@@ -12,7 +12,6 @@ namespace HotelWebApp.Data.Repositories
             _context = context;
         }
 
-
         public async Task<List<Room>> GetAllAsync()
         {
             return await _context.Rooms.ToListAsync();
@@ -53,25 +52,25 @@ namespace HotelWebApp.Data.Repositories
 
         public async Task<IEnumerable<Room>> GetAvailableRoomsAsync(DateTime checkIn, DateTime checkOut)
         {
-            // Definir os estados de reserva que "ocupam" um quarto
+            var checkInDateOnly = checkIn.Date;
+            var checkOutDateOnly = checkOut.Date;
+
             var blockingStatuses = new[]
             {
                 ReservationStatus.Confirmed,
                 ReservationStatus.CheckedIn
             };
 
-            // Encontrar todos os IDs de quartos que estão ocupados no período desejado
             var unavailableRoomIds = await _context.Reservations
-                .Where(r => blockingStatuses.Contains(r.Status) &&  // Apenas reservas que bloqueiam o quarto
-                            r.CheckInDate < checkOut &&             // A reserva começa antes do fim da nossa estadia
-                            r.CheckOutDate > checkIn)               // E termina depois do início da nossa estadia
+                .Where(r => blockingStatuses.Contains(r.Status) &&
+                            r.CheckInDate.Date < checkOutDateOnly &&
+                            r.CheckOutDate > checkIn)
                 .Select(r => r.RoomId)
                 .Distinct()
                 .ToListAsync();
 
-            // Retornar todos os quartos que não estão em manutenção e não estão na lista de indisponíveis
             return await _context.Rooms
-                .Where(r => r.Status != RoomStatus.Maintenance && // Também exclui quartos em manutenção
+                .Where(r => r.Status != RoomStatus.Maintenance &&
                              !unavailableRoomIds.Contains(r.Id))
                 .OrderBy(r => r.RoomNumber)
                 .ToListAsync();
