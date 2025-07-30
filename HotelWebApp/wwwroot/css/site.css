@@ -18,5 +18,36 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+    padding-top: 70px;
+    margin-bottom: 60px;
+    background-color: #f8f9fa
+}
+
+/* Estilos para a secção Hero da Homepage */
+.hero-section {
+    position: relative;
+    height: 70vh; /* Ocupa 70% da altura do ecrã */
+    background-image: url('../images/hero-background.jpg');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5); /* Overlay escuro para a legibilidade do texto */
+    }
+
+.hero-content {
+    position: relative; /* Para ficar por cima do overlay */
+    z-index: 2;
 }

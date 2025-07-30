@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@using HotelWebApp.Data.Entities
+@inject SignInManager<ApplicationUser> SignInManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -15,68 +19,70 @@
     <script src="https://cdn.syncfusion.com/ej2/29.1.33/dist/ej2.min.js"></script>
 
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
+
+
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">HotelWebApp</a>
+                <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-hotel me-2"></i>HotelWebApp
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Rooms" asp-action="Index">Rooms</a>
-                            </li>
+                <div class="navbar-collapse collapse d-lg-inline-flex justify-content-between">
 
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Amenities" asp-action="Index">Amenities</a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="UserManagement" asp-action="Index">Manage Employees</a>
-                            </li>
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        @if (SignInManager.IsSignedIn(User))
+                        { 
+                            <!-- Links que só aparecem para utilizadores logados, dependendo do seu perfil -->
+                            @if (User.IsInRole("Admin"))
+                            {
+                            }
+                            @if (User.IsInRole("Employee"))
+                            {
+                                <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Reservations" asp-action="Index">Reservations</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Reservations" asp-action="Schedule">Schedule</a></li>
+                            }
+                            @if (User.IsInRole("Guest"))
+                            {
+                                <li class="nav-item"><a class="nav-link" asp-controller="Rooms" asp-action="Index">Our Rooms</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Reservations" asp-action="MyReservations">My Reservations</a></li>
+                            }
                         }
-                        @if (User.IsInRole("Employee"))
+                        else
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Reservations" asp-action="Index">Reservations Management</a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Reservations" asp-action="Schedule">Schedule</a>
-                            </li>
-                        }
-
-                        @if (User.IsInRole("Guest"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Reservations" asp-action="MyReservations">My Reservations</a>
-                            </li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Home</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Rooms" asp-action="Index">Our Rooms</a></li>
                         }
                     </ul>
-                    <partial name="_LoginPartial"/>
+
+                    <partial name="_LoginPartial" />
+
                 </div>
             </div>
         </nav>
     </header>
+
+
+
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer text-muted bg-white mt-auto py-3">
         <div class="container">
-            &copy; 2025 - HotelWebApp - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            © 2025 - HotelWebApp - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+
+
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
