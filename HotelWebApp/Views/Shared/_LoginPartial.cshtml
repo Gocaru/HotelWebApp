@@ -12,13 +12,11 @@
         ? $"~/images/profiles/{user.ProfilePictureUrl}"
         : "~/images/profiles/default.png";
 
-        // Mover o link "Manage" e o botão "Logout" para o mesmo <li> para melhor alinhamento
         <li class="nav-item d-flex align-items-center">
 
             <a id="manage" class="nav-link text-dark d-flex align-items-center" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
                 <img src="@Url.Content(photoPath)" class="rounded-circle me-2" style="width:40px; height:40px; object-fit:cover;" asp-append-version="true" />
 
-                @* Usar uma classe para esconder o nome em ecrãs pequenos se necessário *@
                 <span class="d-none d-sm-inline">Hello @(user?.FullName ?? user?.UserName)!</span>
             </a>
 

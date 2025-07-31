@@ -41,7 +41,6 @@
                         </div>
 
                         @{
-                            // Separar a string de detalhes nas suas partes constituintes
                             var detailsParts = request.RequestDetails.Split(new[] { " ||| " }, StringSplitOptions.RemoveEmptyEntries);
                             var serviceRequestPart = detailsParts.FirstOrDefault(p => p.StartsWith("[SERVICE]"));
                             var textRequestPart = detailsParts.FirstOrDefault(p => !p.StartsWith("[SERVICE]"));
@@ -49,14 +48,12 @@
 
                         @if (!string.IsNullOrEmpty(serviceRequestPart))
                         {
-                            // Formata o pedido de serviço de forma amigável
                             var serviceInfo = serviceRequestPart.Replace("[SERVICE] ", "");
                             <p class="mb-1 mt-2"><strong>Service Request:</strong> <em>@serviceInfo</em></p>
                         }
 
                         @if (!string.IsNullOrEmpty(textRequestPart))
                         {
-                            // Mostra o pedido de texto livre
                             <p class="mb-1 mt-2"><strong>Your Message:</strong> <em>"@textRequestPart"</em></p>
                         }
 
@@ -75,7 +72,6 @@
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
             <input type="hidden" asp-for="ReservationId" />
 
-            @* Secção para adicionar um serviço *@
             <div class="card shadow-sm mb-4">
                 <div class="card-header">
                     <h4>Add a Service</h4>
@@ -97,7 +93,6 @@
                 </div>
             </div>
 
-            @* Secção para outros pedidos *@
             <div class="card shadow-sm">
                 <div class="card-header">
                     <h4>Other Requests</h4>
@@ -111,7 +106,6 @@
                 </div>
             </div>
 
-            @* Botões de Ação *@
             <div class="form-group mt-4">
                 <button type="submit" class="btn btn-primary">Submit Request</button>
                 <a asp-action="MyReservations" class="btn btn-secondary">Cancel</a>

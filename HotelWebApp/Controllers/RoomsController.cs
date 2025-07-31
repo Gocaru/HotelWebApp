@@ -7,6 +7,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace HotelWebApp.Controllers
 {
+    /// <summary>
+    /// Manages the display and administration of hotel rooms.
+    /// Public actions allow anonymous users to view rooms, while protected actions are for Admins.
+    /// </summary>
     public class RoomsController : Controller
     {
         private readonly IRoomRepository _roomRepository;
@@ -23,6 +27,9 @@ namespace HotelWebApp.Controllers
         }
 
         // GET: RoomsController
+        /// <summary>
+        /// Displays a public list of all hotel rooms.
+        /// </summary>
         [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
@@ -31,6 +38,9 @@ namespace HotelWebApp.Controllers
         }
 
         // GET: RoomsController/Details/5
+        /// <summary>
+        /// Displays the public details of a specific room.
+        /// </summary>
         [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
@@ -40,6 +50,9 @@ namespace HotelWebApp.Controllers
         }
 
         // GET: RoomsController/Create
+        /// <summary>
+        /// Displays the form for an Admin to create a new room.
+        /// </summary>
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
@@ -49,13 +62,22 @@ namespace HotelWebApp.Controllers
         }
 
         // POST: RoomsController/Create
+        /// <summary>
+        /// Handles the creation of a new room, including the image upload.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(RoomViewModel viewModel)
         {
+            if (await _roomRepository.RoomNumberExistsAsync(viewModel.RoomNumber))
+            {
+                ModelState.AddModelError("RoomNumber", "A room with this number already exists.");
+            }
+
             if (ModelState.IsValid)
             {
+                // Process and save the uploaded image file, getting its unique name.
                 string uniqueFileName = await ProcessUploadedFile(viewModel);
 
                 var room = new Room
@@ -65,7 +87,7 @@ namespace HotelWebApp.Controllers
                     PricePerNight = viewModel.PricePerNight,
                     Type = viewModel.Type.Value,
                     Status = viewModel.Status.Value,
-                    ImageUrl = uniqueFileName // Atribuir o nome do ficheiro guardado
+                    ImageUrl = uniqueFileName 
                 };
 
                 await _roomRepository.AddAsync(room);
@@ -78,6 +100,10 @@ namespace HotelWebApp.Controllers
         }
 
         // GET: RoomsController/Edit/5
+        /// <summary>
+        /// Displays the form for an Admin to edit an existing room.
+        /// Prevents editing if the room has active or future reservations.
+        /// </summary>
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
@@ -88,10 +114,8 @@ namespace HotelWebApp.Controllers
                 return NotFound();
             }
 
-            // Verifica se o quarto tem reservas futuras ou ativas.
             bool hasActiveOrFutureReservations = await _reservationRepository.HasFutureReservationsAsync(id);
 
-            // Se tiver, bloquear a edição e informar o admin.
             if (hasActiveOrFutureReservations)
             {
                 TempData["ErrorMessage"] = $"The Room '{roomToEdit.RoomNumber}' cannot be edited because it has active or future reservations.";
@@ -114,6 +138,9 @@ namespace HotelWebApp.Controllers
         }
 
         // POST: RoomsController/Edit/5
+        /// <summary>
+        /// Handles the update of a room's details, including replacing the image if a new one is provided.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
@@ -121,21 +148,22 @@ namespace HotelWebApp.Controllers
         {
             if (id != viewModel.Id) return NotFound();
 
-            // Passamos o ModelState para a action POST Create.
+            if (await _roomRepository.RoomNumberExistsAsync(viewModel.RoomNumber, viewModel.Id))
+            {
+                ModelState.AddModelError("RoomNumber", "Another room with this number already exists.");
+            }
+
             if (!ModelState.IsValid)
             {
                 PopulateDropdowns();
                 return View(viewModel);
             }
 
-            // Obter o quarto existente da base de dados
             var room = await _roomRepository.GetByIdAsync(id);
             if (room == null) return NotFound();
 
-            // Se um novo ficheiro de imagem foi enviado, processa-o
             if (viewModel.ImageFile != null)
             {
-                // Se já existia uma imagem antiga, apaga-a do disco
                 if (!string.IsNullOrEmpty(room.ImageUrl))
                 {
                     string oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, "images/rooms", room.ImageUrl);
@@ -145,11 +173,9 @@ namespace HotelWebApp.Controllers
                     }
                 }
 
-                // Guarda o novo ficheiro e obtém o seu nome único
                 room.ImageUrl = await ProcessUploadedFile(viewModel);
             }
 
-            // Atualiza as outras propriedades do quarto
             room.RoomNumber = viewModel.RoomNumber;
             room.Capacity = viewModel.Capacity;
             room.PricePerNight = viewModel.PricePerNight;
@@ -162,6 +188,9 @@ namespace HotelWebApp.Controllers
         }
 
         // GET: RoomsController/Delete/5
+        /// <summary>
+        /// Displays the confirmation page before deleting a room.
+        /// </summary>
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -171,23 +200,24 @@ namespace HotelWebApp.Controllers
         }
 
         // POST: RoomsController/Delete/5
+        /// <summary>
+        /// Deletes a room after confirmation.
+        /// Prevents deletion if the room has any future reservations.
+        /// </summary>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            // Business rule: A room with scheduled future bookings cannot be deleted.
             bool hasFutureReservations = await _reservationRepository.HasFutureReservationsAsync(id);
 
-            // Se tiver, bloquear a exclusão e informar o admin.
             if (hasFutureReservations)
             {
-                // Pega os detalhes do quarto para usar na mensagem de erro.
                 var room = await _roomRepository.GetByIdAsync(id);
 
-                // Adiciona uma mensagem de erro clara ao TempData para ser exibida na página Index.
                 TempData["ErrorMessage"] = $"The Room '{room?.RoomNumber}' cannot be deleted because it has future reservations scheduled.";
 
-                // Redireciona de volta para a lista de quartos.
                 return RedirectToAction(nameof(Index));
             }
 
@@ -198,6 +228,9 @@ namespace HotelWebApp.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>
+        /// A private helper method to populate dropdown lists for the Create/Edit views.
+        /// </summary>
         [Authorize(Roles = "Admin")]
         private void PopulateDropdowns()
         {
@@ -205,26 +238,32 @@ namespace HotelWebApp.Controllers
             ViewBag.RoomStatuses = Enum.GetValues(typeof(RoomStatus));
         }
 
+        /// <summary>
+        /// Displays a list of rooms that are available for a specific date range,
+        /// based on a search from the homepage.
+        /// </summary>
         [AllowAnonymous]
         public async Task<IActionResult> SearchResults(DateTime checkInDate, DateTime checkOutDate)
         {
             if (checkOutDate <= checkInDate)
             {
-                // Redirecionar de volta para a Home com uma mensagem de erro
                 TempData["ErrorMessage"] = "Check-out date must be after the check-in date.";
                 return RedirectToAction("Index", "Home");
             }
 
-            // Usar o repositório para encontrar os quartos disponíveis
             var availableRooms = await _roomRepository.GetAvailableRoomsAsync(checkInDate, checkOutDate);
 
-            // Passar as datas para a View para que elas possam ser mostradas
             ViewBag.CheckInDate = checkInDate;
             ViewBag.CheckOutDate = checkOutDate;
 
             return View(availableRooms);
         }
 
+        /// <summary>
+        /// A private helper method to process and save an uploaded room image.
+        /// </summary>
+        /// <param name="viewModel">The view model containing the IFormFile.</param>
+        /// <returns>The unique file name of the saved image, or null if no file was uploaded.</returns>
         private async Task<string> ProcessUploadedFile(RoomViewModel viewModel)
         {
             string uniqueFileName = null;

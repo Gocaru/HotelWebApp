@@ -7,6 +7,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HotelWebApp.Services
 {
+    /// <summary>
+    /// Implements the IReservationService interface, providing the core business logic
+    /// for managing the entire lifecycle of a reservation.
+    /// </summary>
     public class ReservationService : IReservationService
     {
         private readonly HotelWebAppContext _context;
@@ -14,23 +18,27 @@ namespace HotelWebApp.Services
         private readonly IAmenityRepository _amenityRepo;
         private readonly IRoomRepository _roomRepo;
         private readonly IEmailSender _emailSender;
+        private readonly IPaymentService _paymentService;
 
-        public ReservationService(HotelWebAppContext context, IReservationRepository reservationRepo, IRoomRepository roomRepo, IEmailSender emailSender, IAmenityRepository amenityRepo)
+        public ReservationService(HotelWebAppContext context, IReservationRepository reservationRepo, IRoomRepository roomRepo, IEmailSender emailSender, IAmenityRepository amenityRepo, IPaymentService paymentService)
         {
             _context = context;
             _reservationRepo = reservationRepo;
             _roomRepo = roomRepo;
             _emailSender = emailSender;
             _amenityRepo = amenityRepo;
+            _paymentService = paymentService;
         }
 
         public async Task<Result> CreateReservationAsync(ReservationViewModel model, string guestId)
         {
+            // --- Business Rule Validations ---
             if (model.CheckOutDate <= model.CheckInDate)
                 return Result.Failure("Check-out date must be after the check-in date.");
 
-            var checkInWithTime = new DateTime(model.CheckInDate.Year, model.CheckInDate.Month, model.CheckInDate.Day, 12, 0, 0);
-            var checkOutWithTime = new DateTime(model.CheckOutDate.Year, model.CheckOutDate.Month, model.CheckOutDate.Day, 11, 0, 0);
+            // Define standard check-in/out times for consistency.
+            var checkInWithTime = new DateTime(model.CheckInDate.Year, model.CheckInDate.Month, model.CheckInDate.Day, 12, 0, 0); // Check-in at 12:00 PM
+            var checkOutWithTime = new DateTime(model.CheckOutDate.Year, model.CheckOutDate.Month, model.CheckOutDate.Day, 11, 0, 0); // Check-out at 11:00 AM
 
             if (!await _reservationRepo.IsRoomAvailableAsync(model.RoomId, checkInWithTime, checkOutWithTime, null))
                 return Result.Failure("This room is not available for the selected dates.");
@@ -40,6 +48,7 @@ namespace HotelWebApp.Services
 
             if (model.NumberOfGuests > room.Capacity)
                 return Result.Failure($"The selected room only accommodates up to {room.Capacity} guests.");
+            // --- End of Validations ---
 
             var numberOfNights = (checkOutWithTime.Date - checkInWithTime.Date).Days;
 
@@ -51,11 +60,13 @@ namespace HotelWebApp.Services
                 CheckOutDate = checkOutWithTime,
                 NumberOfGuests = model.NumberOfGuests,
                 Status = ReservationStatus.Confirmed,
+                // The initial total price is based on the room cost only. Amenities are added later.
                 TotalPrice = numberOfNights * room.PricePerNight
             };
 
             await _reservationRepo.CreateAsync(reservation);
 
+            // Update the room's status to Reserved to block it for other bookings.
             room.Status = RoomStatus.Reserved;
             await _roomRepo.UpdateAsync(room);
 
@@ -64,7 +75,6 @@ namespace HotelWebApp.Services
 
         public async Task<Result> UpdateReservationAsync(int reservationId, ReservationViewModel model)
         {
-            // Carrega a reserva com todos os detalhes necessários (incluindo o quarto)
             var reservation = await _reservationRepo.GetByIdWithDetailsAsync(reservationId);
             if (reservation == null) return Result.Failure("Reservation not found.");
 
@@ -74,11 +84,8 @@ namespace HotelWebApp.Services
 
             if (oldStatus != newStatus)
             {
-                // O utilizador está a tentar mudar o estado da reserva.
-
                 if (newStatus == ReservationStatus.Cancelled)
                 {
-                    // Cancelar uma Reserva
                     if (oldStatus != ReservationStatus.Confirmed)
                     {
                         return Result.Failure($"Only 'Confirmed' reservations can be cancelled via this form.");
@@ -90,8 +97,7 @@ namespace HotelWebApp.Services
 
                 if (oldStatus == ReservationStatus.Cancelled && newStatus == ReservationStatus.Confirmed)
                 {
-                    // Reativar uma Reserva Cancelada
-                    // garantir que o quarto ainda está disponível.
+
                     if (!await _reservationRepo.IsRoomAvailableAsync(reservation.RoomId, reservation.CheckInDate, reservation.CheckOutDate, reservationId))
                     {
                         return Result.Failure("The room is no longer available to reactivate this reservation.");
@@ -111,15 +117,14 @@ namespace HotelWebApp.Services
             }
 
 
-            // o estado não mudou, então é uma edição dos dados da reserva.
             switch (reservation.Status)
             {
                 case ReservationStatus.Confirmed:
                 case ReservationStatus.CheckedIn:
-                    // Permite a edição nestes estados, com regras específicas abaixo.
+
                     break;
                 default:
-                    // Não permite edição em outros estados como 'Cancelled' ou 'CheckedOut'.
+
                     return Result.Failure($"Cannot edit a reservation with status '{reservation.Status}'.");
             }
 
@@ -131,7 +136,6 @@ namespace HotelWebApp.Services
             var checkInWithTime = new DateTime(model.CheckInDate.Year, model.CheckInDate.Month, model.CheckInDate.Day, 12, 0, 0);
             var checkOutWithTime = new DateTime(model.CheckOutDate.Year, model.CheckOutDate.Month, model.CheckOutDate.Day, 11, 0, 0);
 
-            // Validação específica para o estado CheckedIn
             if (reservation.Status == ReservationStatus.CheckedIn && (reservation.CheckInDate.Date != checkInWithTime.Date || reservation.RoomId != model.RoomId))
             {
                 return Result.Failure("Cannot change check-in date or room for a reservation that is already checked-in.");
@@ -142,7 +146,7 @@ namespace HotelWebApp.Services
                 return Result.Failure("This room is not available for the selected dates.");
             }
 
-            // liberta o quarto antigo, se o quarto for alterado.
+
             if (reservation.RoomId != model.RoomId)
             {
                 var oldRoom = await _roomRepo.GetByIdAsync(reservation.RoomId);
@@ -156,7 +160,7 @@ namespace HotelWebApp.Services
             var newRoom = await _roomRepo.GetByIdAsync(model.RoomId);
             if (newRoom == null) return Result.Failure("New room not found.");
 
-            // Atualiza os dados da reserva
+
             var numberOfNights = (checkOutWithTime.Date - checkInWithTime.Date).Days;
             reservation.GuestId = model.GuestId;
             reservation.RoomId = model.RoomId;
@@ -164,11 +168,11 @@ namespace HotelWebApp.Services
             reservation.CheckOutDate = checkOutWithTime;
             reservation.NumberOfGuests = model.NumberOfGuests;
             reservation.TotalPrice = numberOfNights * newRoom.PricePerNight;
-            // O Status não é alterado aqui porque estamos no fluxo de "edição normal".
+
 
             await _reservationRepo.UpdateAsync(reservation);
 
-            // Se o quarto mudou, o novo quarto deve ser marcado como reservado.
+
             if (reservation.RoomId != model.RoomId)
             {
                 newRoom.Status = RoomStatus.Reserved;
@@ -216,22 +220,24 @@ namespace HotelWebApp.Services
             var reservation = await _reservationRepo.GetByIdWithDetailsAsync(reservationId);
             if (reservation == null) return Result.Failure("Reservation not found.");
 
-            // Regra de negócio: um funcionário pode cancelar uma reserva confirmada a qualquer momento antes do check-in.
+
             if (reservation.Status != ReservationStatus.Confirmed)
                 return Result.Failure("Only 'Confirmed' reservations can be cancelled.");
 
-            // Um funcionário pode ter permissão para cancelar no próprio dia.
+
             if (reservation.CheckInDate.Date <= DateTime.Today.Date)
                 return Result.Failure("This reservation cannot be cancelled on or after the check-in date via this system.");
 
-            // Guarda os detalhes do email ANTES de a reserva ser alterada.
+
             string guestEmail = reservation.ApplicationUser.Email;
             string guestName = reservation.ApplicationUser.FullName;
             string checkInDate = reservation.CheckInDate.ToShortDateString();
             string roomNumber = reservation.Room.RoomNumber;
 
+            // Encapsulate the actual cancellation logic in a private method to avoid code duplication.
             await CancelReservationLogic(reservation);
 
+            // Try to send a notification email to the guest.
             try
             {
                 var subject = "Reservation Cancellation Confirmation";
@@ -255,8 +261,7 @@ namespace HotelWebApp.Services
             }
             catch (Exception ex)
             {
-                // A reserva foi cancelada, mas o email falhou. Retornamos um SUCESSO com AVISO.
-                // A mensagem de aviso informa o funcionário sobre o problema.
+                // If the email fails, the operation is still a success, but with a warning.
                 return Result.SuccessWithWarning(
                     $"The reservation was cancelled successfully, but the notification email to '{guestEmail}' could not be sent. Please verify the email address. Error: {ex.Message}");
             }
@@ -269,7 +274,6 @@ namespace HotelWebApp.Services
             var reservation = await _reservationRepo.GetByIdWithDetailsAsync(reservationId);
             if (reservation == null) return Result.Failure("Reservation not found.");
 
-            // Segurança: Garante que o hóspede só cancela as suas próprias reservas.
             if (reservation.GuestId != guestId)
                 return Result.Failure("Unauthorized to cancel this reservation.");
 
@@ -279,12 +283,14 @@ namespace HotelWebApp.Services
             if (reservation.CheckInDate.Date <= DateTime.Today.Date)
                 return Result.Failure("Reservations cannot be cancelled on or after the check-in date.");
 
+            // Re-use the same cancellation logic.
             await CancelReservationLogic(reservation);
             return Result.Success();
         }
 
         /// <summary>
-        /// Método privado para conter a lógica de cancelamento partilhada, evitando duplicação de código.
+        /// Private helper method to contain the shared logic for cancelling a reservation.
+        /// This avoids code duplication between guest-initiated and employee-initiated cancellations.
         /// </summary>
         private async Task CancelReservationLogic(Reservation reservation)
         {
@@ -315,20 +321,22 @@ namespace HotelWebApp.Services
                 return Result.Failure("Amenity not found."); 
             }
 
-            // Criar a nova entidade de junção
+            // Create the join entity instance.
             var reservationAmenity = new ReservationAmenity
             {
                 ReservationId = reservation.Id,
                 AmenityId = amenity.Id,
                 Quantity = quantity,
+                // Store the price at the time of booking for historical accuracy.
                 PriceAtTimeOfBooking = amenity.Price,
                 DateAdded = DateTime.UtcNow
             };
 
             reservation.ReservationAmenities.Add(reservationAmenity);
 
-            // Recalcula o preço total da reserva
             decimal amenityCost = amenity.Price * quantity;
+
+            // Recalculate the total price of the reservation.
             reservation.TotalPrice += amenityCost;
 
             try
@@ -338,7 +346,6 @@ namespace HotelWebApp.Services
             }
             catch (DbUpdateException ex)
             {
-                // TODO: Log do erro 'ex'
                 return Result.Failure("An error occurred while saving to the database.");
             }
         }
@@ -357,7 +364,6 @@ namespace HotelWebApp.Services
                 return Result.Failure("Amenity link not found for this reservation.");
             }
 
-            // Subtrai o custo da amenity do preço total
             decimal amenityCost = reservationAmenity.PriceAtTimeOfBooking * reservationAmenity.Quantity;
             reservation.TotalPrice -= amenityCost;
 
@@ -381,7 +387,7 @@ namespace HotelWebApp.Services
                 var today = DateTime.Today;
 
                 var reservationsToUpdate = await _context.Reservations
-                    .Include(r => r.Room) 
+                    .Include(r => r.Room)
                     .Where(r => r.Status == ReservationStatus.Confirmed && r.CheckInDate.Date < today)
                     .ToListAsync();
 
@@ -398,6 +404,8 @@ namespace HotelWebApp.Services
                     {
                         reservation.Room.Status = RoomStatus.Available;
                     }
+
+                    await _paymentService.CreateInvoiceForNoShowAsync(reservation.Id);
                 }
 
                 await _context.SaveChangesAsync();

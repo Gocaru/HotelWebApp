@@ -189,12 +189,8 @@ namespace HotelWebApp.Data.Repositories
         /// <returns>True if there are future reservations; otherwise, false.</returns>
         public async Task<bool> HasFutureReservationsAsync(int roomId)
         {
-            // A data de hoje, ignorando a hora, para uma comparação segura.
             var today = DateTime.Today;
 
-            // A consulta procura por qualquer reserva para o quarto especificado que:
-            // 1. Não esteja cancelada.
-            // 2. Tenha uma data de check-in a partir de hoje.
             return await _context.Reservations
                 .AnyAsync(r => r.RoomId == roomId &&
                                r.Status != ReservationStatus.Cancelled &&

@@ -5,50 +5,73 @@
     ViewData["Title"] = "Reservations Management";
 }
 
-<h1>@ViewData["Title"]</h1>
-
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-0">@ViewData["Title"]</h1>
+            <p class="text-muted">View, create, and manage all hotel reservations.</p>
+        </div>
+    </div>
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
 }
 @if (TempData["ErrorMessage"] != null)
 {
-    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
 }
 
-<!-- PASSO 1: DEFINIÇÃO DOS TEMPLATES FORA DO GRID -->
 <script id="statusTemplate" type="text/x-template">
-    <span class="badge ${StatusBadgeClass}">${StatusText}</span>
+        ${if(IsOverdue)}
+            <span class="badge bg-danger">Overdue</span>
+        ${else}
+            <span class="badge ${StatusBadgeClass}">${StatusText}</span>
+        ${/if}
 </script>
 
-<script id="actionsTemplate" type="text/x-template">
-    <div>
-        ${if(CanCheckIn)}
-            <form action="/Reservations/CheckIn/${Id}" method="post" class="d-inline">
-                @Html.AntiForgeryToken()
-                <button type="submit" class="btn btn-success btn-sm" title="Check-in"><i class="fas fa-sign-in-alt"></i></button>
-            </form>
-        ${/if}
+    <script id="actionsTemplate" type="text/x-template">
+        <div>
+            ${if(CanCheckIn)}
+                <form action="/Reservations/CheckIn/${Id}" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-success btn-sm" title="Check-in"><i class="fas fa-sign-in-alt"></i></button>
+                </form>
+            ${/if}
 
-        ${if(CanCheckOut)}
-            <form action="/Reservations/CheckOut/${Id}" method="post" class="d-inline">
-                @Html.AntiForgeryToken()
-                <button type="submit" class="btn btn-primary btn-sm" title="Check-out"><i class="fas fa-sign-out-alt"></i></button>
-            </form>
-        ${/if}
+            ${if(CanCheckOut)}
+                <form action="/Reservations/CheckOut/${Id}" method="post" class="d-inline">
+                     @Html.AntiForgeryToken()
+                    ${if(IsOverdue)}
+                        <button type="submit" class="btn btn-danger btn-sm" title="Process Overdue Check-out">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </button>
+                    ${else}
+                        <button type="submit" class="btn btn-primary btn-sm" title="Check-out">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    ${/if}
+                </form>
+            ${/if}
 
-        ${if(CanEdit)}
-            <a href="/Reservations/Edit/${Id}" class="btn btn-warning btn-sm" title="Edit"><i class="fas fa-edit"></i></a>
-        ${/if}
+            ${if(StatusText == 'CheckedOut' || StatusText == 'Completed' || StatusText == 'NoShow')}
+                <a href="/Invoices/Details?reservationId=${Id}" class="btn btn-secondary btn-sm" title="View Invoice">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </a>
+            ${/if}
 
-        <a href="/Reservations/Details/${Id}" class="btn btn-info btn-sm" title="Details"><i class="fas fa-info-circle"></i></a>
+            ${if(CanEdit)}
+                <a href="/Reservations/Edit/${Id}" class="btn btn-warning btn-sm" title="Edit"><i class="fas fa-edit"></i></a>
+            ${/if}
 
-        ${if(CanDelete)}
-            <a href="/Reservations/Delete/${Id}" class="btn btn-danger btn-sm" title="Delete"><i class="fas fa-trash"></i></a>
-        ${/if}
-    </div>
-</script>
+            <a href="/Reservations/Details/${Id}" class="btn btn-info btn-sm" title="Details"><i class="fas fa-info-circle"></i></a>
+
+            ${if(CanDelete)}
+                <a href="/Reservations/Delete/${Id}" class="btn btn-danger btn-sm" title="Delete"><i class="fas fa-trash"></i></a>
+            ${/if}
+        </div>
+    </script>
+
 
 <div class="alert alert-light border-0 shadow-sm mb-3">
     <h6 class="alert-heading"><i class="fas fa-info-circle"></i> Actions Legend</h6>
@@ -59,10 +82,10 @@
         <span class="me-4"><button class="btn btn-sm btn-warning disabled"><i class="fas fa-edit"></i></button> Edit</span>
         <span class="me-4"><button class="btn btn-sm btn-info disabled"><i class="fas fa-info-circle"></i></button> Details</span>
         <span class="me-4"><button class="btn btn-sm btn-danger disabled"><i class="fas fa-trash"></i></button> Delete</span>
+        <span class="me-4"><button class="btn btn-sm btn-secondary disabled"><i class="fas fa-file-invoice-dollar"></i></button> View Invoice</span>
     </div>
 </div>
 
-<!-- PASSO 2: O GRID QUE USA OS TEMPLATES POR ID -->
 <ejs-grid id="reservationsGrid"
           dataSource="@Model"
           allowPaging="true"
@@ -93,6 +116,6 @@
             }
         }
 
-        // Se tiver outros scripts, como os templates, eles também ficam aqui
     </script>
 }
+</div>

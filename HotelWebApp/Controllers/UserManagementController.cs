@@ -6,6 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HotelWebApp.Controllers
 {
+    /// <summary>
+    /// Controller responsible for the administration of employee user accounts.
+    /// All actions in this controller are restricted to users with the 'Admin' role.
+    /// It uses ASP.NET Core Identity's UserManager to perform user operations.
+    /// </summary>
     [Authorize(Roles = "Admin")]
     public class UserManagementController : Controller
     {
@@ -16,19 +21,28 @@ namespace HotelWebApp.Controllers
             _userManager = userManager;
         }
 
+        /// <summary>
+        /// Displays a list of all users who have the 'Employee' role.
+        /// </summary>
         public async Task<IActionResult> Index()
         {
             var employees = await _userManager.GetUsersInRoleAsync("Employee");
             return View(employees);
         }
 
-
+        /// <summary>
+        /// Displays the form to create a new employee account.
+        /// </summary>
         public IActionResult CreateEmployee()
         {
             return View();
         }
 
         // POST: /UserManagement/CreateEmployee
+        /// <summary>
+        /// Handles the submission for creating a new employee.
+        /// Creates the user and assigns them to the 'Employee' role.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateEmployee(CreateEmployeeViewModel model)
@@ -40,17 +54,21 @@ namespace HotelWebApp.Controllers
                     UserName = model.Email,
                     Email = model.Email,
                     FullName = model.FullName,
-                    EmailConfirmed = true
+                    EmailConfirmed = true // Employee accounts are confirmed automatically by the admin.
                 };
 
+                // Use UserManager to create the user with the specified password.
                 var result = await _userManager.CreateAsync(user, model.Password);
 
                 if (result.Succeeded)
                 {
+                    // If user creation is successful, add the user to the "Employee" role.
                     await _userManager.AddToRoleAsync(user, "Employee");
+                    TempData["SuccessMessage"] = "Employee created successfully.";
                     return RedirectToAction(nameof(Index));
                 }
 
+                // If creation fails, add errors to ModelState to be displayed in the view.
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
@@ -60,6 +78,10 @@ namespace HotelWebApp.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Displays read-only details of a specific employee.
+        /// </summary>
+        /// <param name="id">The user ID (GUID) of the employee.</param>
         public async Task<IActionResult> Details(string id)
         {
             if (id == null) return NotFound();
@@ -70,6 +92,10 @@ namespace HotelWebApp.Controllers
         }
 
         // GET: /UserManagement/Edit/{id}
+        /// <summary>
+        /// Displays the form to edit an employee's details.
+        /// </summary>
+        /// <param name="id">The user ID (GUID) of the employee to edit.</param>
         public async Task<IActionResult> Edit(string id)
         {
             if (id == null) return NotFound();
@@ -86,6 +112,9 @@ namespace HotelWebApp.Controllers
         }
 
         // POST: /UserManagement/Edit/{id}
+        /// <summary>
+        /// Handles the submission of the employee edit form.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(EditEmployeeViewModel model)
@@ -97,7 +126,7 @@ namespace HotelWebApp.Controllers
 
             user.FullName = model.FullName;
             user.Email = model.Email;
-            user.UserName = model.Email;
+            user.UserName = model.Email; // Keep UserName in sync with Email for consistency.
 
             var result = await _userManager.UpdateAsync(user);
 
@@ -116,6 +145,10 @@ namespace HotelWebApp.Controllers
         }
 
         // GET: /UserManagement/Delete/{id}
+        /// <summary>
+        /// Displays the confirmation page before deleting an employee account.
+        /// </summary>
+        /// <param name="id">The user ID of the employee to delete.</param>
         public async Task<IActionResult> Delete(string id)
         {
             if (id == null) return NotFound();
@@ -126,6 +159,10 @@ namespace HotelWebApp.Controllers
         }
 
         // POST: /UserManagement/Delete/{id}
+        /// <summary>
+        /// Deletes the specified employee account after confirmation.
+        /// </summary>
+        /// <param name="id">The user ID of the employee to delete.</param>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)

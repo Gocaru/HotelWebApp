@@ -28,8 +28,6 @@ namespace HotelWebApp
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.SignIn.RequireConfirmedAccount = true;
-                // Pode adicionar outras configurações de password, etc., aqui.
-                // options.Password.RequireDigit = true;
             })
             .AddEntityFrameworkStores<HotelWebAppContext>()
             .AddDefaultUI() // Adiciona a UI padrão do Identity

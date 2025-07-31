@@ -3,6 +3,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HotelWebApp.Data.Repositories
 {
+    /// <summary>
+    /// Implements the IRoomRepository interface to provide data access logic
+    /// for the Room entity using Entity Framework Core.
+    /// </summary>
     public class RoomRepository : IRoomRepository
     {
         private readonly HotelWebAppContext _context;
@@ -61,6 +65,9 @@ namespace HotelWebApp.Data.Repositories
                 ReservationStatus.CheckedIn
             };
 
+            // Step 1: Find the IDs of all rooms that have conflicting reservations.
+            // A conflict occurs if an existing reservation starts before the new one ends,
+            // and ends after the new one starts.
             var unavailableRoomIds = await _context.Reservations
                 .Where(r => blockingStatuses.Contains(r.Status) &&
                             r.CheckInDate.Date < checkOutDateOnly &&
@@ -69,11 +76,24 @@ namespace HotelWebApp.Data.Repositories
                 .Distinct()
                 .ToListAsync();
 
+            // Step 2: Return all rooms that are NOT in maintenance and NOT in the unavailable list.
             return await _context.Rooms
                 .Where(r => r.Status != RoomStatus.Maintenance &&
                              !unavailableRoomIds.Contains(r.Id))
                 .OrderBy(r => r.RoomNumber)
                 .ToListAsync();
+        }
+
+        public async Task<bool> RoomNumberExistsAsync(string roomNumber, int? excludeId = null)
+        {
+            var query = _context.Rooms.Where(r => r.RoomNumber.ToLower() == roomNumber.ToLower());
+
+            if (excludeId.HasValue)
+            {
+                query = query.Where(r => r.Id != excludeId.Value);
+            }
+
+            return await query.AnyAsync();
         }
     }
 }

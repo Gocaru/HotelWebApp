@@ -1,22 +1,41 @@
 ﻿@model HotelWebApp.Data.Entities.Reservation
+
 @{
     ViewData["Title"] = "Cancel Reservation";
 }
 
-<h1>@ViewData["Title"]</h1>
-<h3>Are you sure you want to cancel this reservation?</h3>
+<div class="container mt-4">
+    <h1 class="text-danger">@ViewData["Title"]</h1>
+    <h3>Are you sure you want to cancel this reservation?</h3>
+    <p class="text-danger">Please note: This action cannot be undone.</p>
+    <hr />
 
-<div>
-    <dl class="row">
-        <dt class="col-sm-3">Room Number</dt>
-        <dd class="col-sm-9">@Model.Room.RoomNumber</dd>
-        <dt class="col-sm-3">Check-in Date</dt>
-        <dd class="col-sm-9">@Model.CheckInDate.ToShortDateString()</dd>
-    </dl>
+    <div class="card bg-light">
+        <div class="card-header">
+            <h5 class="mb-0">You are about to cancel the following reservation:</h5>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-4">Guest:</dt>
+                <dd class="col-sm-8">@Model.ApplicationUser.FullName</dd>
 
-    <form asp-action="Cancel" method="post">
-        <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Yes, Cancel" class="btn btn-danger" /> |
-        <a asp-action="MyReservations">No, Go Back</a>
+                <dt class="col-sm-4">Room:</dt>
+                <dd class="col-sm-8">@Model.Room.RoomNumber (@Model.Room.Type)</dd>
+
+                <dt class="col-sm-4">Check-in Date:</dt>
+                <dd class="col-sm-8">@Model.CheckInDate.ToLongDateString()</dd>
+
+                <dt class="col-sm-4">Total Price:</dt>
+                <dd class="col-sm-8">@Model.TotalPrice.ToString("C")</dd>
+            </dl>
+        </div>
+    </div>
+
+    <form asp-action="Cancel" class="mt-4">
+        <input type="hidden" name="id" value="@Model.Id" />
+        @Html.AntiForgeryToken()
+
+        <button type="submit" class="btn btn-danger">Yes, Cancel This Reservation</button>
+        <a asp-action="MyReservations" class="btn btn-secondary">No, Go Back</a>
     </form>
 </div>

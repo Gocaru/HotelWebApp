@@ -19,7 +19,7 @@
     <script src="https://cdn.syncfusion.com/ej2/29.1.33/dist/ej2.min.js"></script>
 
 </head>
-<body class="d-flex flex-column min-vh-100">
+<body>
 
 
     <header>
@@ -37,7 +37,6 @@
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         @if (SignInManager.IsSignedIn(User))
                         { 
-                            <!-- Links que só aparecem para utilizadores logados, dependendo do seu perfil -->
                             @if (User.IsInRole("Admin"))
                             {
                             }
@@ -66,8 +65,6 @@
             </div>
         </nav>
     </header>
-
-
 
 
     <div class="container">

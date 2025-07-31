@@ -1,89 +1,99 @@
 ﻿@model IEnumerable<HotelWebApp.Data.Entities.Reservation>
 @using HotelWebApp.Data.Entities
+@using HotelWebApp.Services
 
 @{
     ViewData["Title"] = "My Reservations";
 }
 
-<h1>@ViewData["Title"]</h1>
-
-<p>
-    <a asp-action="Create" class="btn btn-primary">Make a New Reservation</a>
-</p>
-
-@if (!Model.Any())
-{
-    <div class="alert alert-info mt-4">
-        You do not have any reservations yet.
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-0">@ViewData["Title"]</h1>
+            <p class="text-muted">Here you can see the history and details of all your stays.</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Make a New Reservation
+        </a>
     </div>
-}
-else
-{
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th>
-                    Room Number
-                </th>
-                <th>
-                    Check-in Date
-                </th>
-                <th>
-                    Check-out Date
-                </th>
-                <th>
-                    Total Price
-                </th>
-                <th>
-                    Status
-                </th>
-                <th></th> <!-- Header para a coluna de botões de ação -->
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Room.RoomNumber)
-                    </td>
-                    <td>
-                        @item.CheckInDate.ToString("yyyy-MM-dd")
-                    </td>
-                    <td>
-                        @item.CheckOutDate.ToString("yyyy-MM-dd")
-                    </td>
-                    <td>
-                        @item.TotalPrice.ToString("C")
-                    </td>
-                    <td>
-                        @{
-                            var badgeClass = item.Status switch
-                            {
-                                ReservationStatus.Confirmed => "bg-success",
-                                ReservationStatus.CheckedOut => "bg-info",
-                                ReservationStatus.Cancelled => "bg-danger",
-                                _ => "bg-secondary"
-                            };
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center mt-4">
+            <h5 class="alert-heading">No Reservations Found</h5>
+            <p>You haven't made any reservations yet. Why not book your perfect stay now?</p>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Room</th>
+                            <th>Check-in</th>
+                            <th>Check-out</th>
+                            <th class="text-end">Total Price</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.OrderByDescending(r => r.CheckInDate))
+                        {
+                            <tr>
+                                <td>@item.Room.RoomNumber (@item.Room.Type)</td>
+                                <td>@item.CheckInDate.ToShortDateString()</td>
+                                <td>@item.CheckOutDate.ToShortDateString()</td>
+                                <td class="text-end">@item.TotalPrice.ToString("C")</td>
+                                <td class="text-center">
+                                    @{
+                                        var badgeClass = item.Status switch
+                                        {
+                                            ReservationStatus.Confirmed => "bg-success",
+                                            ReservationStatus.CheckedIn => "bg-primary",
+                                            ReservationStatus.CheckedOut => "bg-secondary",
+                                            ReservationStatus.Cancelled => "bg-danger",
+                                            ReservationStatus.NoShow => "bg-warning text-dark",
+                                            ReservationStatus.Completed => "bg-info text-dark",
+                                            _ => "bg-dark"
+                                        };
+                                    }
+                                    <span class="badge @badgeClass">@item.Status.GetDisplayName()</span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group btn-group-sm" role="group">
+
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info" title="View Details">
+                                            <i class="fas fa-info-circle"></i>
+                                        </a>
+
+                                        @if (item.Status == ReservationStatus.Confirmed && item.CheckInDate.Date > DateTime.Today.Date)
+                                        {
+                                            <a asp-action="RequestChange" asp-route-id="@item.Id" class="btn btn-warning" title="Manage Reservation">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a asp-action="Cancel" asp-route-id="@item.Id" class="btn btn-danger" title="Cancel Reservation">
+                                                <i class="fas fa-times-circle"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
                         }
-                        <span class="badge @badgeClass">@item.Status</span>
-                    </td>
-                    <td>
-                        <div class="btn-group btn-group-sm" role="group">
-
-                            @* O botão "Details" está sempre visível *@
-                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary">Details</a>
-
-                            @* Os botões de gestão só aparecem para reservas futuras e confirmadas *@
-                            @if (item.Status == ReservationStatus.Confirmed && item.CheckInDate.Date > DateTime.Today.Date)
-                            {
-                                <a asp-action="RequestChange" asp-route-id="@item.Id" class="btn btn-outline-warning">Manage</a>
-                                <a asp-action="Cancel" asp-route-id="@item.Id" class="btn btn-outline-danger">Cancel</a>
-                            }
-                        </div>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

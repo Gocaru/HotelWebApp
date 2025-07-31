@@ -5,6 +5,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HotelWebApp.Services
 {
+    /// <summary>
+    /// Implements the IPaymentService interface to provide business logic for financial operations.
+    /// This service interacts directly with the DbContext to ensure transactional integrity.
+    /// </summary>
     public class PaymentService : IPaymentService
     {
         private readonly HotelWebAppContext _context;
@@ -28,11 +32,10 @@ namespace HotelWebApp.Services
 
             if (reservation.Invoice != null)
             {
-                // A fatura já existe, vamos retorná-la em vez de criar uma nova.
                 return Result<Invoice>.Success(reservation.Invoice);
             }
 
-            // Calcula o valor final da fatura (preço das noites + custo das amenities)
+            // Calculate the final total amount, summing the base price and all associated amenities.
             decimal amenitiesTotal = reservation.ReservationAmenities.Sum(ra => ra.PriceAtTimeOfBooking * ra.Quantity);
             decimal finalInvoiceAmount = reservation.TotalPrice + amenitiesTotal;
 
@@ -53,12 +56,13 @@ namespace HotelWebApp.Services
 
         public async Task<Result> ProcessPaymentAsync(int invoiceId, decimal amount, PaymentMethod paymentMethod)
         {
-            // 1. Encontrar a fatura e incluir a Reserva e os Pagamentos existentes
+            // Eagerly load the Reservation and existing Payments to perform all business logic.
             var invoice = await _context.Invoices
                 .Include(i => i.Reservation)
                 .Include(i => i.Payments)
                 .FirstOrDefaultAsync(i => i.Id == invoiceId);
 
+            // --- Business Rule Validations ---
             if (invoice == null) return Result.Failure("Invoice not found.");
             if (invoice.Status == InvoiceStatus.Paid) return Result.Failure("Invoice is already fully paid.");
             if (amount <= 0) return Result.Failure("Payment amount must be positive.");
@@ -70,8 +74,9 @@ namespace HotelWebApp.Services
             {
                 return Result.Failure($"Payment of {amount:C} exceeds the balance due of {balanceDue:C}.");
             }
+            // --- End of Validations ---
 
-            // 2. Criar o novo registo de pagamento
+            // Create the new payment record.
             var newPayment = new Payment
             {
                 InvoiceId = invoiceId,
@@ -81,12 +86,13 @@ namespace HotelWebApp.Services
             };
             _context.Payments.Add(newPayment);
 
-            // 3. Atualizar o status da Fatura com base no novo total pago
+            // Update the invoice status based on the new total amount paid.
             var newTotalPaid = totalPaidSoFar + amount;
             if (newTotalPaid >= invoice.TotalAmount)
             {
                 invoice.Status = InvoiceStatus.Paid;
-                // 4. Se a fatura foi totalmente paga, complete a reserva
+
+                // If the invoice is fully paid, also mark the reservation lifecycle as complete.
                 if (invoice.Reservation != null)
                 {
                     invoice.Reservation.Status = ReservationStatus.Completed;
@@ -97,10 +103,42 @@ namespace HotelWebApp.Services
                 invoice.Status = InvoiceStatus.PartiallyPaid;
             }
 
-            // 5. Salvar tudo
+            // Save all changes (new Payment, updated Invoice, updated Reservation) in a single transaction.
             await _context.SaveChangesAsync();
 
             return Result.Success("Payment registered successfully.");
+        }
+
+        public async Task<Result<Invoice>> CreateInvoiceForNoShowAsync(int reservationId)
+        {
+            var reservation = await _context.Reservations
+                .Include(r => r.Room)
+                .Include(r => r.Invoice)
+                .FirstOrDefaultAsync(r => r.Id == reservationId);
+
+            if (reservation == null) return Result<Invoice>.Failure("Reservation not found.");
+            if (reservation.Invoice != null) return Result<Invoice>.Success(reservation.Invoice); // Já existe
+
+            decimal noShowFee = reservation.Room?.PricePerNight ?? 0;
+
+            if (noShowFee <= 0)
+            {
+                return Result<Invoice>.Success(null, "No-show fee is zero, invoice not created.");
+            }
+
+            var invoice = new Invoice
+            {
+                ReservationId = reservation.Id,
+                GuestId = reservation.GuestId,
+                InvoiceDate = DateTime.UtcNow,
+                TotalAmount = noShowFee,
+                Status = InvoiceStatus.Unpaid
+            };
+
+            _context.Invoices.Add(invoice);
+            await _context.SaveChangesAsync();
+
+            return Result<Invoice>.Success(invoice);
         }
     }
 }
