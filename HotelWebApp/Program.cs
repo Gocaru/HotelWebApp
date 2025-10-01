@@ -2,11 +2,14 @@ using HotelWebApp.Data;
 using HotelWebApp.Data.Entities;
 using HotelWebApp.Data.Repositories;
 using HotelWebApp.Data.Seed;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using HotelWebApp.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.EntityFrameworkCore;
 using Syncfusion.Licensing;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
 
 namespace HotelWebApp
 {
@@ -21,18 +24,43 @@ namespace HotelWebApp
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
             builder.Services.AddTransient<IEmailSender, EmailSender>();
 
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? 
+                throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-            builder.Services.AddDbContext<HotelWebAppContext>(options => options.UseSqlServer(connectionString));
+            builder.Services.AddDbContext<HotelWebAppContext>(options => 
+                options.UseSqlServer(connectionString));
 
+            // Configure Identity
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
-                options.SignIn.RequireConfirmedAccount = true;
+                options.SignIn.RequireConfirmedAccount = false;
             })
             .AddEntityFrameworkStores<HotelWebAppContext>()
             .AddDefaultUI() // Adiciona a UI padrão do Identity
             .AddDefaultTokenProviders(); // Adiciona os geradores de token
 
+            // Configure JWT Authentication for API
+            var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+            var secretKey = jwtSettings["SecretKey"];
+            var key = Encoding.ASCII.GetBytes(secretKey);
+
+            builder.Services.AddAuthentication()
+                .AddJwtBearer("ApiScheme", options =>
+                {
+                    options.RequireHttpsMetadata = false;
+                    options.SaveToken = true;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(key),
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero
+                    };
+                });
+
+            // Add repositories
             builder.Services.AddScoped<IRoomRepository, RoomRepository>();
             builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
             builder.Services.AddScoped<IReservationService, ReservationService>();
@@ -40,16 +68,38 @@ namespace HotelWebApp
             builder.Services.AddScoped<IPaymentService, PaymentService>();
             builder.Services.AddScoped<IChangeRequestRepository, ChangeRequestRepository>();
 
+            // Add JWT service
+            builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 
             builder.Services.AddTransient<SeedDb>();
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
-
             builder.Services.AddRazorPages();
 
+            // Configuração CORS para a app móvel
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowMobileApp", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                });
+            });
+
+            // Add Swagger para documentação e teste de APIs
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
+
+            // Configure Swagger
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
@@ -61,9 +111,9 @@ namespace HotelWebApp
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
 
+            app.UseCors("AllowMobileApp");
             app.UseAuthentication();
             app.UseAuthorization();
 
