@@ -1,5 +1,8 @@
-﻿using HotelWebApp.Data.Entities;
+﻿using HotelWebApp.Data;
+using HotelWebApp.Data.Entities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace HotelWebApp.Data.Seed
 {
@@ -10,13 +13,15 @@ namespace HotelWebApp.Data.Seed
     /// </summary>
     public class SeedDb
     {
+        private readonly HotelWebAppContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        public SeedDb(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+        public SeedDb(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, HotelWebAppContext context)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _context = context;
         }
 
         /// <summary>
@@ -25,7 +30,9 @@ namespace HotelWebApp.Data.Seed
         /// </summary>
         public async Task SeedAsync()
         {
-            // First, ensure all required roles are present in the database
+            await _context.Database.MigrateAsync();
+
+            // Ensure all required roles are present in the database
             await CheckRoleAsync("Admin");
             await CheckRoleAsync("Employee");
             await CheckRoleAsync("Guest");
