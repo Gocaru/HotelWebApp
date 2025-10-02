@@ -2,7 +2,10 @@
 
 namespace HotelWebApp.Models.Api
 {
-    public class LoginRequest
+    /// <summary>
+    /// Request model for user login containing credentials
+    /// </summary>
+    public class MobileLoginRequest
     {
         [Required]
         [EmailAddress]

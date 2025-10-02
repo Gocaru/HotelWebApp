@@ -29,6 +29,12 @@ public class HotelWebAppContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<ChangeRequest> ChangeRequests { get; set; }
 
+    public DbSet<Activity> Activities { get; set; }
+
+    public DbSet<ActivityBooking> ActivityBookings { get; set; }
+
+    public DbSet<Promotion> Promotions { get; set; }
+
     /// <summary>
     /// Configures the model and its relationships using the Fluent API.
     /// This method is called by Entity Framework when the model is being created.
