@@ -1,5 +1,8 @@
 ﻿namespace HotelWebApp.Models.Api
 {
+    /// <summary>
+    /// Response wrapper for all API endpoints containing success status, data, and error information
+    /// </summary>
     public class ApiResponse<T>
     {
         public bool Success { get; set; }

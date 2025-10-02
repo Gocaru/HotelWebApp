@@ -1,5 +1,8 @@
 ﻿namespace HotelWebApp.Models.Api
 {
+    /// <summary>
+    /// Represents a user's profile information
+    /// </summary>
     public class UserDto
     {
         public string Id { get; set; } = string.Empty;
