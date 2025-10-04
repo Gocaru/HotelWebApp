@@ -1,0 +1,121 @@
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using HotelWebApp.Mobile.Services;
+
+namespace HotelWebApp.Mobile.ViewModels
+{
+    public partial class LoginViewModel : ObservableObject
+    {
+        private readonly AuthService _authService;
+
+        public LoginViewModel(AuthService authService)
+        {
+            _authService = authService;
+        }
+
+        [ObservableProperty]
+        private string email = string.Empty;
+
+        [ObservableProperty]
+        private string password = string.Empty;
+
+        [ObservableProperty]
+        private string errorMessage = string.Empty;
+
+        [ObservableProperty]
+        private bool isBusy;
+
+        public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
+        public bool IsNotBusy => !IsBusy;
+
+        [RelayCommand]
+        private async Task LoginAsync()
+        {
+            System.Diagnostics.Debug.WriteLine("=== LOGIN STARTED ===");
+
+            if (string.IsNullOrWhiteSpace(Email))
+            {
+                ErrorMessage = "Please enter your email"; 
+                System.Diagnostics.Debug.WriteLine($"Validation failed: Email empty");
+                OnPropertyChanged(nameof(HasError));
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(Password))
+            {
+                ErrorMessage = "Please enter your password"; 
+                System.Diagnostics.Debug.WriteLine($"Validation failed: Password empty");
+                OnPropertyChanged(nameof(HasError));
+                return;
+            }
+
+            IsBusy = true;
+            ErrorMessage = string.Empty;
+            OnPropertyChanged(nameof(HasError));
+
+            System.Diagnostics.Debug.WriteLine($"Calling API with Email: {Email}");
+
+            try
+            {
+                var result = await _authService.LoginAsync(Email, Password);
+
+                System.Diagnostics.Debug.WriteLine($"API Response - Success: {result.Success}");
+                System.Diagnostics.Debug.WriteLine($"API Response - Message: {result.Message}");
+
+                if (result.Success && result.Data != null)
+                {
+                    System.Diagnostics.Debug.WriteLine("✅ Login SUCCESS - Reconfiguring Shell");
+
+                    // Reconfigurar Shell para utilizador autenticado
+                    if (Shell.Current is AppShell appShell)
+                    {
+                        appShell.ConfigureShellForAuthenticatedUser(AppShell.Services);
+                    }
+                }
+                else
+                {
+                    ErrorMessage = result.Message ?? "Login failed. Please try again."; 
+                    System.Diagnostics.Debug.WriteLine($"Login FAILED - ErrorMessage: {ErrorMessage}");
+                    OnPropertyChanged(nameof(HasError));
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Erro de conexão: {ex.Message}";
+                System.Diagnostics.Debug.WriteLine($"EXCEPTION: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack: {ex.StackTrace}");
+                OnPropertyChanged(nameof(HasError));
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        [RelayCommand]
+        private async Task ForgotPasswordAsync()
+        {
+            // TODO: Implementar mais tarde
+            await Shell.Current.DisplayAlert("Info", "Funcionalidade em desenvolvimento", "OK");
+        }
+
+        [RelayCommand]
+        private async Task NavigateToRegisterAsync()
+        {
+            // TODO: Implementar mais tarde
+            await Shell.Current.DisplayAlert("Info", "Funcionalidade em desenvolvimento", "OK");
+        }
+
+        [RelayCommand]
+        private async Task GuestAccessAsync()
+        {
+            // Acesso como convidado - reconfigurar Shell sem autenticação
+            System.Diagnostics.Debug.WriteLine("Guest access - showing home without authentication");
+
+            if (Shell.Current is AppShell appShell)
+            {
+                appShell.ConfigureShellForAuthenticatedUser(AppShell.Services);
+            }
+        }
+    }
+}

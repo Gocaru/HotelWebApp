@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:HotelWebApp.Mobile.ViewModels"
+             x:Class="HotelWebApp.Mobile.Views.HomePage"
+             x:DataType="viewmodels:HomeViewModel"
+             Title="Home"
+             BackgroundColor="#F5F5F5">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="30" Spacing="20">
+
+            <!-- Welcome Message -->
+            <Label Text="{Binding WelcomeMessage}"
+                   FontSize="28"
+                   FontAttributes="Bold"
+                   TextColor="#1E3A8A"
+                   HorizontalOptions="Center"
+                   Margin="0,40,0,20"/>
+
+            <!-- Feature Buttons -->
+            <Frame Padding="0" 
+                   CornerRadius="10" 
+                   HasShadow="True"
+                   BorderColor="Transparent">
+                <Button Text="📅 My Reservations"
+                        BackgroundColor="#1E3A8A"
+                        TextColor="White"
+                        FontSize="16"
+                        HeightRequest="60"
+                        CornerRadius="10"/>
+            </Frame>
+
+            <Frame Padding="0" 
+                   CornerRadius="10" 
+                   HasShadow="True"
+                   BorderColor="Transparent">
+                <Button Text="🏨 Book Room"
+                        BackgroundColor="#1E3A8A"
+                        TextColor="White"
+                        FontSize="16"
+                        HeightRequest="60"
+                        CornerRadius="10"/>
+            </Frame>
+
+            <Frame Padding="0" 
+                   CornerRadius="10" 
+                   HasShadow="True"
+                   BorderColor="Transparent">
+                <Button Text="🎯 Activities"
+                        BackgroundColor="#1E3A8A"
+                        TextColor="White"
+                        FontSize="16"
+                        HeightRequest="60"
+                        CornerRadius="10"/>
+            </Frame>
+
+            <Frame Padding="0" 
+                   CornerRadius="10" 
+                   HasShadow="True"
+                   BorderColor="Transparent">
+                <Button Text="👤 My Profile"
+                        BackgroundColor="#1E3A8A"
+                        TextColor="White"
+                        FontSize="16"
+                        HeightRequest="60"
+                        CornerRadius="10"/>
+            </Frame>
+
+            <!-- Logout Button -->
+            <Frame Padding="0" 
+                   CornerRadius="10" 
+                   HasShadow="True"
+                   BorderColor="Transparent"
+                   Margin="0,20,0,0">
+                <Button Text="🚪 Logout"
+                        Command="{Binding LogoutCommand}"
+                        BackgroundColor="#DC2626"
+                        TextColor="White"
+                        FontSize="16"
+                        FontAttributes="Bold"
+                        HeightRequest="60"
+                        CornerRadius="10"/>
+            </Frame>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

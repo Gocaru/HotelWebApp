@@ -144,7 +144,7 @@ namespace HotelWebApp
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
 
@@ -164,6 +164,11 @@ namespace HotelWebApp
                 var seeder = services.GetRequiredService<SeedDb>();
                 await seeder.SeedAsync();
             }
+
+            // Força HTTP em todas as interfaces de rede
+            app.Urls.Clear();
+            app.Urls.Add("http://0.0.0.0:5113");
+            app.Urls.Add("http://192.168.1.74:5113");
 
             app.Run();
         }
