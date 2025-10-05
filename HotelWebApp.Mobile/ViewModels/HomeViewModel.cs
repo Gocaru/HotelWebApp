@@ -18,6 +18,12 @@ namespace HotelWebApp.Mobile.ViewModels
         }
 
         [RelayCommand]
+        private async Task NavigateToReservationsAsync()
+        {
+            await Shell.Current.GoToAsync(nameof(ReservationsPage));
+        }
+
+        [RelayCommand]
         private async Task LogoutAsync()
         {
             await _authService.LogoutAsync();

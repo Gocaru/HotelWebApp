@@ -24,6 +24,7 @@
                    HasShadow="True"
                    BorderColor="Transparent">
                 <Button Text="📅 My Reservations"
+                        Command="{Binding NavigateToReservationsCommand}"
                         BackgroundColor="#1E3A8A"
                         TextColor="White"
                         FontSize="16"
