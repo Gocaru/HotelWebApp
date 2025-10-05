@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:HotelWebApp.Mobile.ViewModels"
+             xmlns:models="clr-namespace:HotelWebApp.Mobile.Models"
+             x:Class="HotelWebApp.Mobile.Views.ReservationsPage"
+             x:DataType="viewmodels:ReservationsViewModel"
+             Title="My Reservations"
+             BackgroundColor="#F5F5F5">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <Frame Grid.Row="0" 
+               Padding="20" 
+               BackgroundColor="#1E3A8A" 
+               CornerRadius="0"
+               HasShadow="False">
+            <VerticalStackLayout Spacing="5">
+                <Label Text="My Reservations" 
+                       FontSize="24" 
+                       FontAttributes="Bold" 
+                       TextColor="White"/>
+                <Label Text="View and manage your bookings" 
+                       FontSize="14" 
+                       TextColor="White" 
+                       Opacity="0.9"/>
+            </VerticalStackLayout>
+        </Frame>
+
+        <RefreshView Grid.Row="1"
+                     Command="{Binding LoadReservationsCommand}"
+                     IsRefreshing="{Binding IsBusy}">
+
+            <ScrollView>
+                <VerticalStackLayout Padding="15" Spacing="15">
+
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding IsBusy}"
+                                       Color="#1E3A8A"
+                                       HeightRequest="50"/>
+
+                    <Frame IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotEmptyConverter}}"
+                           BackgroundColor="#FEE2E2"
+                           BorderColor="#EF4444"
+                           CornerRadius="10"
+                           Padding="15"
+                           HasShadow="False">
+                        <Label Text="{Binding ErrorMessage}"
+                               TextColor="#991B1B"
+                               FontSize="14"/>
+                    </Frame>
+
+                    <VerticalStackLayout IsVisible="{Binding HasReservations, Converter={StaticResource InvertedBoolConverter}}"
+                                         Padding="20"
+                                         Spacing="15"
+                                         VerticalOptions="Center"
+                                         HorizontalOptions="Center"
+                                         Margin="0,50,0,0">
+                        <Label Text="📅" 
+                               FontSize="48" 
+                               HorizontalOptions="Center"/>
+                        <Label Text="No reservations yet" 
+                               FontSize="18" 
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"/>
+                        <Label Text="Book your first room to see it here" 
+                               FontSize="14" 
+                               TextColor="#6B7280"
+                               HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+
+                    <CollectionView ItemsSource="{Binding Reservations}"
+                                    IsVisible="{Binding HasReservations}"
+                                    SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:ReservationDto">
+                                <Frame Padding="0" 
+                                       Margin="0,0,0,10" 
+                                       CornerRadius="15" 
+                                       HasShadow="True"
+                                       BorderColor="Transparent">
+                                    <Frame.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ReservationsViewModel}}, Path=ViewReservationDetailsCommand}"
+                                                              CommandParameter="{Binding .}"/>
+                                    </Frame.GestureRecognizers>
+
+                                    <Grid RowDefinitions="Auto,Auto,Auto" 
+                                          Padding="15">
+
+                                        <HorizontalStackLayout Grid.Row="0" 
+                                                               Spacing="10"
+                                                               Margin="0,0,0,10">
+                                            <Label Text="🏨" FontSize="24"/>
+                                            <VerticalStackLayout>
+                                                <Label Text="{Binding RoomType}" 
+                                                       FontSize="18" 
+                                                       FontAttributes="Bold"/>
+                                                <Label Text="{Binding RoomNumber, StringFormat='Room {0}'}" 
+                                                       FontSize="14" 
+                                                       TextColor="#6B7280"/>
+                                            </VerticalStackLayout>
+                                        </HorizontalStackLayout>
+
+                                        <Grid Grid.Row="1" 
+                                              ColumnDefinitions="*,Auto,*"
+                                              Margin="0,0,0,10">
+                                            <VerticalStackLayout Grid.Column="0">
+                                                <Label Text="Check-in" 
+                                                       FontSize="12" 
+                                                       TextColor="#6B7280"/>
+                                                <Label Text="{Binding CheckInFormatted}" 
+                                                       FontSize="14" 
+                                                       FontAttributes="Bold"/>
+                                            </VerticalStackLayout>
+
+                                            <Label Grid.Column="1" 
+                                                   Text="→" 
+                                                   FontSize="20" 
+                                                   VerticalOptions="Center"
+                                                   Margin="10,0"/>
+
+                                            <VerticalStackLayout Grid.Column="2">
+                                                <Label Text="Check-out" 
+                                                       FontSize="12" 
+                                                       TextColor="#6B7280"/>
+                                                <Label Text="{Binding CheckOutFormatted}" 
+                                                       FontSize="14" 
+                                                       FontAttributes="Bold"/>
+                                            </VerticalStackLayout>
+                                        </Grid>
+
+                                        <HorizontalStackLayout Grid.Row="2" 
+                                                               Spacing="10"
+                                                               HorizontalOptions="End">
+                                            <Frame Padding="8,4" 
+                                                   CornerRadius="5"
+                                                   BackgroundColor="{Binding StatusColor}"
+                                                   HasShadow="False">
+                                                <Label Text="{Binding Status}" 
+                                                       TextColor="White" 
+                                                       FontSize="12"
+                                                       FontAttributes="Bold"/>
+                                            </Frame>
+                                            <Label Text="{Binding PriceFormatted}" 
+                                                   FontSize="18" 
+                                                   FontAttributes="Bold"
+                                                   TextColor="#1E3A8A"
+                                                   VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                    </Grid>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

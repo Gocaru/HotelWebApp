@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:HotelWebApp.Mobile.ViewModels"
+             x:Class="HotelWebApp.Mobile.Views.ReservationDetailPage"
+             x:DataType="viewmodels:ReservationDetailViewModel"
+             Title="Reservation Details"
+             BackgroundColor="#F5F5F5">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+
+            <!-- Loading Indicator -->
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               Color="#1E3A8A"
+                               HeightRequest="50"/>
+
+            <!-- Error Message -->
+            <Frame IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotEmptyConverter}}"
+                   BackgroundColor="#FEE2E2"
+                   BorderColor="#EF4444"
+                   CornerRadius="10"
+                   Padding="15"
+                   HasShadow="False">
+                <Label Text="{Binding ErrorMessage}"
+                       TextColor="#991B1B"
+                       FontSize="14"/>
+            </Frame>
+
+            <!-- Reservation Details -->
+            <VerticalStackLayout IsVisible="{Binding Reservation, Converter={StaticResource ObjectNotNullConverter}}"
+                                 Spacing="15">
+
+                <!-- Room Info Card -->
+                <Frame CornerRadius="15" HasShadow="True" Padding="20" BorderColor="Transparent">
+                    <VerticalStackLayout Spacing="15">
+                        <HorizontalStackLayout Spacing="10">
+                            <Label Text="🏨" FontSize="32"/>
+                            <VerticalStackLayout>
+                                <Label Text="{Binding Reservation.RoomType}" 
+                                       FontSize="24" 
+                                       FontAttributes="Bold"/>
+                                <Label Text="{Binding Reservation.RoomNumber, StringFormat='Room {0}'}" 
+                                       FontSize="16" 
+                                       TextColor="#6B7280"/>
+                            </VerticalStackLayout>
+                        </HorizontalStackLayout>
+
+                        <!-- Status Badge -->
+                        <Frame Padding="10,5" 
+                               CornerRadius="8"
+                               BackgroundColor="{Binding Reservation.StatusColor}"
+                               HasShadow="False"
+                               HorizontalOptions="Start">
+                            <Label Text="{Binding Reservation.Status}" 
+                                   TextColor="White" 
+                                   FontSize="14"
+                                   FontAttributes="Bold"/>
+                        </Frame>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Dates Card -->
+                <Frame CornerRadius="15" HasShadow="True" Padding="20" BorderColor="Transparent">
+                    <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="15">
+                        <Label Grid.Row="0" 
+                               Text="📅 Stay Duration" 
+                               FontSize="18" 
+                               FontAttributes="Bold"/>
+
+                        <Grid Grid.Row="1" ColumnDefinitions="*,Auto,*" ColumnSpacing="10">
+                            <VerticalStackLayout Grid.Column="0">
+                                <Label Text="Check-In" 
+                                       FontSize="12" 
+                                       TextColor="#6B7280"/>
+                                <Label Text="{Binding Reservation.CheckInFormatted}" 
+                                       FontSize="16" 
+                                       FontAttributes="Bold"/>
+                            </VerticalStackLayout>
+
+                            <Label Grid.Column="1" 
+                                   Text="→" 
+                                   FontSize="24" 
+                                   VerticalOptions="Center"/>
+
+                            <VerticalStackLayout Grid.Column="2">
+                                <Label Text="Check-Out" 
+                                       FontSize="12" 
+                                       TextColor="#6B7280"/>
+                                <Label Text="{Binding Reservation.CheckOutFormatted}" 
+                                       FontSize="16" 
+                                       FontAttributes="Bold"/>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <Label Grid.Row="2" 
+                               Text="{Binding Reservation.NumberOfNights, StringFormat='{0} night(s)'}"
+                               FontSize="14"
+                               TextColor="#6B7280"/>
+                    </Grid>
+                </Frame>
+
+                <!-- Guest Info Card -->
+                <Frame CornerRadius="15" HasShadow="True" Padding="20" BorderColor="Transparent">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="👤 Reservation Information" 
+                               FontSize="18" 
+                               FontAttributes="Bold"/>
+
+                        <HorizontalStackLayout Spacing="10">
+                            <Label Text="Number of Guests:" 
+                                   FontSize="14" 
+                                   TextColor="#6B7280" 
+                                   WidthRequest="150"/>
+                            <Label Text="{Binding Reservation.NumberOfGuests}" 
+                                   FontSize="14"
+                                   FontAttributes="Bold"/>
+                        </HorizontalStackLayout>
+
+                        <HorizontalStackLayout Spacing="10">
+                            <Label Text="Reservation Date:" 
+                                   FontSize="14" 
+                                   TextColor="#6B7280" 
+                                   WidthRequest="150"/>
+                            <Label Text="{Binding Reservation.ReservationDate, StringFormat='{0:dd MMM yyyy}'}" 
+                                   FontSize="14"/>
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Price Card -->
+                <Frame CornerRadius="15" HasShadow="True" Padding="20" BorderColor="Transparent">
+                    <HorizontalStackLayout Spacing="10" HorizontalOptions="FillAndExpand">
+                        <Label Text="💰 Total Price:" 
+                               FontSize="18" 
+                               VerticalOptions="Center"
+                               HorizontalOptions="StartAndExpand"/>
+                        <Label Text="{Binding Reservation.PriceFormatted}" 
+                               FontSize="24" 
+                               FontAttributes="Bold"
+                               TextColor="#1E3A8A"
+                               VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </Frame>
+
+                <!-- Action Buttons -->
+                <VerticalStackLayout Spacing="10" Margin="0,10,0,0">
+
+                    <!-- Check-In Button -->
+                    <Button Text="✅ Check-In Now"
+                            Command="{Binding CheckInCommand}"
+                            IsVisible="{Binding Reservation.CanCheckIn}"
+                            BackgroundColor="#10B981"
+                            TextColor="White"
+                            FontSize="16"
+                            FontAttributes="Bold"
+                            HeightRequest="50"
+                            CornerRadius="10"/>
+
+                    <!-- Cancel Button -->
+                    <Button Text="❌ Cancel Reservation"
+                            Command="{Binding CancelReservationCommand}"
+                            IsVisible="{Binding Reservation.CanCancel}"
+                            BackgroundColor="#EF4444"
+                            TextColor="White"
+                            FontSize="16"
+                            FontAttributes="Bold"
+                            HeightRequest="50"
+                            CornerRadius="10"/>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -14,6 +14,8 @@ namespace HotelWebApp.Mobile
             // Registar rotas
             Routing.RegisterRoute(nameof(LoginPage), typeof(LoginPage));
             Routing.RegisterRoute(nameof(HomePage), typeof(HomePage));
+            Routing.RegisterRoute(nameof(ReservationsPage), typeof(ReservationsPage));
+            Routing.RegisterRoute(nameof(ReservationDetailPage), typeof(ReservationDetailPage));
 
             // Inicializar estado do Shell baseado em autenticação
             InitializeShellState(serviceProvider);
