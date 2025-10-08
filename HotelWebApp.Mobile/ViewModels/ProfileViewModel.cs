@@ -80,7 +80,7 @@ namespace HotelWebApp.Mobile.ViewModels
                         .Where(r => r.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase))
                         .ToList();
                     Profile.CompletedStays = completedList.Count;
-                    System.Diagnostics.Debug.WriteLine($"📊 Completed: {Profile.CompletedStays}");
+                    System.Diagnostics.Debug.WriteLine($"Completed: {Profile.CompletedStays}");
 
                     // Upcoming = Confirmed/CheckedIn com data futura ou hoje
                     var upcomingList = validReservations
@@ -90,7 +90,7 @@ namespace HotelWebApp.Mobile.ViewModels
                             r.CheckInDate >= DateTime.Today)
                         .ToList();
                     Profile.UpcomingReservations = upcomingList.Count;
-                    System.Diagnostics.Debug.WriteLine($"📊 Upcoming: {Profile.UpcomingReservations}");
+                    System.Diagnostics.Debug.WriteLine($"Upcoming: {Profile.UpcomingReservations}");
 
                     System.Diagnostics.Debug.WriteLine($"=== END DEBUG ===\n");
 
@@ -244,6 +244,12 @@ namespace HotelWebApp.Mobile.ViewModels
         private async Task ViewReservationsAsync()
         {
             await Shell.Current.GoToAsync(nameof(ReservationsPage));
+        }
+
+        [RelayCommand]
+        private async Task NavigateToChangePasswordAsync()
+        {
+            await Shell.Current.GoToAsync(nameof(ChangePasswordPage));
         }
     }
 }

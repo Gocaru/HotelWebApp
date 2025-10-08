@@ -48,7 +48,7 @@ namespace HotelWebApp.Mobile.Services
 
                 if (result?.Success == true && result.Data != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"✅ Profile loaded: {result.Data.FullName}");
+                    System.Diagnostics.Debug.WriteLine($"Profile loaded: {result.Data.FullName}");
                 }
 
                 return result ?? new ApiResponse<UserDto>
@@ -145,7 +145,7 @@ namespace HotelWebApp.Mobile.Services
 
                 if (result?.Success == true && result.Data != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"✅ Photo uploaded: {result.Data}");
+                    System.Diagnostics.Debug.WriteLine($"Photo uploaded: {result.Data}");
                 }
 
                 return result ?? new ApiResponse<string>
@@ -158,6 +158,67 @@ namespace HotelWebApp.Mobile.Services
             {
                 System.Diagnostics.Debug.WriteLine($"EXCEPTION: {ex.Message}");
                 return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = $"Connection error: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ApiResponse<bool>> ChangePasswordAsync(ChangePasswordRequest request)
+        {
+            try
+            {
+                await AddAuthorizationHeaderAsync();
+
+                System.Diagnostics.Debug.WriteLine("=== CHANGE PASSWORD ===");
+
+                var response = await _httpClient.PutAsJsonAsync("api/User/change-password", request);
+
+                System.Diagnostics.Debug.WriteLine($"StatusCode: {response.StatusCode}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    System.Diagnostics.Debug.WriteLine($"ERROR: {errorContent}");
+
+                    // Tentar parsear mensagem de erro
+                    try
+                    {
+                        var errorResponse = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+                        return errorResponse ?? new ApiResponse<bool>
+                        {
+                            Success = false,
+                            Message = "Failed to change password"
+                        };
+                    }
+                    catch
+                    {
+                        return new ApiResponse<bool>
+                        {
+                            Success = false,
+                            Message = "Failed to change password"
+                        };
+                    }
+                }
+
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+
+                if (result?.Success == true)
+                {
+                    System.Diagnostics.Debug.WriteLine("Password changed successfully");
+                }
+
+                return result ?? new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = "Failed to parse response"
+                };
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"EXCEPTION: {ex.Message}");
+                return new ApiResponse<bool>
                 {
                     Success = false,
                     Message = $"Connection error: {ex.Message}"

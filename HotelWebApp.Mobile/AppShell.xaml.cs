@@ -22,6 +22,7 @@ namespace HotelWebApp.Mobile
             Routing.RegisterRoute(nameof(MyActivityBookingsPage), typeof(MyActivityBookingsPage));
             Routing.RegisterRoute(nameof(PromotionsPage), typeof(PromotionsPage));
             Routing.RegisterRoute(nameof(PromotionDetailPage), typeof(PromotionDetailPage));
+            Routing.RegisterRoute(nameof(ChangePasswordPage), typeof(ChangePasswordPage));
 
             // Inicializar estado do Shell baseado em autenticação
             InitializeShellState(serviceProvider);

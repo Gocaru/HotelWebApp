@@ -131,6 +131,7 @@ namespace HotelWebApp.Mobile
             builder.Services.AddTransient<MyActivityBookingsViewModel>();
             builder.Services.AddTransient<PromotionsViewModel>();
             builder.Services.AddTransient<PromotionDetailViewModel>();
+            builder.Services.AddTransient<ChangePasswordViewModel>();
 
             // Registar Views
             builder.Services.AddTransient<LoginPage>();
@@ -143,6 +144,7 @@ namespace HotelWebApp.Mobile
             builder.Services.AddTransient<MyActivityBookingsPage>();
             builder.Services.AddTransient<PromotionsPage>();
             builder.Services.AddTransient<PromotionDetailPage>();
+            builder.Services.AddTransient<ChangePasswordPage>();
 
             // AppShell
             builder.Services.AddSingleton<AppShell>(sp => new AppShell(sp));
