@@ -46,7 +46,8 @@ namespace HotelWebApp.Controllers.Api
                     Duration = a.Duration,
                     Schedule = a.Schedule,
                     Capacity = a.Capacity,
-                    ImageUrl = a.ImageUrl
+                    ImageUrl = a.ImageUrl,
+                    CurrentParticipants = 0
                 }).ToList();
 
                 return Ok(new ApiResponse<List<ActivityDto>>
@@ -91,6 +92,12 @@ namespace HotelWebApp.Controllers.Api
                     });
                 }
 
+                var currentParticipants = await _context.ActivityBookings
+                    .Where(ab => ab.ActivityId == id
+                        && (ab.Status == ActivityBookingStatus.Pending
+                            || ab.Status == ActivityBookingStatus.Confirmed))
+                    .SumAsync(ab => ab.NumberOfPeople);
+
                 var activityDto = new ActivityDto
                 {
                     Id = activity.Id,
@@ -100,7 +107,8 @@ namespace HotelWebApp.Controllers.Api
                     Duration = activity.Duration,
                     Schedule = activity.Schedule,
                     Capacity = activity.Capacity,
-                    ImageUrl = activity.ImageUrl
+                    ImageUrl = activity.ImageUrl,
+                    CurrentParticipants = currentParticipants 
                 };
 
                 return Ok(new ApiResponse<ActivityDto>
@@ -116,6 +124,81 @@ namespace HotelWebApp.Controllers.Api
                 {
                     Success = false,
                     Message = "Error retrieving activity",
+                    Errors = new List<string> { ex.Message }
+                });
+            }
+        }
+
+        /// <summary>
+        /// Check activity availability for a specific date
+        /// </summary>
+        /// <param name="id">Activity ID</param>
+        /// <param name="date">Date to check (format: yyyy-MM-dd)</param>
+        /// <returns>Availability information for the specified date</returns>
+        // GET: api/activities/{id}/availability?date=2025-01-15
+        [HttpGet("{id}/availability")]
+        [AllowAnonymous]
+        public async Task<ActionResult<ApiResponse<ActivityAvailabilityDto>>> GetActivityAvailability(
+            int id,
+            [FromQuery] DateTime date)
+        {
+            try
+            {
+                var activity = await _context.Activities
+                    .FirstOrDefaultAsync(a => a.Id == id && a.IsActive);
+
+                if (activity == null)
+                {
+                    return NotFound(new ApiResponse<ActivityAvailabilityDto>
+                    {
+                        Success = false,
+                        Message = "Activity not found"
+                    });
+                }
+
+                // Validar que a data não é no passado
+                if (date.Date < DateTime.Today)
+                {
+                    return BadRequest(new ApiResponse<ActivityAvailabilityDto>
+                    {
+                        Success = false,
+                        Message = "Cannot check availability for past dates"
+                    });
+                }
+
+                var currentParticipants = await _context.ActivityBookings
+                    .Where(ab => ab.ActivityId == id
+                        && ab.ScheduledDate.Date == date.Date  // ✅ DATA ESPECÍFICA
+                        && (ab.Status == ActivityBookingStatus.Pending
+                            || ab.Status == ActivityBookingStatus.Confirmed))
+                    .SumAsync(ab => ab.NumberOfPeople);
+
+                var availableSpots = activity.Capacity - currentParticipants;
+
+                var availabilityDto = new ActivityAvailabilityDto
+                {
+                    ActivityId = activity.Id,
+                    ActivityName = activity.Name,
+                    Date = date.Date,
+                    Capacity = activity.Capacity,
+                    CurrentParticipants = currentParticipants,
+                    AvailableSpots = Math.Max(0, availableSpots),
+                    IsFull = currentParticipants >= activity.Capacity
+                };
+
+                return Ok(new ApiResponse<ActivityAvailabilityDto>
+                {
+                    Success = true,
+                    Data = availabilityDto,
+                    Message = $"Availability checked for {date:yyyy-MM-dd}"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiResponse<ActivityAvailabilityDto>
+                {
+                    Success = false,
+                    Message = "Error checking availability",
                     Errors = new List<string> { ex.Message }
                 });
             }
@@ -263,7 +346,7 @@ namespace HotelWebApp.Controllers.Api
                 }
 
                 var bookings = await _context.ActivityBookings
-                    .Include(ab => ab.Activity)
+                    .Include(ab => ab.Activity) 
                     .Where(ab => ab.GuestId == userId)
                     .OrderByDescending(ab => ab.BookingDate)
                     .ToListAsync();
@@ -276,7 +359,11 @@ namespace HotelWebApp.Controllers.Api
                     ScheduledDate = b.ScheduledDate,
                     NumberOfPeople = b.NumberOfPeople,
                     Status = b.Status.ToString(),
-                    TotalPrice = b.TotalPrice
+                    TotalPrice = b.TotalPrice,
+                    ActivityLocation = b.Activity.Schedule, 
+                    ActivityDuration = b.Activity.Duration,
+                    ActivitySchedule = b.Activity.Schedule,
+                    ActivityPrice = b.Activity.Price
                 }).ToList();
 
                 return Ok(new ApiResponse<List<ActivityBookingDto>>

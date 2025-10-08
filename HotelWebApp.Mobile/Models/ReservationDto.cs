@@ -2,23 +2,59 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace HotelWebApp.Mobile.Models
 {
     public class ReservationDto
     {
+        [JsonPropertyName("id")]
         public int Id { get; set; }
+
+        [JsonPropertyName("checkInDate")]
         public DateTime CheckInDate { get; set; }
+
+        [JsonPropertyName("checkOutDate")]
         public DateTime CheckOutDate { get; set; }
+
+        [JsonPropertyName("reservationDate")]
         public DateTime ReservationDate { get; set; }
+
+        [JsonPropertyName("totalPrice")]
         public decimal TotalPrice { get; set; }
+
+        [JsonPropertyName("status")]
         public string Status { get; set; } = string.Empty;
+
+        [JsonPropertyName("numberOfGuests")]
         public int NumberOfGuests { get; set; }
+
+        [JsonPropertyName("room")]
         public RoomDto? Room { get; set; }
+
+        [JsonPropertyName("amenities")]
         public List<ReservationAmenityDto> Amenities { get; set; } = new();
 
+        [JsonPropertyName("originalPrice")]
+        public decimal? OriginalPrice { get; set; }
+
+        [JsonPropertyName("discountPercentage")]
+        public decimal? DiscountPercentage { get; set; }
+
+        [JsonPropertyName("promotionTitle")]
+        public string? PromotionTitle { get; set; }
+
+
         // Propriedades calculadas
+
+        public bool HasPromotion => DiscountPercentage.HasValue && DiscountPercentage.Value > 0;
+        public string DiscountText => HasPromotion ? $"-{DiscountPercentage:F0}%" : string.Empty;
+        public string OriginalPriceFormatted => OriginalPrice.HasValue ? $"€{OriginalPrice:N2}" : string.Empty;
+        public string SavingsFormatted => HasPromotion && OriginalPrice.HasValue
+            ? $"€{(OriginalPrice.Value - TotalPrice):N2}"
+            : string.Empty;
+
         public string RoomNumber => Room?.RoomNumber ?? "N/A";
         public string RoomType => Room?.Type ?? "N/A";
         public int NumberOfNights => (CheckOutDate - CheckInDate).Days;

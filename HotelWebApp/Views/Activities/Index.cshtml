@@ -1,0 +1,87 @@
+﻿@model IEnumerable<HotelWebApp.Data.Entities.Activity>
+
+@{
+    ViewData["Title"] = "Activities Management";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-0">@ViewData["Title"]</h1>
+            <p class="text-muted">Manage hotel activities and services available to guests.</p>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <script id="statusTemplate" type="text/x-template">
+        ${if(IsActive)}
+            <span class="badge bg-success">Active</span>
+        ${else}
+            <span class="badge bg-secondary">Inactive</span>
+        ${/if}
+    </script>
+
+    <script id="actionsTemplate" type="text/x-template">
+        <div>
+            <a href="/Activities/Details/${Id}" class="btn btn-info btn-sm" title="Details">
+                <i class="fas fa-info-circle"></i>
+            </a>
+            <a href="/Activities/Edit/${Id}" class="btn btn-warning btn-sm" title="Edit">
+                <i class="fas fa-edit"></i>
+            </a>
+            <a href="/Activities/Delete/${Id}" class="btn btn-danger btn-sm" title="Delete">
+                <i class="fas fa-trash"></i>
+            </a>
+        </div>
+    </script>
+
+    <div class="alert alert-light border-0 shadow-sm mb-3">
+        <h6 class="alert-heading"><i class="fas fa-info-circle"></i> Actions Legend</h6>
+        <hr>
+        <div class="d-flex flex-wrap">
+            <span class="me-4"><button class="btn btn-sm btn-info disabled"><i class="fas fa-info-circle"></i></button> Details</span>
+            <span class="me-4"><button class="btn btn-sm btn-warning disabled"><i class="fas fa-edit"></i></button> Edit</span>
+            <span class="me-4"><button class="btn btn-sm btn-danger disabled"><i class="fas fa-trash"></i></button> Delete</span>
+        </div>
+    </div>
+
+    <ejs-grid id="activitiesGrid"
+              dataSource="@Model"
+              allowPaging="true"
+              allowSorting="true"
+              toolbar="@(new List<string>() { "Add", "Search" })"
+              toolbarClick="toolbarClickHandler">
+
+        <e-grid-editSettings allowAdding="true"></e-grid-editSettings>
+        <e-grid-pagesettings pageSize="10"></e-grid-pagesettings>
+        <e-grid-columns>
+            <e-grid-column field="Id" isPrimaryKey="true" visible="false"></e-grid-column>
+            <e-grid-column field="Name" headerText="Activity Name" width="180"></e-grid-column>
+            <e-grid-column field="Duration" headerText="Duration" width="120"></e-grid-column>
+            <e-grid-column field="Schedule" headerText="Schedule" width="150"></e-grid-column>
+            <e-grid-column field="Capacity" headerText="Capacity" width="100" textAlign="Center"></e-grid-column>
+            <e-grid-column field="Price" headerText="Price" format="C2" textAlign="Right" width="110"></e-grid-column>
+            <e-grid-column headerText="Status" template="#statusTemplate" width="100" textAlign="Center"></e-grid-column>
+            <e-grid-column headerText="Actions" template="#actionsTemplate" width="140" textAlign="Center"></e-grid-column>
+        </e-grid-columns>
+    </ejs-grid>
+</div>
+
+@section Scripts {
+    <script>
+        function toolbarClickHandler(args) {
+            if (args.item.id === 'activitiesGrid_add') {
+                args.cancel = true;
+                window.location.href = '@Url.Action("Create", "Activities")';
+            }
+        }
+    </script>
+}

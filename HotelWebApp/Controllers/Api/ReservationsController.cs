@@ -65,6 +65,9 @@ namespace HotelWebApp.Controllers.Api
                     TotalPrice = r.TotalPrice,
                     Status = r.Status.ToString(),
                     NumberOfGuests = r.NumberOfGuests,
+                    OriginalPrice = r.OriginalPrice,
+                    DiscountPercentage = r.DiscountPercentage,
+                    PromotionTitle = r.Promotion?.Title,
                     Room = r.Room != null ? new RoomDto
                     {
                         Id = r.Room.Id,
@@ -145,6 +148,9 @@ namespace HotelWebApp.Controllers.Api
                     TotalPrice = reservation.TotalPrice,
                     Status = reservation.Status.ToString(),
                     NumberOfGuests = reservation.NumberOfGuests,
+                    OriginalPrice = reservation.OriginalPrice,
+                    DiscountPercentage = reservation.DiscountPercentage,
+                    PromotionTitle = reservation.Promotion?.Title,
                     Room = reservation.Room != null ? new RoomDto
                     {
                         Id = reservation.Room.Id,

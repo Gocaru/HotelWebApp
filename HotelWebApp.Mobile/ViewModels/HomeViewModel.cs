@@ -24,6 +24,24 @@ namespace HotelWebApp.Mobile.ViewModels
         }
 
         [RelayCommand]
+        private async Task NavigateToActivitiesAsync()
+        {
+            await Shell.Current.GoToAsync(nameof(ActivitiesPage));
+        }
+
+        [RelayCommand]
+        private async Task NavigateToMyActivityBookingsAsync()
+        {
+            await Shell.Current.GoToAsync(nameof(MyActivityBookingsPage));
+        }
+
+        [RelayCommand]
+        private async Task NavigateToPromotionsAsync()
+        {
+            await Shell.Current.GoToAsync(nameof(PromotionsPage));
+        }
+
+        [RelayCommand]
         private async Task LogoutAsync()
         {
             await _authService.LogoutAsync();

@@ -91,5 +91,12 @@ namespace HotelWebApp.Data.Repositories
         /// <returns>True if there are future reservations; otherwise, false.</returns>
         Task<bool> HasFutureReservationsAsync(int roomId);
 
+        /// <summary>
+        /// Asynchronously retrieves all confirmed reservations with check-in dates in the past,
+        /// which should be marked as No-Show. Includes the related Room entity.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a collection of past-due confirmed reservations.</returns>
+        Task<IEnumerable<Reservation>> GetPastConfirmedReservationsAsync();
+
     }
 }

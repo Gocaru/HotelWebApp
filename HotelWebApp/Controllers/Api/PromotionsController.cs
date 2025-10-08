@@ -46,7 +46,8 @@ namespace HotelWebApp.Controllers.Api
                     EndDate = p.EndDate,
                     DiscountPercentage = p.DiscountPercentage,
                     ImageUrl = p.ImageUrl,
-                    Terms = p.Terms
+                    Terms = p.Terms,
+                    IsActive = p.IsActive
                 }).ToList();
 
                 return Ok(new ApiResponse<List<PromotionDto>>
@@ -100,7 +101,8 @@ namespace HotelWebApp.Controllers.Api
                     EndDate = promotion.EndDate,
                     DiscountPercentage = promotion.DiscountPercentage,
                     ImageUrl = promotion.ImageUrl,
-                    Terms = promotion.Terms
+                    Terms = promotion.Terms,
+                    IsActive = promotion.IsActive
                 };
 
                 return Ok(new ApiResponse<PromotionDto>
@@ -116,6 +118,71 @@ namespace HotelWebApp.Controllers.Api
                 {
                     Success = false,
                     Message = "Error retrieving promotion",
+                    Errors = new List<string> { ex.Message }
+                });
+            }
+        }
+
+        /// <summary>
+        /// Gets promotions valid for specific dates
+        /// </summary>
+        /// <param name="checkInDate">Check-in date</param>
+        /// <param name="checkOutDate">Check-out date</param>
+        /// <returns>List of applicable promotions</returns>
+        // GET: api/promotions/available?checkInDate=2025-10-01&checkOutDate=2025-10-05
+        [HttpGet("available")]
+        [AllowAnonymous]
+        public async Task<ActionResult<ApiResponse<List<PromotionDto>>>> GetAvailablePromotions(
+            [FromQuery] DateTime checkInDate,
+            [FromQuery] DateTime checkOutDate)
+        {
+            try
+            {
+                var today = DateTime.Today;
+
+                // Validar datas
+                if (checkInDate < today || checkOutDate <= checkInDate)
+                {
+                    return BadRequest(new ApiResponse<List<PromotionDto>>
+                    {
+                        Success = false,
+                        Message = "Invalid dates"
+                    });
+                }
+
+                var promotions = await _context.Promotions
+                    .Where(p => p.IsActive
+                        && p.StartDate <= checkInDate  // Promoção já começou
+                        && p.EndDate >= checkInDate)   // Promoção ainda não acabou no check-in
+                    .OrderByDescending(p => p.DiscountPercentage)
+                    .ToListAsync();
+
+                var promotionDtos = promotions.Select(p => new PromotionDto
+                {
+                    Id = p.Id,
+                    Title = p.Title,
+                    Description = p.Description,
+                    StartDate = p.StartDate,
+                    EndDate = p.EndDate,
+                    DiscountPercentage = p.DiscountPercentage,
+                    ImageUrl = p.ImageUrl,
+                    Terms = p.Terms,
+                    IsActive = p.IsActive
+                }).ToList();
+
+                return Ok(new ApiResponse<List<PromotionDto>>
+                {
+                    Success = true,
+                    Data = promotionDtos,
+                    Message = $"Found {promotionDtos.Count} applicable promotions"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiResponse<List<PromotionDto>>
+                {
+                    Success = false,
+                    Message = "Error retrieving promotions",
                     Errors = new List<string> { ex.Message }
                 });
             }

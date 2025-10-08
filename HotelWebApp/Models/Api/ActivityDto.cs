@@ -13,5 +13,11 @@
         public string? Schedule { get; set; }
         public int Capacity { get; set; }
         public string? ImageUrl { get; set; }
+
+        public int CurrentParticipants { get; set; }
+
+        public int AvailableSpots => Capacity - CurrentParticipants;
+
+        public bool IsFull => CurrentParticipants >= Capacity;
     }
 }

@@ -14,5 +14,9 @@
         public int NumberOfGuests { get; set; }
         public RoomDto? Room { get; set; }
         public List<ReservationAmenityDto> Amenities { get; set; } = new();
+
+        public decimal? OriginalPrice { get; set; }
+        public decimal? DiscountPercentage { get; set; }
+        public string? PromotionTitle { get; set; }
     }
 }

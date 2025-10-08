@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:HotelWebApp.Mobile.ViewModels"
+             x:Class="HotelWebApp.Mobile.Views.ActivityDetailPage"
+             x:DataType="viewmodels:ActivityDetailViewModel"
+             Title="Activity Details"
+             BackgroundColor="#F5F5F5">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+
+            <!-- Loading Indicator -->
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               Color="#1E3A8A"
+                               HeightRequest="50"/>
+
+            <!-- Error Message -->
+            <Frame IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotEmptyConverter}}"
+                   BackgroundColor="#FEE2E2"
+                   BorderColor="#EF4444"
+                   CornerRadius="10"
+                   Padding="15"
+                   HasShadow="False">
+                <Label Text="{Binding ErrorMessage}"
+                       TextColor="#991B1B"
+                       FontSize="14"/>
+            </Frame>
+
+            <!-- Success Message -->
+            <Frame IsVisible="{Binding SuccessMessage, Converter={StaticResource StringNotEmptyConverter}}"
+                   BackgroundColor="#D1FAE5"
+                   BorderColor="#10B981"
+                   CornerRadius="10"
+                   Padding="15"
+                   HasShadow="False">
+                <Label Text="{Binding SuccessMessage}"
+                       TextColor="#065F46"
+                       FontSize="14"
+                       FontAttributes="Bold"/>
+            </Frame>
+
+            <!-- Activity Content -->
+            <VerticalStackLayout IsVisible="{Binding Activity, Converter={StaticResource ObjectNotNullConverter}}"
+                                 Spacing="15">
+
+                <!-- Header -->
+                <Frame Padding="20"
+                       BackgroundColor="White"
+                       CornerRadius="15"
+                       HasShadow="True"
+                       BorderColor="Transparent">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="{Binding Activity.Name}"
+                               FontSize="24"
+                               FontAttributes="Bold"
+                               TextColor="#1E3A8A"/>
+
+                        <Label Text="{Binding Activity.Description}"
+                               FontSize="14"
+                               TextColor="#6B7280"
+                               LineBreakMode="WordWrap"/>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Date & Time -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <Frame Grid.Column="0"
+                           Padding="15"
+                           BackgroundColor="White"
+                           CornerRadius="15"
+                           HasShadow="True"
+                           BorderColor="Transparent">
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="📅 Date"
+                                   FontSize="12"
+                                   TextColor="#6B7280"/>
+                            <Label Text="{Binding Activity.DisplayDuration}"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   TextColor="#1F2937"/>
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <Frame Grid.Column="1"
+                           Padding="15"
+                           BackgroundColor="White"
+                           CornerRadius="15"
+                           HasShadow="True"
+                           BorderColor="Transparent">
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="🕐 Time"
+                                   FontSize="12"
+                                   TextColor="#6B7280"/>
+                            <Label Text="{Binding Activity.DisplaySchedule}"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   TextColor="#1F2937"
+                                   LineBreakMode="TailTruncation"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                </Grid>
+
+                <!-- Capacity & Price -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <Frame Grid.Column="0"
+                           Padding="15"
+                           BackgroundColor="White"
+                           CornerRadius="15"
+                           HasShadow="True"
+                           BorderColor="Transparent">
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="👥 Available"
+                                   FontSize="12"
+                                   TextColor="#6B7280"/>
+
+                            <!-- ✅ Usar propriedade computada segura -->
+                            <Label Text="{Binding AvailableText}"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   TextColor="{Binding AvailabilityColor}"/>
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <Frame Grid.Column="1"
+                           Padding="15"
+                           BackgroundColor="White"
+                           CornerRadius="15"
+                           HasShadow="True"
+                           BorderColor="Transparent">
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="💰 Price"
+                                   FontSize="12"
+                                   TextColor="#6B7280"/>
+                            <Label Text="{Binding Activity.FormattedPrice}"
+                                   FontSize="20"
+                                   FontAttributes="Bold"
+                                   TextColor="#1E3A8A"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                </Grid>
+
+                <!-- Booking Section -->
+                <Frame Padding="20"
+                       BackgroundColor="White"
+                       CornerRadius="15"
+                       HasShadow="True"
+                       BorderColor="Transparent"
+                       Margin="0,10,0,0">
+                    <VerticalStackLayout Spacing="20">
+
+                        <Label Text="📅 Book This Activity"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               TextColor="#1E3A8A"/>
+
+                        <!-- Scheduled Date Picker -->
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="Select Date"
+                                   FontSize="14"
+                                   TextColor="#6B7280"/>
+                            <DatePicker Date="{Binding ScheduledDate}"
+                                        MinimumDate="{Binding MinimumDate}"
+                                        Format="dd/MM/yyyy"
+                                        FontSize="16"
+                                        TextColor="#1F2937"/>
+                        </VerticalStackLayout>
+
+                        <!-- ✅ NOVO - Availability Display -->
+                        <Frame IsVisible="{Binding Availability, Converter={StaticResource ObjectNotNullConverter}}"
+                               Padding="15"
+                               BackgroundColor="#F9FAFB"
+                               BorderColor="#E5E7EB"
+                               CornerRadius="10"
+                               HasShadow="False">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <!-- Loading indicator -->
+                                <ActivityIndicator Grid.Column="0"
+                                                   IsRunning="{Binding IsCheckingAvailability}"
+                                                   IsVisible="{Binding IsCheckingAvailability}"
+                                                   Color="#1E3A8A"
+                                                   WidthRequest="20"
+                                                   HeightRequest="20"
+                                                   VerticalOptions="Center"
+                                                   Margin="0,0,10,0"/>
+
+                                <HorizontalStackLayout Grid.Column="1" 
+                                                       Spacing="10"
+                                                       IsVisible="{Binding IsCheckingAvailability, Converter={StaticResource InvertedBoolConverter}}">
+                                    <Label Text="📊"
+                                           FontSize="20"
+                                           VerticalOptions="Center"/>
+                                    <VerticalStackLayout>
+                                        <Label Text="{Binding Availability.AvailabilityText}"
+                                               FontSize="16"
+                                               FontAttributes="Bold"
+                                               TextColor="{Binding Availability.AvailabilityColor}"/>
+                                        <Label Text="{Binding Availability.Date, StringFormat='for {0:dd/MM/yyyy}'}"
+                                               FontSize="12"
+                                               TextColor="#6B7280"/>
+                                    </VerticalStackLayout>
+                                </HorizontalStackLayout>
+                            </Grid>
+                        </Frame>
+
+                        <!-- Number of Participants -->
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="Number of Participants"
+                                   FontSize="14"
+                                   TextColor="#6B7280"/>
+
+                            <Grid ColumnDefinitions="Auto,*,Auto"
+                                  ColumnSpacing="15"
+                                  VerticalOptions="Center">
+
+                                <!-- Decrement Button -->
+                                <Button Grid.Column="0"
+                                        Text="−"
+                                        Command="{Binding DecrementParticipantsCommand}"
+                                        BackgroundColor="#1E3A8A"
+                                        TextColor="White"
+                                        FontSize="24"
+                                        WidthRequest="60"
+                                        HeightRequest="60"
+                                        CornerRadius="30"
+                                        FontAttributes="Bold"/>
+
+                                <!-- Count Display -->
+                                <Frame Grid.Column="1"
+                                       Padding="0"
+                                       BackgroundColor="#F3F4F6"
+                                       BorderColor="#E5E7EB"
+                                       CornerRadius="10"
+                                       HasShadow="False">
+                                    <Label Text="{Binding NumberOfParticipants}"
+                                           FontSize="32"
+                                           FontAttributes="Bold"
+                                           TextColor="#1E3A8A"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center"
+                                           Padding="20"/>
+                                </Frame>
+
+                                <!-- Increment Button -->
+                                <Button Grid.Column="2"
+                                        Text="+"
+                                        Command="{Binding IncrementParticipantsCommand}"
+                                        BackgroundColor="#1E3A8A"
+                                        TextColor="White"
+                                        FontSize="24"
+                                        WidthRequest="60"
+                                        HeightRequest="60"
+                                        CornerRadius="30"
+                                        FontAttributes="Bold"/>
+                            </Grid>
+                        </VerticalStackLayout>
+
+                        <!-- Total Price Display -->
+                        <Frame Padding="15"
+                               BackgroundColor="#EEF2FF"
+                               BorderColor="#1E3A8A"
+                               CornerRadius="10"
+                               HasShadow="False">
+                            <HorizontalStackLayout Spacing="10"
+                                                   HorizontalOptions="Center">
+                                <Label Text="Total:"
+                                       FontSize="18"
+                                       TextColor="#1E3A8A"
+                                       VerticalOptions="Center"/>
+                                <Label Text="{Binding TotalPrice, StringFormat='€{0:F2}'}"
+                                       FontSize="24"
+                                       FontAttributes="Bold"
+                                       TextColor="#1E3A8A"
+                                       VerticalOptions="Center"/>
+                            </HorizontalStackLayout>
+                        </Frame>
+
+                        <!-- Book Button -->
+                        <Button Text="Book Activity"
+                                Command="{Binding BookActivityCommand}"
+                                BackgroundColor="#1E3A8A"
+                                TextColor="White"
+                                FontSize="18"
+                                FontAttributes="Bold"
+                                HeightRequest="60"
+                                CornerRadius="15"
+                                IsEnabled="{Binding IsBooking, Converter={StaticResource InvertedBoolConverter}}">
+                            <Button.Triggers>
+                                <!-- ✅ Desabilitar se lotado (com null check) -->
+                                <MultiTrigger TargetType="Button">
+                                    <MultiTrigger.Conditions>
+                                        <BindingCondition Binding="{Binding Availability, Converter={StaticResource ObjectNotNullConverter}}" Value="True"/>
+                                        <BindingCondition Binding="{Binding Availability.IsFull}" Value="True"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="BackgroundColor" Value="#9CA3AF"/>
+                                    <Setter Property="Text" Value="Fully Booked for This Date"/>
+                                    <Setter Property="IsEnabled" Value="False"/>
+                                </MultiTrigger>
+                            </Button.Triggers>
+                        </Button>
+
+                    </VerticalStackLayout>
+                </Frame>
+
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

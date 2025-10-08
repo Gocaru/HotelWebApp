@@ -29,5 +29,11 @@ namespace HotelWebApp.Data.Entities
         public string? ImageUrl { get; set; }
 
         public string? Terms { get; set; }
+
+        public bool IsExpired => EndDate < DateTime.Today;
+
+        public PromotionType Type { get; set; } = PromotionType.General;
+        public int? MinimumNights { get; set; }        // Para LongStay: estadia mínima
+        public int? MinimumDaysInAdvance { get; set; }  // Para EarlyBird: antecedência mínima
     }
 }

@@ -12,5 +12,10 @@
         public int NumberOfPeople { get; set; }
         public string Status { get; set; } = string.Empty;
         public decimal TotalPrice { get; set; }
+
+        public string? ActivityLocation { get; set; }
+        public string? ActivityDuration { get; set; }
+        public string? ActivitySchedule { get; set; }
+        public decimal ActivityPrice { get; set; }
     }
 }
