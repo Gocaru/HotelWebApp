@@ -264,5 +264,77 @@ namespace HotelWebApp.Controllers.Api
                 });
             }
         }
+
+        /// <summary>
+        /// Changes the authenticated user's password
+        /// </summary>
+        /// <param name="request">Current password and new password</param>
+        /// <returns>Confirmation of password change</returns>
+        [HttpPut("change-password")]
+        public async Task<ActionResult<ApiResponse<bool>>> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new ApiResponse<bool>
+                    {
+                        Success = false,
+                        Message = "User not found in token"
+                    });
+                }
+
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    return NotFound(new ApiResponse<bool>
+                    {
+                        Success = false,
+                        Message = "User not found"
+                    });
+                }
+
+                // Verificar password atual
+                var passwordCheck = await _userManager.CheckPasswordAsync(user, request.CurrentPassword);
+                if (!passwordCheck)
+                {
+                    return BadRequest(new ApiResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Current password is incorrect"
+                    });
+                }
+
+                // Alterar password
+                var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+
+                if (!result.Succeeded)
+                {
+                    return BadRequest(new ApiResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Failed to change password",
+                        Errors = result.Errors.Select(e => e.Description).ToList()
+                    });
+                }
+
+                return Ok(new ApiResponse<bool>
+                {
+                    Success = true,
+                    Data = true,
+                    Message = "Password changed successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = "Error changing password",
+                    Errors = new List<string> { ex.Message }
+                });
+            }
+        }
     }
 }

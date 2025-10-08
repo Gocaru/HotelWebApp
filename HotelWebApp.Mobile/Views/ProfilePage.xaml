@@ -160,7 +160,7 @@
                                    FontAttributes="Bold"
                                    TextColor="{AppThemeBinding Light=#1F1F1F, Dark=White}" />
 
-                            <!-- Edit Button (quando NÃO está a editar) -->
+                            <!-- Edit Button (quando não está a editar) -->
                             <Button Grid.Column="1"
                                     Text="Edit"
                                     Command="{Binding ToggleEditCommand}"
@@ -170,7 +170,7 @@
                                     Padding="10,0"
                                     IsVisible="{Binding IsEditing, Converter={StaticResource InvertedBoolConverter}}" />
 
-                            <!-- Cancel Button (quando ESTÁ a editar) -->
+                            <!-- Cancel Button (quando está a editar) -->
                             <Button Grid.Column="1"
                                     Text="Cancel"
                                     Command="{Binding ToggleEditCommand}"
@@ -269,6 +269,17 @@
                         Command="{Binding ViewReservationsCommand}"
                         BackgroundColor="{StaticResource Primary}"
                         TextColor="White"
+                        CornerRadius="10"
+                        HeightRequest="50"
+                        FontAttributes="Bold" />
+
+                <!-- Change Password Button -->
+                <Button Text="Change Password"
+                        Command="{Binding NavigateToChangePasswordCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="{StaticResource Primary}"
+                        BorderColor="{StaticResource Primary}"
+                        BorderWidth="2"
                         CornerRadius="10"
                         HeightRequest="50"
                         FontAttributes="Bold" />

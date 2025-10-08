@@ -35,7 +35,7 @@ namespace HotelWebApp.Mobile.ViewModels
 
             if (string.IsNullOrWhiteSpace(Email))
             {
-                ErrorMessage = "Please enter your email"; 
+                ErrorMessage = "Please enter your email";
                 System.Diagnostics.Debug.WriteLine($"Validation failed: Email empty");
                 OnPropertyChanged(nameof(HasError));
                 return;
@@ -43,7 +43,7 @@ namespace HotelWebApp.Mobile.ViewModels
 
             if (string.IsNullOrWhiteSpace(Password))
             {
-                ErrorMessage = "Please enter your password"; 
+                ErrorMessage = "Please enter your password";
                 System.Diagnostics.Debug.WriteLine($"Validation failed: Password empty");
                 OnPropertyChanged(nameof(HasError));
                 return;
@@ -52,36 +52,42 @@ namespace HotelWebApp.Mobile.ViewModels
             IsBusy = true;
             ErrorMessage = string.Empty;
             OnPropertyChanged(nameof(HasError));
-
             System.Diagnostics.Debug.WriteLine($"Calling API with Email: {Email}");
 
             try
             {
                 var result = await _authService.LoginAsync(Email, Password);
-
                 System.Diagnostics.Debug.WriteLine($"API Response - Success: {result.Success}");
                 System.Diagnostics.Debug.WriteLine($"API Response - Message: {result.Message}");
 
                 if (result.Success && result.Data != null)
                 {
-                    System.Diagnostics.Debug.WriteLine("✅ Login SUCCESS - Reconfiguring Shell");
+                    System.Diagnostics.Debug.WriteLine("Login SUCCESS - Reconfiguring Shell");
 
                     // Reconfigurar Shell para utilizador autenticado
                     if (Shell.Current is AppShell appShell)
                     {
                         appShell.ConfigureShellForAuthenticatedUser(AppShell.Services);
                     }
+
+                    await Shell.Current.GoToAsync("///Home");
+
+                    System.Diagnostics.Debug.WriteLine("Navigation to HomePage completed");
+
+                    // Limpar campos após login bem-sucedido
+                    Email = string.Empty;
+                    Password = string.Empty;
                 }
                 else
                 {
-                    ErrorMessage = result.Message ?? "Login failed. Please try again."; 
+                    ErrorMessage = result.Message ?? "Login failed. Please try again.";
                     System.Diagnostics.Debug.WriteLine($"Login FAILED - ErrorMessage: {ErrorMessage}");
                     OnPropertyChanged(nameof(HasError));
                 }
             }
             catch (Exception ex)
             {
-                ErrorMessage = $"Erro de conexão: {ex.Message}";
+                ErrorMessage = $"Connection error: {ex.Message}";
                 System.Diagnostics.Debug.WriteLine($"EXCEPTION: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Stack: {ex.StackTrace}");
                 OnPropertyChanged(nameof(HasError));
