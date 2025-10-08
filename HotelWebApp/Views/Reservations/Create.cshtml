@@ -82,6 +82,18 @@
                                     <span asp-validation-for="NumberOfGuests" class="text-danger"></span>
                                 </div>
 
+                                <div class="form-group mb-3">
+                                    <label asp-for="PromotionId" class="control-label">
+                                        <i class="fas fa-gift text-success"></i> Apply Promotion (Optional)
+                                    </label>
+                                    <select asp-for="PromotionId" class="form-select" asp-items="Model.Promotions">
+                                        <option value="">-- No promotion --</option>
+                                    </select>
+                                    <small class="form-text text-muted">
+                                        <i class="fas fa-info-circle"></i> Select a promotion to get a discount on your stay
+                                    </small>
+                                </div>
+
                                 <div class="form-group mt-4">
                                     <input type="submit" value="Confirm Reservation" class="btn btn-primary" />
                                     <a asp-action="Index" class="btn btn-secondary">Cancel</a>
@@ -126,7 +138,40 @@
                 }
             }
 
-            checkInInput.addEventListener('change', updateCheckOutConstraints);
+            async function updatePromotions() {
+                if (!checkInInput.value || !checkOutInput.value || !promotionSelect) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/Promotions/available?checkInDate=${checkInInput.value}&checkOutDate=${checkOutInput.value}`);
+                    const result = await response.json();
+
+                    if (result.success && result.data) {
+                        promotionSelect.innerHTML = '<option value="">-- No promotion --</option>';
+
+                        result.data.forEach(promo => {
+                            const option = document.createElement('option');
+                            option.value = promo.id;
+                            option.text = `${promo.title} (-${promo.discountPercentage}%)`;
+                            promotionSelect.appendChild(option);
+                        });
+
+                        console.log(`✅ Updated promotions: ${result.data.length} available`);
+                    }
+                } catch (error) {
+                    console.error('Error updating promotions:', error);
+                }
+            }
+
+            checkInInput.addEventListener('change', function() {
+                updateCheckOutConstraints();
+                updatePromotions(); 
+            });
+
+            checkOutInput.addEventListener('change', function() {
+                updatePromotions(); 
+            });
 
             updateCheckOutConstraints();
         });

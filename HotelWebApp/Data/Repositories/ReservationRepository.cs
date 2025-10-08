@@ -49,6 +49,7 @@ namespace HotelWebApp.Data.Repositories
                 .Include(r => r.ReservationAmenities)
                     .ThenInclude(ra => ra.Amenity)
                 .Include(r => r.Invoice)
+                .Include(r => r.Promotion)
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
@@ -137,6 +138,7 @@ namespace HotelWebApp.Data.Repositories
             return await _context.Reservations
                 .Where(r => r.GuestId == guestId)
                 .Include(r => r.Room)
+                .Include(r => r.Promotion)
                 .OrderByDescending(r => r.CheckInDate)
                 .ToListAsync();
         }
@@ -195,6 +197,21 @@ namespace HotelWebApp.Data.Repositories
                 .AnyAsync(r => r.RoomId == roomId &&
                                r.Status != ReservationStatus.Cancelled &&
                                r.CheckInDate >= today);
+        }
+
+        /// <summary>
+        /// Asynchronously retrieves all confirmed reservations with check-in dates in the past,
+        /// which should be marked as No-Show. Includes the related Room entity.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a collection of past-due confirmed reservations.</returns>
+        public async Task<IEnumerable<Reservation>> GetPastConfirmedReservationsAsync()
+        {
+            var today = DateTime.Today;
+
+            return await _context.Reservations
+                .Include(r => r.Room)
+                .Where(r => r.Status == ReservationStatus.Confirmed && r.CheckInDate.Date < today)
+                .ToListAsync();
         }
 
     }

@@ -176,6 +176,24 @@ else if (User.IsInRole("Admin"))
                     </div>
                 </div>
             </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title"><i class="fas fa-running me-2"></i>Manage Activities</h5>
+                        <p class="card-text">Create and manage activities and services available to guests.</p>
+                        <a asp-controller="Activities" asp-action="Index" class="btn btn-primary mt-auto">Go to Activities</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title"><i class="fas fa-tags me-2"></i>Manage Promotions</h5>
+                        <p class="card-text">Create and manage promotional offers and special deals.</p>
+                        <a asp-controller="Promotions" asp-action="Index" class="btn btn-primary mt-auto">Go to Promotions</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 }

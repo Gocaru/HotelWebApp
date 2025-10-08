@@ -6,11 +6,8 @@
              x:DataType="viewmodels:HomeViewModel"
              Title="Home"
              BackgroundColor="#F5F5F5">
-
     <ScrollView>
         <VerticalStackLayout Padding="30" Spacing="20">
-
-            <!-- Welcome Message -->
             <Label Text="{Binding WelcomeMessage}"
                    FontSize="28"
                    FontAttributes="Bold"
@@ -18,7 +15,6 @@
                    HorizontalOptions="Center"
                    Margin="0,40,0,20"/>
 
-            <!-- Feature Buttons -->
             <Frame Padding="0" 
                    CornerRadius="10" 
                    HasShadow="True"
@@ -36,19 +32,8 @@
                    CornerRadius="10" 
                    HasShadow="True"
                    BorderColor="Transparent">
-                <Button Text="🏨 Book Room"
-                        BackgroundColor="#1E3A8A"
-                        TextColor="White"
-                        FontSize="16"
-                        HeightRequest="60"
-                        CornerRadius="10"/>
-            </Frame>
-
-            <Frame Padding="0" 
-                   CornerRadius="10" 
-                   HasShadow="True"
-                   BorderColor="Transparent">
                 <Button Text="🎯 Activities"
+                        Command="{Binding NavigateToActivitiesCommand}"
                         BackgroundColor="#1E3A8A"
                         TextColor="White"
                         FontSize="16"
@@ -60,7 +45,8 @@
                    CornerRadius="10" 
                    HasShadow="True"
                    BorderColor="Transparent">
-                <Button Text="👤 My Profile"
+                <Button Text="📋 My Activity Bookings"
+                        Command="{Binding NavigateToMyActivityBookingsCommand}"
                         BackgroundColor="#1E3A8A"
                         TextColor="White"
                         FontSize="16"
@@ -68,7 +54,19 @@
                         CornerRadius="10"/>
             </Frame>
 
-            <!-- Logout Button -->
+            <Frame Padding="0" 
+                   CornerRadius="10" 
+                   HasShadow="True"
+                   BorderColor="Transparent">
+                <Button Text="🎁 Promotions"
+                        Command="{Binding NavigateToPromotionsCommand}"
+                        BackgroundColor="#10B981"
+                        TextColor="White"
+                        FontSize="16"
+                        HeightRequest="60"
+                        CornerRadius="10"/>
+            </Frame>
+
             <Frame Padding="0" 
                    CornerRadius="10" 
                    HasShadow="True"
@@ -83,7 +81,6 @@
                         HeightRequest="60"
                         CornerRadius="10"/>
             </Frame>
-
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

@@ -23,6 +23,7 @@ namespace HotelWebApp.Controllers
         private readonly IAmenityRepository _amenityRepository;
         private readonly IPaymentService _paymentService;
         private readonly IChangeRequestRepository _changeRequestRepo;
+        private readonly IPromotionRepository _promotionRepo;
 
         public ReservationsController(IReservationRepository reservationRepo,
                                         IRoomRepository roomRepo,
@@ -30,7 +31,8 @@ namespace HotelWebApp.Controllers
                                         IReservationService reservationService,
                                         IAmenityRepository amenityRepository,
                                         IPaymentService paymentService,
-                                        IChangeRequestRepository changeRequestRepo)
+                                        IChangeRequestRepository changeRequestRepo,
+                                        IPromotionRepository promotionRepo)
         {
             _reservationRepo = reservationRepo;
             _roomRepo = roomRepo;
@@ -39,6 +41,7 @@ namespace HotelWebApp.Controllers
             _amenityRepository = amenityRepository;
             _paymentService = paymentService;
             _changeRequestRepo = changeRequestRepo;
+            _promotionRepo = promotionRepo;
         }
 
         // GET: Reservations
@@ -61,8 +64,6 @@ namespace HotelWebApp.Controllers
                     numberOfNights = 1;
                 }
 
-                decimal stayCost = numberOfNights * (res.Room?.PricePerNight ?? 0);
-
                 decimal amenitiesCost = res.ReservationAmenities?.Sum(ra => (ra.Amenity?.Price ?? 0) * ra.Quantity) ?? 0;
 
                 return new ReservationListViewModel
@@ -78,8 +79,7 @@ namespace HotelWebApp.Controllers
                     NumberOfGuests = res.NumberOfGuests,
                     RoomDetails = $"{res.Room?.RoomNumber} ({res.Room?.Type})",
                     GuestDetails = $"{res.ApplicationUser?.FullName ?? "N/A"} ({res.NumberOfGuests} pax)",
-                    TotalCost = stayCost + amenitiesCost,
-
+                    TotalCost = res.TotalPrice + amenitiesCost,
                     CanCheckIn = (res.Status == ReservationStatus.Confirmed && res.CheckInDate.Date <= DateTime.Today.Date),
                     CanCheckOut = (res.Status == ReservationStatus.CheckedIn),
                     CanEdit = (res.Status == ReservationStatus.Confirmed || res.Status == ReservationStatus.CheckedIn),
@@ -189,6 +189,14 @@ namespace HotelWebApp.Controllers
 
                 model.CheckInDate = checkInDate.Value;
                 model.CheckOutDate = checkOutDate.Value;
+
+                var validPromotions = await _promotionRepo.GetPromotionsForDateRangeAsync(checkInDate.Value, checkOutDate.Value);
+
+                model.Promotions = validPromotions.Select(p => new SelectListItem
+                {
+                    Value = p.Id.ToString(),
+                    Text = $"{p.Title} (-{p.DiscountPercentage}%)"
+                });
             }
             else if (roomId.HasValue)
             {
@@ -204,6 +212,13 @@ namespace HotelWebApp.Controllers
                 }
                 model.CheckInDate = DateTime.Today.AddDays(1);
                 model.CheckOutDate = DateTime.Today.AddDays(2);
+
+                var validPromotions = await _promotionRepo.GetPromotionsForDateRangeAsync(model.CheckInDate, model.CheckOutDate);
+                model.Promotions = validPromotions.Select(p => new SelectListItem
+                {
+                    Value = p.Id.ToString(),
+                    Text = $"{p.Title} (-{p.DiscountPercentage}%)"
+                });
             }
             else
             {
@@ -212,6 +227,7 @@ namespace HotelWebApp.Controllers
             }
 
             ViewBag.Source = source;
+
             return View(model);
         }
 

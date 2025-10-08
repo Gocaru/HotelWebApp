@@ -94,5 +94,28 @@ namespace HotelWebApp.Data.Entities
         /// This may be null until the check-out process is initiated.
         /// </summary>
         public virtual Invoice? Invoice { get; set; }
+
+        /// <summary>
+        /// The ID of the promotion applied to this reservation, if any.
+        /// </summary>
+        public int? PromotionId { get; set; }
+
+        /// <summary>
+        /// Navigation property to the applied Promotion.
+        /// </summary>
+        [ForeignKey("PromotionId")]
+        public virtual Promotion? Promotion { get; set; }
+
+        /// <summary>
+        /// The discount percentage that was applied from the promotion (stored for historical record).
+        /// </summary>
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal? DiscountPercentage { get; set; }
+
+        /// <summary>
+        /// The original price before any discount was applied.
+        /// </summary>
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? OriginalPrice { get; set; }
     }
 }

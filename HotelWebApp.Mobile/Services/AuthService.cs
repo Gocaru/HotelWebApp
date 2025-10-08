@@ -22,6 +22,7 @@ namespace HotelWebApp.Mobile.Services
             {
                 System.Diagnostics.Debug.WriteLine($"=== LOGIN REQUEST ===");
                 System.Diagnostics.Debug.WriteLine($"BaseAddress: {_httpClient.BaseAddress}");
+                System.Diagnostics.Debug.WriteLine($"Timeout: {_httpClient.Timeout}");
                 System.Diagnostics.Debug.WriteLine($"Email: {email}");
 
                 var request = new MobileLoginRequest
@@ -30,8 +31,11 @@ namespace HotelWebApp.Mobile.Services
                     Password = password
                 };
 
+                System.Diagnostics.Debug.WriteLine($"⏱️ Starting HTTP POST at {DateTime.Now:HH:mm:ss.fff}");
+
                 var response = await _httpClient.PostAsJsonAsync("api/Auth/login", request);
 
+                System.Diagnostics.Debug.WriteLine($"✅ HTTP POST completed at {DateTime.Now:HH:mm:ss.fff}");
                 System.Diagnostics.Debug.WriteLine($"AuthService: StatusCode = {response.StatusCode}");
 
                 if (!response.IsSuccessStatusCode)
@@ -82,9 +86,30 @@ namespace HotelWebApp.Mobile.Services
                     Message = "Unknown error"
                 };
             }
+            catch (TaskCanceledException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ TIMEOUT at {DateTime.Now:HH:mm:ss.fff}");
+                System.Diagnostics.Debug.WriteLine($"Exception: {ex.Message}");
+                return new ApiResponse<LoginResponse>
+                {
+                    Success = false,
+                    Message = "Connection timeout - check if API is accessible"
+                };
+            }
+            catch (HttpRequestException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ HTTP ERROR at {DateTime.Now:HH:mm:ss.fff}");
+                System.Diagnostics.Debug.WriteLine($"Exception: {ex.Message}");
+                return new ApiResponse<LoginResponse>
+                {
+                    Success = false,
+                    Message = $"Network error: {ex.Message}"
+                };
+            }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Exception: {ex}");
+                System.Diagnostics.Debug.WriteLine($"❌ GENERAL EXCEPTION at {DateTime.Now:HH:mm:ss.fff}");
+                System.Diagnostics.Debug.WriteLine($"Exception: {ex}");
                 return new ApiResponse<LoginResponse>
                 {
                     Success = false,

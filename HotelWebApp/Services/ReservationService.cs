@@ -13,21 +13,27 @@ namespace HotelWebApp.Services
     /// </summary>
     public class ReservationService : IReservationService
     {
-        private readonly HotelWebAppContext _context;
         private readonly IReservationRepository _reservationRepo;
         private readonly IAmenityRepository _amenityRepo;
         private readonly IRoomRepository _roomRepo;
         private readonly IEmailSender _emailSender;
         private readonly IPaymentService _paymentService;
+        private readonly IPromotionRepository _promotionRepo;
 
-        public ReservationService(HotelWebAppContext context, IReservationRepository reservationRepo, IRoomRepository roomRepo, IEmailSender emailSender, IAmenityRepository amenityRepo, IPaymentService paymentService)
+        public ReservationService(
+            IReservationRepository reservationRepo, 
+            IRoomRepository roomRepo, 
+            IEmailSender emailSender, 
+            IAmenityRepository amenityRepo, 
+            IPaymentService paymentService, 
+            IPromotionRepository promotionRepo)
         {
-            _context = context;
             _reservationRepo = reservationRepo;
             _roomRepo = roomRepo;
             _emailSender = emailSender;
             _amenityRepo = amenityRepo;
             _paymentService = paymentService;
+            _promotionRepo = promotionRepo;
         }
 
         public async Task<Result> CreateReservationAsync(ReservationViewModel model, string guestId)
@@ -52,6 +58,35 @@ namespace HotelWebApp.Services
 
             var numberOfNights = (checkOutWithTime.Date - checkInWithTime.Date).Days;
 
+            decimal originalPrice = numberOfNights * room.PricePerNight;
+            decimal finalPrice = originalPrice;
+            decimal? discountPercentage = null;
+            int? promotionId = null;
+
+            if (model.PromotionId.HasValue && model.PromotionId.Value > 0)
+            {
+                var promotion = await _promotionRepo.GetActiveByIdAsync(model.PromotionId.Value);  // ✅
+
+                if (promotion != null)
+                {
+                    // Validar se a promoção está válida para as datas da reserva
+                    if (checkInWithTime.Date >= promotion.StartDate.Date &&
+                        checkInWithTime.Date <= promotion.EndDate.Date)
+                    {
+                        promotionId = promotion.Id;
+                        discountPercentage = promotion.DiscountPercentage;
+
+                        decimal discountAmount = (originalPrice * discountPercentage.Value) / 100;
+                        finalPrice = originalPrice - discountAmount;
+
+                        System.Diagnostics.Debug.WriteLine($"🎁 Promotion Applied: {promotion.Title}");
+                        System.Diagnostics.Debug.WriteLine($"   Original Price: {originalPrice:C}");
+                        System.Diagnostics.Debug.WriteLine($"   Discount: {discountPercentage}% = {discountAmount:C}");
+                        System.Diagnostics.Debug.WriteLine($"   Final Price: {finalPrice:C}");
+                    }
+                }
+            }
+
             var reservation = new Reservation
             {
                 GuestId = guestId,
@@ -60,11 +95,22 @@ namespace HotelWebApp.Services
                 CheckOutDate = checkOutWithTime,
                 NumberOfGuests = model.NumberOfGuests,
                 Status = ReservationStatus.Confirmed,
-                // The initial total price is based on the room cost only. Amenities are added later.
-                TotalPrice = numberOfNights * room.PricePerNight
+                PromotionId = promotionId,
+                OriginalPrice = originalPrice,
+                DiscountPercentage = discountPercentage,
+                TotalPrice = finalPrice  // Preço final com desconto aplicado
             };
 
+            System.Diagnostics.Debug.WriteLine($"   Creating reservation for Employee:");
+            System.Diagnostics.Debug.WriteLine($"   GuestId from parameter: {guestId}");
+            System.Diagnostics.Debug.WriteLine($"   GuestId in model: {model.GuestId}");
+            System.Diagnostics.Debug.WriteLine($"   GuestId in reservation object: {reservation.GuestId}");
+            System.Diagnostics.Debug.WriteLine($"   RoomId: {model.RoomId}");
+            System.Diagnostics.Debug.WriteLine($"   Dates: {checkInWithTime:yyyy-MM-dd} to {checkOutWithTime:yyyy-MM-dd}");
+
             await _reservationRepo.CreateAsync(reservation);
+
+            System.Diagnostics.Debug.WriteLine($"✅ Reservation created with ID: {reservation.Id}");
 
             // Update the room's status to Reserved to block it for other bookings.
             room.Status = RoomStatus.Reserved;
@@ -384,12 +430,7 @@ namespace HotelWebApp.Services
         {
             try
             {
-                var today = DateTime.Today;
-
-                var reservationsToUpdate = await _context.Reservations
-                    .Include(r => r.Room)
-                    .Where(r => r.Status == ReservationStatus.Confirmed && r.CheckInDate.Date < today)
-                    .ToListAsync();
+                var reservationsToUpdate = await _reservationRepo.GetPastConfirmedReservationsAsync();  // ✅
 
                 if (!reservationsToUpdate.Any())
                 {
@@ -408,11 +449,9 @@ namespace HotelWebApp.Services
                     await _paymentService.CreateInvoiceForNoShowAsync(reservation.Id);
                 }
 
-                await _context.SaveChangesAsync();
-
-                string successMessage = reservationsToUpdate.Count == 1
+                string successMessage = reservationsToUpdate.Count() == 1
                     ? "1 reservation was successfully marked as No-Show."
-                    : $"{reservationsToUpdate.Count} reservations were successfully marked as No-Show.";
+                    : $"{reservationsToUpdate.Count()} reservations were successfully marked as No-Show.";
 
                 return Result.Success(successMessage);
             }
@@ -422,4 +461,5 @@ namespace HotelWebApp.Services
             }
         }
     }
+    
 }

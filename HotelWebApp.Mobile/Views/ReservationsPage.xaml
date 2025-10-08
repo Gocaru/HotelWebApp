@@ -29,7 +29,7 @@
 
         <RefreshView Grid.Row="1"
                      Command="{Binding LoadReservationsCommand}"
-                     IsRefreshing="{Binding IsBusy}">
+                     IsRefreshing="{Binding IsRefreshing}">
 
             <ScrollView>
                 <VerticalStackLayout Padding="15" Spacing="15">

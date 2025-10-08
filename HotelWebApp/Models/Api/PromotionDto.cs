@@ -13,5 +13,6 @@
         public int? DiscountPercentage { get; set; }
         public string? ImageUrl { get; set; }
         public string? Terms { get; set; }
+        public bool IsActive { get; set; }
     }
 }

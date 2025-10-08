@@ -335,6 +335,12 @@ namespace HotelWebApp.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("MinimumDaysInAdvance")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MinimumNights")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
@@ -345,6 +351,9 @@ namespace HotelWebApp.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -365,11 +374,20 @@ namespace HotelWebApp.Migrations
                     b.Property<DateTime>("CheckOutDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<decimal?>("DiscountPercentage")
+                        .HasColumnType("decimal(5,2)");
+
                     b.Property<string>("GuestId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("NumberOfGuests")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("OriginalPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("PromotionId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ReservationDate")
@@ -387,6 +405,8 @@ namespace HotelWebApp.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("GuestId");
+
+                    b.HasIndex("PromotionId");
 
                     b.HasIndex("RoomId");
 
@@ -665,6 +685,10 @@ namespace HotelWebApp.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("HotelWebApp.Data.Entities.Promotion", "Promotion")
+                        .WithMany()
+                        .HasForeignKey("PromotionId");
+
                     b.HasOne("HotelWebApp.Data.Entities.Room", "Room")
                         .WithMany("Reservations")
                         .HasForeignKey("RoomId")
@@ -672,6 +696,8 @@ namespace HotelWebApp.Migrations
                         .IsRequired();
 
                     b.Navigation("ApplicationUser");
+
+                    b.Navigation("Promotion");
 
                     b.Navigation("Room");
                 });

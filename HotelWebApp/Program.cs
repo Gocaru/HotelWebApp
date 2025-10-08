@@ -68,6 +68,8 @@ namespace HotelWebApp
             builder.Services.AddScoped<IAmenityRepository, AmenityRepository>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
             builder.Services.AddScoped<IChangeRequestRepository, ChangeRequestRepository>();
+            builder.Services.AddScoped<IActivityRepository, ActivityRepository>();
+            builder.Services.AddScoped<IPromotionRepository, PromotionRepository>();
 
             // Add JWT service
             builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
@@ -127,6 +129,8 @@ namespace HotelWebApp
                 });
             });
 
+            builder.WebHost.UseUrls("http://0.0.0.0:5113");
+
             var app = builder.Build();
 
             // Configure Swagger
@@ -165,10 +169,7 @@ namespace HotelWebApp
                 await seeder.SeedAsync();
             }
 
-            // Força HTTP em todas as interfaces de rede
-            app.Urls.Clear();
-            app.Urls.Add("http://0.0.0.0:5113");
-            app.Urls.Add("http://192.168.1.74:5113");
+
 
             app.Run();
         }

@@ -49,7 +49,27 @@ namespace HotelWebApp.Mobile.Services
                     };
                 }
 
+                var content = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"Response Content: {content.Substring(0, Math.Min(500, content.Length))}...");
+
                 var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<ReservationDto>>>();
+
+                if (result == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("❌ Result is NULL after parsing");
+                }
+                else if (result.Data == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ Result.Data is NULL. Success: {result.Success}, Message: {result.Message}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"✅ Parsed {result.Data.Count} reservations");
+                    foreach (var res in result.Data)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"   - Reservation #{res.Id}: {res.Status}, Room: {res.RoomNumber}");
+                    }
+                }
 
                 return result ?? new ApiResponse<List<ReservationDto>>
                 {
@@ -59,7 +79,9 @@ namespace HotelWebApp.Mobile.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Exception: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ EXCEPTION: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"StackTrace: {ex.StackTrace}");
+
                 return new ApiResponse<List<ReservationDto>>
                 {
                     Success = false,

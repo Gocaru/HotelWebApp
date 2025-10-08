@@ -74,5 +74,11 @@ namespace HotelWebApp.Models
         /// A collection of SelectListItem used to populate the available rooms dropdown.
         /// </summary>
         public IEnumerable<SelectListItem>? Rooms { get; set; }
+
+
+        [Display(Name = "Promotion")]
+        public int? PromotionId { get; set; }
+
+        public IEnumerable<SelectListItem>? Promotions { get; set; }
     }
 }
