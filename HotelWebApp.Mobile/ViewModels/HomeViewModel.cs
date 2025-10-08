@@ -10,7 +10,7 @@ namespace HotelWebApp.Mobile.ViewModels
         private readonly AuthService _authService;
 
         [ObservableProperty]
-        private string welcomeMessage = "Welcome to Hotel App!";
+        private string welcomeMessage = "Welcome!";
 
         public HomeViewModel(AuthService authService)
         {
@@ -18,42 +18,48 @@ namespace HotelWebApp.Mobile.ViewModels
         }
 
         [RelayCommand]
-        private async Task NavigateToReservationsAsync()
+        private async Task NavigateToProfile()
+        {
+            await Shell.Current.GoToAsync(nameof(ProfilePage));
+        }
+
+        [RelayCommand]
+        private async Task NavigateToReservations()
         {
             await Shell.Current.GoToAsync(nameof(ReservationsPage));
         }
 
         [RelayCommand]
-        private async Task NavigateToActivitiesAsync()
+        private async Task NavigateToActivities()
         {
             await Shell.Current.GoToAsync(nameof(ActivitiesPage));
         }
 
         [RelayCommand]
-        private async Task NavigateToMyActivityBookingsAsync()
+        private async Task NavigateToMyActivityBookings()
         {
             await Shell.Current.GoToAsync(nameof(MyActivityBookingsPage));
         }
 
         [RelayCommand]
-        private async Task NavigateToPromotionsAsync()
+        private async Task NavigateToPromotions()
         {
             await Shell.Current.GoToAsync(nameof(PromotionsPage));
         }
 
         [RelayCommand]
-        private async Task LogoutAsync()
+        private async Task Logout()
         {
-            await _authService.LogoutAsync();
+            bool confirm = await Shell.Current.DisplayAlert(
+                "Logout",
+                "Are you sure you want to logout?",
+                "Yes",
+                "No");
 
-            // Reconfigurar Shell para não autenticado
-            if (Shell.Current is AppShell appShell)
+            if (confirm)
             {
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    appShell.ConfigureShellForUnauthenticatedUser(AppShell.Services);
-                    Shell.Current.GoToAsync($"///{nameof(LoginPage)}");
-                });
+                await _authService.LogoutAsync();
+                await Shell.Current.GoToAsync(nameof(LoginPage));
             }
         }
     }

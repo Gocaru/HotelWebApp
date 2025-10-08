@@ -14,6 +14,7 @@ namespace HotelWebApp.Mobile
             // Registar rotas
             Routing.RegisterRoute(nameof(LoginPage), typeof(LoginPage));
             Routing.RegisterRoute(nameof(HomePage), typeof(HomePage));
+            Routing.RegisterRoute(nameof(ProfilePage), typeof(ProfilePage));
             Routing.RegisterRoute(nameof(ReservationsPage), typeof(ReservationsPage));
             Routing.RegisterRoute(nameof(ReservationDetailPage), typeof(ReservationDetailPage));
             Routing.RegisterRoute(nameof(ActivitiesPage), typeof(ActivitiesPage));
