@@ -14,18 +14,15 @@
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="20">
 
-            <!-- Loading Indicator -->
             <ActivityIndicator IsRunning="{Binding IsBusy}"
                              IsVisible="{Binding IsBusy}"
                              Color="{StaticResource Primary}"
                              VerticalOptions="Center"
                              HeightRequest="50" />
 
-            <!-- Profile Content -->
             <VerticalStackLayout IsVisible="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
                                Spacing="20">
 
-                <!-- Profile Photo Section -->
                 <Frame CornerRadius="15"
                        Padding="0"
                        HasShadow="True"
@@ -33,7 +30,6 @@
                        BackgroundColor="{AppThemeBinding Light=White, Dark=#1F1F1F}">
                     <VerticalStackLayout Padding="20" Spacing="15">
 
-                        <!-- Photo with tap gesture -->
                         <Grid WidthRequest="120"
                               HeightRequest="120"
                               HorizontalOptions="Center">
@@ -42,14 +38,15 @@
                                    Padding="0"
                                    HasShadow="False"
                                    BorderColor="{StaticResource Primary}"
+                                   BackgroundColor="Transparent"
                                    WidthRequest="120"
                                    HeightRequest="120"
                                    IsClippedToBounds="True">
-                                <Image Source="{Binding Profile.ProfileImageSource}"
-                                       Aspect="AspectFill" />
+                                <Image Source="{Binding Profile.ProfilePictureUrl}"
+                                       Aspect="AspectFill"
+                                       BackgroundColor="Transparent" />
                             </Frame>
 
-                            <!-- Camera icon overlay -->
                             <Frame CornerRadius="20"
                                    Padding="8"
                                    HasShadow="True"
@@ -81,9 +78,7 @@
                     </VerticalStackLayout>
                 </Frame>
 
-                <!-- Statistics Cards -->
                 <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
-                    <!-- Total Reservations -->
                     <Frame Grid.Column="0"
                            CornerRadius="12"
                            Padding="15"
@@ -103,7 +98,6 @@
                         </VerticalStackLayout>
                     </Frame>
 
-                    <!-- Completed Stays -->
                     <Frame Grid.Column="1"
                            CornerRadius="12"
                            Padding="15"
@@ -123,7 +117,6 @@
                         </VerticalStackLayout>
                     </Frame>
 
-                    <!-- Upcoming -->
                     <Frame Grid.Column="2"
                            CornerRadius="12"
                            Padding="15"
@@ -144,7 +137,6 @@
                     </Frame>
                 </Grid>
 
-                <!-- Personal Information -->
                 <Frame CornerRadius="15"
                        Padding="20"
                        HasShadow="True"
@@ -152,7 +144,6 @@
                        BackgroundColor="{AppThemeBinding Light=White, Dark=#1F1F1F}">
                     <VerticalStackLayout Spacing="15">
 
-                        <!-- Header with Edit Button -->
                         <Grid ColumnDefinitions="*,Auto">
                             <Label Grid.Column="0"
                                    Text="Personal Information"
@@ -160,7 +151,6 @@
                                    FontAttributes="Bold"
                                    TextColor="{AppThemeBinding Light=#1F1F1F, Dark=White}" />
 
-                            <!-- Edit Button (quando não está a editar) -->
                             <Button Grid.Column="1"
                                     Text="Edit"
                                     Command="{Binding ToggleEditCommand}"
@@ -170,7 +160,6 @@
                                     Padding="10,0"
                                     IsVisible="{Binding IsEditing, Converter={StaticResource InvertedBoolConverter}}" />
 
-                            <!-- Cancel Button (quando está a editar) -->
                             <Button Grid.Column="1"
                                     Text="Cancel"
                                     Command="{Binding ToggleEditCommand}"
@@ -181,7 +170,6 @@
                                     IsVisible="{Binding IsEditing}" />
                         </Grid>
 
-                        <!-- View Mode -->
                         <VerticalStackLayout Spacing="15"
                                            IsVisible="{Binding IsEditing, Converter={StaticResource InvertedBoolConverter}}">
 
@@ -213,7 +201,6 @@
                             </VerticalStackLayout>
                         </VerticalStackLayout>
 
-                        <!-- Edit Mode -->
                         <VerticalStackLayout Spacing="15"
                                            IsVisible="{Binding IsEditing}">
 
@@ -251,7 +238,6 @@
                                        BackgroundColor="{AppThemeBinding Light=#F9FAFB, Dark=#2D2D2D}" />
                             </VerticalStackLayout>
 
-                            <!-- Save Button -->
                             <Button Text="Save Changes"
                                     Command="{Binding SaveProfileCommand}"
                                     BackgroundColor="{StaticResource Primary}"
@@ -264,7 +250,6 @@
                     </VerticalStackLayout>
                 </Frame>
 
-                <!-- View All Reservations Button -->
                 <Button Text="View All Reservations"
                         Command="{Binding ViewReservationsCommand}"
                         BackgroundColor="{StaticResource Primary}"
@@ -273,7 +258,6 @@
                         HeightRequest="50"
                         FontAttributes="Bold" />
 
-                <!-- Change Password Button -->
                 <Button Text="Change Password"
                         Command="{Binding NavigateToChangePasswordCommand}"
                         BackgroundColor="Transparent"

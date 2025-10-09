@@ -62,5 +62,11 @@ namespace HotelWebApp.Mobile.ViewModels
                 await Shell.Current.GoToAsync(nameof(LoginPage));
             }
         }
+
+        [RelayCommand]
+        private async Task NavigateToAbout()
+        {
+            await Shell.Current.GoToAsync(nameof(AboutPage));
+        }
     }
 }
