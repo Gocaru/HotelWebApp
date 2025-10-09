@@ -65,7 +65,6 @@ namespace HotelWebApp.Mobile.ViewModels
                 {
                     System.Diagnostics.Debug.WriteLine("Login SUCCESS - Reconfiguring Shell");
 
-                    // Reconfigurar Shell para utilizador autenticado
                     if (Shell.Current is AppShell appShell)
                     {
                         appShell.ConfigureShellForAuthenticatedUser(AppShell.Services);
@@ -75,15 +74,31 @@ namespace HotelWebApp.Mobile.ViewModels
 
                     System.Diagnostics.Debug.WriteLine("Navigation to HomePage completed");
 
-                    // Limpar campos após login bem-sucedido
                     Email = string.Empty;
                     Password = string.Empty;
                 }
                 else
                 {
-                    ErrorMessage = result.Message ?? "Login failed. Please try again.";
-                    System.Diagnostics.Debug.WriteLine($"Login FAILED - ErrorMessage: {ErrorMessage}");
-                    OnPropertyChanged(nameof(HasError));
+                    // Verifica se é erro de email não confirmado
+                    if (result.Message?.Contains("Email not confirmed") == true)
+                    {
+                        var confirm = await Shell.Current.DisplayAlert(
+                            "Email Not Confirmed",
+                            "Your email address has not been confirmed yet. Would you like to confirm it now?",
+                            "Yes",
+                            "Cancel");
+
+                        if (confirm)
+                        {
+                            await Shell.Current.GoToAsync($"{nameof(ConfirmEmailPage)}?email={Uri.EscapeDataString(Email)}");
+                        }
+                    }
+                    else
+                    {
+                        ErrorMessage = result.Message ?? "Login failed. Please try again.";
+                        System.Diagnostics.Debug.WriteLine($"Login FAILED - ErrorMessage: {ErrorMessage}");
+                        OnPropertyChanged(nameof(HasError));
+                    }
                 }
             }
             catch (Exception ex)
@@ -108,8 +123,7 @@ namespace HotelWebApp.Mobile.ViewModels
         [RelayCommand]
         private async Task NavigateToRegisterAsync()
         {
-            // TODO: Implementar mais tarde
-            await Shell.Current.DisplayAlert("Info", "Funcionalidade em desenvolvimento", "OK");
+            await Shell.Current.GoToAsync(nameof(RegisterPage));
         }
 
         [RelayCommand]
