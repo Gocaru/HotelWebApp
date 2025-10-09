@@ -73,6 +73,7 @@ namespace HotelWebApp
             builder.Services.AddScoped<IReservationService, ReservationService>();
             builder.Services.AddScoped<IAmenityRepository, AmenityRepository>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
+            builder.Services.AddScoped<IMobilePaymentService, MobilePaymentService>();
             builder.Services.AddScoped<IChangeRequestRepository, ChangeRequestRepository>();
             builder.Services.AddScoped<IActivityRepository, ActivityRepository>();
             builder.Services.AddScoped<IPromotionRepository, PromotionRepository>();

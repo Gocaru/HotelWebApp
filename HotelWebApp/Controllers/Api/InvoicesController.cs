@@ -292,5 +292,129 @@ namespace HotelWebApp.Controllers.Api
                 });
             }
         }
+
+        /// <summary>
+        /// Retrieves detailed line items breakdown for an invoice
+        /// </summary>
+        /// <param name="id">The invoice ID</param>
+        /// <returns>Itemized list of charges including room, amenities, activities, and discounts</returns>
+        // GET: api/invoices/{id}/items
+        [HttpGet("{id}/items")]
+        public async Task<ActionResult<ApiResponse<List<InvoiceItemDto>>>> GetInvoiceItems(int id)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new ApiResponse<List<InvoiceItemDto>>
+                    {
+                        Success = false,
+                        Message = "User not found in token"
+                    });
+                }
+
+                var invoice = await _context.Invoices
+                    .Include(i => i.Reservation)
+                        .ThenInclude(r => r.Room)
+                    .Include(i => i.Reservation)
+                        .ThenInclude(r => r.ReservationAmenities)
+                            .ThenInclude(ra => ra.Amenity)
+                    .FirstOrDefaultAsync(i => i.Id == id);
+
+                if (invoice == null)
+                {
+                    return NotFound(new ApiResponse<List<InvoiceItemDto>>
+                    {
+                        Success = false,
+                        Message = "Invoice not found"
+                    });
+                }
+
+                if (invoice.GuestId != userId)
+                {
+                    return Forbid();
+                }
+
+                var items = new List<InvoiceItemDto>();
+
+                // 1. Room charges
+                if (invoice.Reservation?.Room != null)
+                {
+                    var nights = (invoice.Reservation.CheckOutDate - invoice.Reservation.CheckInDate).Days;
+                    var roomPricePerNight = invoice.Reservation.Room.PricePerNight;
+
+                    items.Add(new InvoiceItemDto
+                    {
+                        Description = $"{invoice.Reservation.Room.Type} - Room {invoice.Reservation.Room.RoomNumber}",
+                        UnitPrice = roomPricePerNight,
+                        Quantity = nights,
+                        TotalPrice = roomPricePerNight * nights
+                    });
+                }
+
+                // 2. Amenities
+                if (invoice.Reservation?.ReservationAmenities?.Any() == true)
+                {
+                    foreach (var ra in invoice.Reservation.ReservationAmenities)
+                    {
+                        items.Add(new InvoiceItemDto
+                        {
+                            Description = ra.Amenity?.Name ?? "Amenity",
+                            UnitPrice = ra.PriceAtTimeOfBooking,
+                            Quantity = ra.Quantity,
+                            TotalPrice = ra.PriceAtTimeOfBooking * ra.Quantity
+                        });
+                    }
+                }
+
+                // 3. Activities
+                var activities = await _context.ActivityBookings
+                    .Include(ab => ab.Activity)
+                    .Where(ab => ab.ReservationId == invoice.ReservationId && ab.Status == ActivityBookingStatus.Completed)
+                    .ToListAsync();
+
+                foreach (var activityBooking in activities)
+                {
+                    items.Add(new InvoiceItemDto
+                    {
+                        Description = $"{activityBooking.Activity?.Name ?? "Activity"} - {activityBooking.ScheduledDate:dd MMM yyyy}",
+                        UnitPrice = activityBooking.TotalPrice / activityBooking.NumberOfPeople,
+                        Quantity = activityBooking.NumberOfPeople,
+                        TotalPrice = activityBooking.TotalPrice
+                    });
+                }
+
+                // 4. Discount (if any promotion applied)
+                if (invoice.Reservation?.DiscountPercentage.HasValue == true && invoice.Reservation.DiscountPercentage > 0)
+                {
+                    var discountAmount = (invoice.Reservation.OriginalPrice ?? invoice.Reservation.TotalPrice) - invoice.Reservation.TotalPrice;
+
+                    items.Add(new InvoiceItemDto
+                    {
+                        Description = $"Discount ({invoice.Reservation.DiscountPercentage}%)",
+                        UnitPrice = -discountAmount,
+                        Quantity = 1,
+                        TotalPrice = -discountAmount
+                    });
+                }
+
+                return Ok(new ApiResponse<List<InvoiceItemDto>>
+                {
+                    Success = true,
+                    Data = items,
+                    Message = "Invoice items retrieved successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiResponse<List<InvoiceItemDto>>
+                {
+                    Success = false,
+                    Message = "Error retrieving invoice items",
+                    Errors = new List<string> { ex.Message }
+                });
+            }
+        }
     }
 }

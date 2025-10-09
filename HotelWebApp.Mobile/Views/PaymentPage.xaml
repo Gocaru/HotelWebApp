@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:HotelWebApp.Mobile.ViewModels"
+             x:Class="HotelWebApp.Mobile.Views.PaymentPage"
+             x:DataType="viewmodels:PaymentViewModel"
+             Title="Payment"
+             BackgroundColor="#F5F5F5">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+
+            <Frame CornerRadius="15" HasShadow="True" Padding="20" BorderColor="Transparent" BackgroundColor="#1E3A8A">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="💳 Payment" 
+                           FontSize="24" 
+                           FontAttributes="Bold" 
+                           TextColor="White"/>
+                    <Label Text="{Binding Invoice.Id, StringFormat='Invoice #{0}'}" 
+                           FontSize="16" 
+                           TextColor="White" 
+                           Opacity="0.9"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Frame CornerRadius="15" HasShadow="True" Padding="20" BorderColor="Transparent">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="12">
+                    <Label Grid.Row="0" 
+                           Text="Invoice Summary" 
+                           FontSize="18" 
+                           FontAttributes="Bold"/>
+
+                    <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0" Text="Total Amount:" FontSize="14" TextColor="#6B7280"/>
+                        <Label Grid.Column="1" 
+                               Text="{Binding Invoice.TotalAmountFormatted}" 
+                               FontSize="14" 
+                               FontAttributes="Bold"/>
+                    </Grid>
+
+                    <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0" Text="Already Paid:" FontSize="14" TextColor="#6B7280"/>
+                        <Label Grid.Column="1" 
+                               Text="{Binding Invoice.AmountPaidFormatted}" 
+                               FontSize="14" 
+                               FontAttributes="Bold"
+                               TextColor="#10B981"/>
+                    </Grid>
+
+                    <Grid Grid.Row="3" ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0" 
+                               Text="Balance Due:" 
+                               FontSize="16" 
+                               FontAttributes="Bold"/>
+                        <Label Grid.Column="1" 
+                               Text="{Binding Invoice.BalanceDueFormatted}" 
+                               FontSize="18" 
+                               FontAttributes="Bold"
+                               TextColor="#EF4444"/>
+                    </Grid>
+                </Grid>
+            </Frame>
+
+            <Frame CornerRadius="15" HasShadow="True" Padding="20" BorderColor="Transparent">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Payment Amount" FontSize="16" FontAttributes="Bold"/>
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="€" 
+                               FontSize="24" 
+                               VerticalOptions="Center"
+                               TextColor="#1E3A8A"/>
+                        <Entry Text="{Binding PaymentAmount}" 
+                               Keyboard="Numeric"
+                               Placeholder="0.00"
+                               FontSize="24"
+                               HorizontalOptions="FillAndExpand"/>
+                    </HorizontalStackLayout>
+
+                    <Button Text="Pay Full Amount"
+                            Command="{Binding PayFullAmountCommand}"
+                            BackgroundColor="#6B7280"
+                            TextColor="White"
+                            FontSize="14"
+                            HeightRequest="40"
+                            CornerRadius="8"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Frame CornerRadius="15" HasShadow="True" Padding="20" BorderColor="Transparent">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="💳 Card Details" FontSize="18" FontAttributes="Bold"/>
+
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Card Number" FontSize="14" TextColor="#6B7280"/>
+                        <Entry Text="{Binding CardNumber}"
+                               Placeholder="1234 5678 9012 3456"
+                               Keyboard="Numeric"
+                               MaxLength="19"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Card Holder Name" FontSize="14" TextColor="#6B7280"/>
+                        <Entry Text="{Binding CardHolderName}"
+                               Placeholder="John Doe"/>
+                    </VerticalStackLayout>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <VerticalStackLayout Grid.Column="0" Spacing="5">
+                            <Label Text="Expiry Date" FontSize="14" TextColor="#6B7280"/>
+                            <Entry Text="{Binding ExpiryDate}"
+                                   Placeholder="MM/YY"
+                                   Keyboard="Numeric"
+                                   MaxLength="5"/>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Column="1" Spacing="5">
+                            <Label Text="CVV" FontSize="14" TextColor="#6B7280"/>
+                            <Entry Text="{Binding Cvv}"
+                                   Placeholder="123"
+                                   Keyboard="Numeric"
+                                   MaxLength="4"
+                                   IsPassword="True"/>
+                        </VerticalStackLayout>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Frame IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotEmptyConverter}}"
+                   BackgroundColor="#FEE2E2"
+                   BorderColor="#EF4444"
+                   CornerRadius="10"
+                   Padding="15"
+                   HasShadow="False">
+                <Label Text="{Binding ErrorMessage}"
+                       TextColor="#991B1B"
+                       FontSize="14"/>
+            </Frame>
+
+
+            <Frame CornerRadius="10" 
+                   BackgroundColor="#EFF6FF" 
+                   BorderColor="#DBEAFE"
+                   Padding="15"
+                   HasShadow="False">
+                <HorizontalStackLayout Spacing="10">
+                    <Label Text="🔒" FontSize="20"/>
+                    <Label Text="This is a simulated payment for demonstration purposes. No real charges will be made."
+                           FontSize="12"
+                           TextColor="#1E40AF"
+                           LineBreakMode="WordWrap"
+                           VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+            </Frame>
+
+            <Button Text="💳 Process Payment"
+                    Command="{Binding ProcessPaymentCommand}"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+                    BackgroundColor="#10B981"
+                    TextColor="White"
+                    FontSize="18"
+                    FontAttributes="Bold"
+                    HeightRequest="55"
+                    CornerRadius="12"
+                    Margin="0,10,0,0"/>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               Color="#1E3A8A"
+                               HeightRequest="50"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

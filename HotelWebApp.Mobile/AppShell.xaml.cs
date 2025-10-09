@@ -27,6 +27,8 @@ namespace HotelWebApp.Mobile
             Routing.RegisterRoute(nameof(ChangePasswordPage), typeof(ChangePasswordPage));
             Routing.RegisterRoute(nameof(ForgotPasswordPage), typeof(ForgotPasswordPage));
             Routing.RegisterRoute(nameof(ResetPasswordPage), typeof(ResetPasswordPage));
+            Routing.RegisterRoute(nameof(InvoiceDetailPage), typeof(InvoiceDetailPage));
+            Routing.RegisterRoute(nameof(PaymentPage), typeof(PaymentPage));
             Routing.RegisterRoute(nameof(AboutPage), typeof(AboutPage));
 
             // Inicializar estado do Shell baseado em autenticação
@@ -47,18 +49,79 @@ namespace HotelWebApp.Mobile
         {
             Items.Clear();
 
+            // Home Tab
             Items.Add(new Tab
             {
                 Title = "Home",
                 Items =
-                {
-                    new ShellContent
-                    {
-                        Title = "Home",
-                        Route = "Home",
-                        ContentTemplate = new DataTemplate(() => sp.GetRequiredService<HomePage>())
-                    }
-                }
+        {
+            new ShellContent
+            {
+                Title = "Home",
+                Route = "Home",
+                ContentTemplate = new DataTemplate(() => sp.GetRequiredService<HomePage>())
+            }
+        }
+            });
+
+            // Reservations Tab
+            Items.Add(new Tab
+            {
+                Title = "Reservations",
+                Items =
+        {
+            new ShellContent
+            {
+                Title = "My Reservations",
+                Route = "Reservations",
+                ContentTemplate = new DataTemplate(() => sp.GetRequiredService<ReservationsPage>())
+            }
+        }
+            });
+
+            // Invoices Tab
+            Items.Add(new Tab
+            {
+                Title = "Invoices",
+                Items =
+        {
+            new ShellContent
+            {
+                Title = "My Invoices",
+                Route = "Invoices",
+                ContentTemplate = new DataTemplate(() => sp.GetRequiredService<InvoicesPage>())
+            }
+        }
+            });
+
+            // Activities Tab
+            Items.Add(new Tab
+            {
+                Title = "Activities",
+                Items =
+        {
+            new ShellContent
+            {
+                Title = "Activities",
+                Route = "Activities",
+                ContentTemplate = new DataTemplate(() => sp.GetRequiredService<ActivitiesPage>())
+            }
+        }
+            });
+
+            // Profile Tab
+            Items.Add(new Tab
+            {
+                Title = "Profile",
+                Items =
+        {
+            new ShellContent
+            {
+                Title = "Profile",
+                Route = "Profile",
+                ContentTemplate = new DataTemplate(() => sp.GetRequiredService<ProfilePage>())
+            }
+        }
             });
         }
 
