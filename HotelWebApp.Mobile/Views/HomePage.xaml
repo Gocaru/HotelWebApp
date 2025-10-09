@@ -16,7 +16,6 @@
                    HorizontalOptions="Center"
                    Margin="0,40,0,20"/>
 
-            <!-- 👤 Profile Button -->
             <Frame Padding="0" 
                    CornerRadius="10" 
                    HasShadow="True"
@@ -30,7 +29,6 @@
                         CornerRadius="10"/>
             </Frame>
 
-            <!-- 📅 Reservations Button -->
             <Frame Padding="0" 
                    CornerRadius="10" 
                    HasShadow="True"
@@ -44,7 +42,6 @@
                         CornerRadius="10"/>
             </Frame>
 
-            <!-- 🎯 Activities Button -->
             <Frame Padding="0" 
                    CornerRadius="10" 
                    HasShadow="True"
@@ -58,7 +55,6 @@
                         CornerRadius="10"/>
             </Frame>
 
-            <!-- 📋 Activity Bookings Button -->
             <Frame Padding="0" 
                    CornerRadius="10" 
                    HasShadow="True"
@@ -72,7 +68,6 @@
                         CornerRadius="10"/>
             </Frame>
 
-            <!-- 🎁 Promotions Button -->
             <Frame Padding="0" 
                    CornerRadius="10" 
                    HasShadow="True"
@@ -86,7 +81,19 @@
                         CornerRadius="10"/>
             </Frame>
 
-            <!-- 🚪 Logout Button -->
+            <Frame Padding="0" 
+                   CornerRadius="10" 
+                   HasShadow="True"
+                   BorderColor="Transparent">
+                <Button Text="ℹ️ About"
+                        Command="{Binding NavigateToAboutCommand}"
+                        BackgroundColor="#6B7280"
+                        TextColor="White"
+                        FontSize="16"
+                        HeightRequest="60"
+                        CornerRadius="10"/>
+            </Frame>
+
             <Frame Padding="0" 
                    CornerRadius="10" 
                    HasShadow="True"

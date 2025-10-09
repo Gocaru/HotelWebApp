@@ -233,19 +233,23 @@ namespace HotelWebApp.Controllers.Api
                     await photo.CopyToAsync(stream);
                 }
 
+                // DELETAR FOTO ANTIGA (se existir)
                 if (!string.IsNullOrEmpty(user.ProfilePictureUrl))
                 {
-                    var oldFilePath = Path.Combine(_environment.WebRootPath, "images", "profiles", user.ProfilePictureUrl);
+                    // Extrai só o nome do ficheiro do caminho completo
+                    var oldFileName = user.ProfilePictureUrl.Replace("/images/profiles/", "");
+                    var oldFilePath = Path.Combine(_environment.WebRootPath, "images", "profiles", oldFileName);
+
                     if (System.IO.File.Exists(oldFilePath))
                     {
                         System.IO.File.Delete(oldFilePath);
                     }
                 }
 
-                user.ProfilePictureUrl = fileName;
-                await _userManager.UpdateAsync(user);
-
+                // GUARDAR O CAMINHO COMPLETO
                 var photoUrl = $"/images/profiles/{fileName}";
+                user.ProfilePictureUrl = photoUrl;
+                await _userManager.UpdateAsync(user);
 
                 return Ok(new ApiResponse<string>
                 {

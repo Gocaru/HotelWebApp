@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using HotelWebApp.Mobile.Helpers;
 using HotelWebApp.Mobile.Models;
 using HotelWebApp.Mobile.Services;
 using HotelWebApp.Mobile.Views;
@@ -44,7 +45,6 @@ namespace HotelWebApp.Mobile.ViewModels
             {
                 IsBusy = true;
 
-                // Carrega perfil do utilizador
                 var profileResponse = await _userService.GetProfileAsync();
 
                 if (!profileResponse.Success || profileResponse.Data == null)
@@ -54,6 +54,33 @@ namespace HotelWebApp.Mobile.ViewModels
                 }
 
                 Profile = profileResponse.Data;
+
+                System.Diagnostics.Debug.WriteLine($"\n=== PROFILE PICTURE DEBUG ===");
+                System.Diagnostics.Debug.WriteLine($"ProfilePictureUrl RAW: '{Profile.ProfilePictureUrl}'");
+
+                if (!string.IsNullOrWhiteSpace(Profile.ProfilePictureUrl))
+                {
+                    // ✅ USAR A CONSTANT
+                    if (!Profile.ProfilePictureUrl.StartsWith("http"))
+                    {
+                        var relativePath = Profile.ProfilePictureUrl.TrimStart('/');
+                        Profile.ProfilePictureUrl = $"{Constants.ApiBaseUrl}/{relativePath}";
+                    }
+
+                    // ✅ Cache buster
+                    Profile.ProfilePictureUrl += $"?t={DateTime.Now.Ticks}";
+
+                    System.Diagnostics.Debug.WriteLine($"✅ Final URL: {Profile.ProfilePictureUrl}");
+                }
+                else
+                {
+                    Profile.ProfilePictureUrl = "https://via.placeholder.com/150/6366F1/FFFFFF?text=No+Photo";
+                    System.Diagnostics.Debug.WriteLine("✅ Using placeholder");
+                }
+
+                System.Diagnostics.Debug.WriteLine($"=== END DEBUG ===\n");
+                OnPropertyChanged(nameof(Profile));
+
 
                 // Carrega sempre as reservas para calcular estatísticas
                 var reservationsResponse = await _reservationService.GetMyReservationsAsync();
@@ -211,14 +238,12 @@ namespace HotelWebApp.Mobile.ViewModels
 
                     if (uploadResponse.Success && uploadResponse.Data != null)
                     {
-                        // Atualizar o ProfilePictureUrl diretamente
                         if (Profile != null)
                         {
-                            // Extrair só o nome do ficheiro da URL retornada
-                            var fileName = uploadResponse.Data.Replace("/images/profiles/", "").Split('?')[0];
-                            Profile.ProfilePictureUrl = fileName;
+                            var relativePath = uploadResponse.Data.TrimStart('/');
+                            Profile.ProfilePictureUrl = $"{Constants.ApiBaseUrl}/{relativePath}?t={DateTime.Now.Ticks}";
 
-                            // Forçar atualização da propriedade computada
+                            System.Diagnostics.Debug.WriteLine($"✅ Photo URL updated: {Profile.ProfilePictureUrl}");
                             OnPropertyChanged(nameof(Profile));
                         }
 
