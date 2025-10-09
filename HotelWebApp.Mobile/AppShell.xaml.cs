@@ -22,6 +22,8 @@ namespace HotelWebApp.Mobile
             Routing.RegisterRoute(nameof(MyActivityBookingsPage), typeof(MyActivityBookingsPage));
             Routing.RegisterRoute(nameof(PromotionsPage), typeof(PromotionsPage));
             Routing.RegisterRoute(nameof(PromotionDetailPage), typeof(PromotionDetailPage));
+            Routing.RegisterRoute(nameof(RegisterPage), typeof(RegisterPage));
+            Routing.RegisterRoute(nameof(ConfirmEmailPage), typeof(ConfirmEmailPage));
             Routing.RegisterRoute(nameof(ChangePasswordPage), typeof(ChangePasswordPage));
             Routing.RegisterRoute(nameof(ForgotPasswordPage), typeof(ForgotPasswordPage));
             Routing.RegisterRoute(nameof(ResetPasswordPage), typeof(ResetPasswordPage));

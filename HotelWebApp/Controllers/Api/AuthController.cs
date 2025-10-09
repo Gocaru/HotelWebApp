@@ -3,7 +3,6 @@ using HotelWebApp.Models.Api;
 using HotelWebApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -22,17 +21,20 @@ namespace HotelWebApp.Controllers.Api
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IJwtTokenService _jwtTokenService;
         private readonly IEmailSender _emailSender;
+        private readonly IEmailConfirmationService _emailConfirmationService;
 
         public AuthController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             IJwtTokenService jwtTokenService,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            IEmailConfirmationService emailConfirmationService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtTokenService = jwtTokenService;
             _emailSender = emailSender;
+            _emailConfirmationService = emailConfirmationService;
         }
 
         /// <summary>
@@ -124,24 +126,27 @@ namespace HotelWebApp.Controllers.Api
         }
 
         /// <summary>
-        /// Registers a new guest user and returns a JWT token
+        /// Registers a new guest user and sends email confirmation
         /// </summary>
         /// <param name="request">Registration details including email, password, full name, and phone number</param>
-        /// <returns>JWT token and user profile information</returns>
+        /// <returns>Success message instructing user to check email</returns>
         /// <remarks>
-        /// New users are automatically assigned the 'Guest' role and their email is confirmed by default.
+        /// New users are automatically assigned the 'Guest' role but email must be confirmed before login.
         /// Password must meet the security requirements (minimum 6 characters).
         /// </remarks>
         [HttpPost("register")]
         [AllowAnonymous]
-        public async Task<ActionResult<ApiResponse<LoginResponse>>> Register([FromBody] MobileRegisterRequest request)
+        public async Task<ActionResult<ApiResponse<bool>>> Register([FromBody] MobileRegisterRequest request)
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"=== REGISTER REQUEST ===");
+                System.Diagnostics.Debug.WriteLine($"Email: {request.Email}");
+
                 var existingUser = await _userManager.FindByEmailAsync(request.Email);
                 if (existingUser != null)
                 {
-                    return BadRequest(new ApiResponse<LoginResponse>
+                    return BadRequest(new ApiResponse<bool>
                     {
                         Success = false,
                         Message = "Registration failed",
@@ -155,14 +160,14 @@ namespace HotelWebApp.Controllers.Api
                     Email = request.Email,
                     FullName = request.FullName,
                     PhoneNumber = request.PhoneNumber,
-                    EmailConfirmed = true
+                    EmailConfirmed = false
                 };
 
                 var result = await _userManager.CreateAsync(user, request.Password);
 
                 if (!result.Succeeded)
                 {
-                    return BadRequest(new ApiResponse<LoginResponse>
+                    return BadRequest(new ApiResponse<bool>
                     {
                         Success = false,
                         Message = "Registration failed",
@@ -172,35 +177,219 @@ namespace HotelWebApp.Controllers.Api
 
                 await _userManager.AddToRoleAsync(user, "Guest");
 
-                var token = await _jwtTokenService.GenerateTokenAsync(user);
+                // Gera código de 6 dígitos
+                var code = _emailConfirmationService.GenerateAndStoreCode(user.Id);
+                System.Diagnostics.Debug.WriteLine($"6-digit code generated: {code}");
 
-                var userDto = new UserDto
+                // Envia mail com o código
+                try
                 {
-                    Id = user.Id,
-                    Email = user.Email,
-                    FullName = user.FullName,
-                    ProfilePictureUrl = user.ProfilePictureUrl,
-                    IdentificationDocument = user.IdentificationDocument,
-                    PhoneNumber = user.PhoneNumber
-                };
+                    await _emailSender.SendEmailAsync(
+                        user.Email,
+                        "Confirm Your Email - HotelWebApp",
+                        $@"
+                        <h2>Welcome to HotelWebApp!</h2>
+    
+                        <p>Thank you for registering, <strong>{user.FullName}</strong>.</p>
+    
+                        <p>Your email confirmation code is:</p>
+    
+                        <h1 style='background-color: #6366F1; color: white; padding: 20px; text-align: center; font-size: 36px; letter-spacing: 5px;'>
+                            {code}
+                        </h1>
+    
+                        <p>This code will expire in 15 minutes.</p>
+    
+                        <p>If you didn't create this account, please ignore this email.</p>
+    
+                        <p>---<br>HotelWebApp Team</p>
+                        ");
 
-                return Ok(new ApiResponse<LoginResponse>
+                    System.Diagnostics.Debug.WriteLine("Confirmation email sent successfully!");
+                }
+                catch (Exception emailEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Email sending failed: {emailEx.Message}");
+
+                    await _userManager.DeleteAsync(user);
+
+                    return StatusCode(500, new ApiResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Failed to send confirmation email. Please try again.",
+                        Errors = new List<string> { emailEx.Message }
+                    });
+                }
+
+                return Ok(new ApiResponse<bool>
                 {
                     Success = true,
-                    Data = new LoginResponse
-                    {
-                        Token = token,
-                        User = userDto
-                    },
-                    Message = "Registration successful"
+                    Data = true,
+                    Message = "Registration successful! Check your email for a 6-digit confirmation code."
                 });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new ApiResponse<LoginResponse>
+                System.Diagnostics.Debug.WriteLine($"EXCEPTION: {ex.Message}");
+                return StatusCode(500, new ApiResponse<bool>
                 {
                     Success = false,
                     Message = "Internal server error",
+                    Errors = new List<string> { ex.Message }
+                });
+            }
+        }
+
+        /// <summary>
+        /// Confirms user email with the provided token
+        /// </summary>
+        /// <param name="request">Email and confirmation token</param>
+        /// <returns>Success confirmation</returns>
+        [HttpPost("confirm-email")]
+        [AllowAnonymous]
+        public async Task<ActionResult<ApiResponse<bool>>> ConfirmEmail([FromBody] ConfirmEmailRequest request)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"=== CONFIRM EMAIL REQUEST ===");
+                System.Diagnostics.Debug.WriteLine($"Email: {request.Email}");
+                System.Diagnostics.Debug.WriteLine($"Code: {request.Token}");
+
+                var user = await _userManager.FindByEmailAsync(request.Email);
+                if (user == null)
+                {
+                    return BadRequest(new ApiResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Invalid request",
+                        Errors = new List<string> { "User not found" }
+                    });
+                }
+
+                if (user.EmailConfirmed)
+                {
+                    return Ok(new ApiResponse<bool>
+                    {
+                        Success = true,
+                        Data = true,
+                        Message = "Email already confirmed. You can login now."
+                    });
+                }
+
+                // VALIDAR CÓDIGO DE 6 DÍGITOS
+                var isValid = _emailConfirmationService.ValidateCode(user.Id, request.Token);
+
+                if (!isValid)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ Invalid or expired code");
+                    return BadRequest(new ApiResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Invalid or expired confirmation code",
+                        Errors = new List<string> { "Please request a new code" }
+                    });
+                }
+
+                // CONFIRMAR EMAIL
+                user.EmailConfirmed = true;
+                await _userManager.UpdateAsync(user);
+
+                System.Diagnostics.Debug.WriteLine("✅ Email confirmed successfully!");
+
+                return Ok(new ApiResponse<bool>
+                {
+                    Success = true,
+                    Data = true,
+                    Message = "Email confirmed successfully! You can now login."
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ EXCEPTION: {ex.Message}");
+                return StatusCode(500, new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = "Error confirming email",
+                    Errors = new List<string> { ex.Message }
+                });
+            }
+        }
+
+        /// <summary>
+        /// Resends the email confirmation code
+        /// </summary>
+        /// <param name="request">User email</param>
+        /// <returns>Success confirmation</returns>
+        [HttpPost("resend-confirmation")]
+        [AllowAnonymous]
+        public async Task<ActionResult<ApiResponse<bool>>> ResendConfirmationEmail([FromBody] ResendConfirmationRequest request)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"=== RESEND CONFIRMATION EMAIL ===");
+                System.Diagnostics.Debug.WriteLine($"Email: {request.Email}");
+
+                var user = await _userManager.FindByEmailAsync(request.Email);
+
+                if (user == null)
+                {
+                    return Ok(new ApiResponse<bool>
+                    {
+                        Success = true,
+                        Data = true,
+                        Message = "If the email exists, a new confirmation code has been sent."
+                    });
+                }
+
+                if (user.EmailConfirmed)
+                {
+                    return Ok(new ApiResponse<bool>
+                    {
+                        Success = true,
+                        Data = true,
+                        Message = "Email already confirmed. You can login now."
+                    });
+                }
+
+                // GERAR NOVO CÓDIGO
+                var code = _emailConfirmationService.GenerateAndStoreCode(user.Id);
+                System.Diagnostics.Debug.WriteLine($"New 6-digit code: {code}");
+
+                await _emailSender.SendEmailAsync(
+                    user.Email,
+                    "New Confirmation Code - HotelWebApp",
+                    $@"<html>
+                <body style='font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5;'>
+                    <div style='max-width: 600px; margin: 0 auto; background-color: white; border-radius: 10px; padding: 30px;'>
+                        <h2 style='color: #6366F1;'>New Confirmation Code</h2>
+                        <p>Hi <strong>{user.FullName}</strong>,</p>
+                        <p>Here's your new confirmation code:</p>
+                        
+                        <div style='background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%); color: white; padding: 30px; border-radius: 10px; text-align: center; margin: 30px 0;'>
+                            <h1 style='margin: 0; letter-spacing: 8px; font-size: 48px;'>{code}</h1>
+                        </div>
+                        
+                        <p style='color: #666; font-size: 14px;'>This code will expire in <strong>15 minutes</strong>.</p>
+                    </div>
+                </body>
+              </html>");
+
+                System.Diagnostics.Debug.WriteLine("Confirmation email resent!");
+
+                return Ok(new ApiResponse<bool>
+                {
+                    Success = true,
+                    Data = true,
+                    Message = "A new confirmation code has been sent to your email."
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"EXCEPTION: {ex.Message}");
+                return StatusCode(500, new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = "Error sending confirmation email",
                     Errors = new List<string> { ex.Message }
                 });
             }

@@ -131,6 +131,8 @@ namespace HotelWebApp.Mobile
             builder.Services.AddTransient<MyActivityBookingsViewModel>();
             builder.Services.AddTransient<PromotionsViewModel>();
             builder.Services.AddTransient<PromotionDetailViewModel>();
+            builder.Services.AddTransient<RegisterViewModel>();
+            builder.Services.AddTransient<ConfirmEmailViewModel>();
             builder.Services.AddTransient<ChangePasswordViewModel>();
             builder.Services.AddTransient<ForgotPasswordViewModel>();
             builder.Services.AddTransient<ResetPasswordViewModel>();
@@ -147,6 +149,8 @@ namespace HotelWebApp.Mobile
             builder.Services.AddTransient<MyActivityBookingsPage>();
             builder.Services.AddTransient<PromotionsPage>();
             builder.Services.AddTransient<PromotionDetailPage>();
+            builder.Services.AddTransient<RegisterPage>();
+            builder.Services.AddTransient<ConfirmEmailPage>();
             builder.Services.AddTransient<ChangePasswordPage>();
             builder.Services.AddTransient<ForgotPasswordPage>();
             builder.Services.AddTransient<ResetPasswordPage>();

@@ -61,6 +61,12 @@ namespace HotelWebApp
                     };
                 });
 
+            // Adicionar Memory Cache
+            builder.Services.AddMemoryCache();
+
+            // Adicionar serviço de confirmação
+            builder.Services.AddScoped<IEmailConfirmationService, EmailConfirmationService>();
+
             // Add repositories
             builder.Services.AddScoped<IRoomRepository, RoomRepository>();
             builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
