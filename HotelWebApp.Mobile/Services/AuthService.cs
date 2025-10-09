@@ -136,6 +136,119 @@ namespace HotelWebApp.Mobile.Services
             return false;
         }
 
+        public async Task<ApiResponse<bool>> ForgotPasswordAsync(string email)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"=== FORGOT PASSWORD REQUEST ===");
+                System.Diagnostics.Debug.WriteLine($"Email: {email}");
+
+                var request = new MobileForgotPasswordRequest
+                {
+                    Email = email,
+                    AppUrl = "hotelapp://reset-password" // Deep link para a app
+                };
+
+                var response = await _httpClient.PostAsJsonAsync("api/Auth/forgot-password", request);
+
+                System.Diagnostics.Debug.WriteLine($"StatusCode: {response.StatusCode}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    System.Diagnostics.Debug.WriteLine($"Error: {errorContent}");
+
+                    return new ApiResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Failed to send reset email"
+                    };
+                }
+
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+
+                System.Diagnostics.Debug.WriteLine($"Success: {result?.Success}");
+
+                return result ?? new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = "Unknown error"
+                };
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Exception: {ex.Message}");
+                return new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = $"Connection error: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ApiResponse<bool>> ResetPasswordAsync(string email, string token, string newPassword)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"=== RESET PASSWORD REQUEST ===");
+                System.Diagnostics.Debug.WriteLine($"Email: {email}");
+
+                var request = new MobileResetPasswordRequest
+                {
+                    Email = email,
+                    Token = token,
+                    NewPassword = newPassword
+                };
+
+                var response = await _httpClient.PostAsJsonAsync("api/Auth/reset-password", request);
+
+                System.Diagnostics.Debug.WriteLine($"StatusCode: {response.StatusCode}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    System.Diagnostics.Debug.WriteLine($"Error: {errorContent}");
+
+                    try
+                    {
+                        var errorResponse = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+                        return errorResponse ?? new ApiResponse<bool>
+                        {
+                            Success = false,
+                            Message = "Failed to reset password"
+                        };
+                    }
+                    catch
+                    {
+                        return new ApiResponse<bool>
+                        {
+                            Success = false,
+                            Message = "Failed to reset password"
+                        };
+                    }
+                }
+
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+
+                System.Diagnostics.Debug.WriteLine($"Success: {result?.Success}");
+
+                return result ?? new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = "Unknown error"
+                };
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Exception: {ex.Message}");
+                return new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = $"Connection error: {ex.Message}"
+                };
+            }
+        }
+
         public async Task LogoutAsync()
         {
             _authToken = null;

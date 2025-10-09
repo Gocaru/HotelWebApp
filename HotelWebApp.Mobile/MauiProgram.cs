@@ -132,6 +132,8 @@ namespace HotelWebApp.Mobile
             builder.Services.AddTransient<PromotionsViewModel>();
             builder.Services.AddTransient<PromotionDetailViewModel>();
             builder.Services.AddTransient<ChangePasswordViewModel>();
+            builder.Services.AddTransient<ForgotPasswordViewModel>();
+            builder.Services.AddTransient<ResetPasswordViewModel>();
             builder.Services.AddTransient<AboutViewModel>();
 
             // Registar Views
@@ -146,6 +148,8 @@ namespace HotelWebApp.Mobile
             builder.Services.AddTransient<PromotionsPage>();
             builder.Services.AddTransient<PromotionDetailPage>();
             builder.Services.AddTransient<ChangePasswordPage>();
+            builder.Services.AddTransient<ForgotPasswordPage>();
+            builder.Services.AddTransient<ResetPasswordPage>();
             builder.Services.AddTransient<AboutPage>();
 
             // AppShell
