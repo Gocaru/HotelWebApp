@@ -221,10 +221,14 @@ namespace HotelWebApp.Controllers.Api
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"=== FORGOT PASSWORD REQUEST ===");
+                System.Diagnostics.Debug.WriteLine($"Email: {request.Email}");
+
                 var user = await _userManager.FindByEmailAsync(request.Email);
 
                 if (user == null)
                 {
+                    System.Diagnostics.Debug.WriteLine("User not found");
                     return Ok(new ApiResponse<bool>
                     {
                         Success = true,
@@ -233,15 +237,33 @@ namespace HotelWebApp.Controllers.Api
                     });
                 }
 
+                System.Diagnostics.Debug.WriteLine($"User found: {user.Email}");
+                System.Diagnostics.Debug.WriteLine($"EmailConfirmed: {user.EmailConfirmed}");
+
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                System.Diagnostics.Debug.WriteLine($"Token generated (length: {token.Length})");
 
                 var resetLink = $"{request.AppUrl}/reset-password?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(user.Email)}";
 
-                await _emailSender.SendEmailAsync(
-                    user.Email,
-                    "Reset Your Password",
-                    $"Please reset your password by clicking here: <a href='{resetLink}'>Reset Password</a><br/><br/>Or use this code in the app: {token}"
-                );
+                System.Diagnostics.Debug.WriteLine($"🔗 Reset Link: {resetLink}");
+                System.Diagnostics.Debug.WriteLine($"📧 Sending email to: {user.Email}");
+
+                try
+                {
+                    await _emailSender.SendEmailAsync(
+                        user.Email,
+                        "Reset Your Password",
+                        $"Please reset your password by clicking here: <a href='{resetLink}'>Reset Password</a><br/><br/>Or use this code in the app: {token}"
+                    );
+
+                    System.Diagnostics.Debug.WriteLine("✅ Email sent successfully!");
+                }
+                catch (Exception emailEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ Email sending failed: {emailEx.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Stack trace: {emailEx.StackTrace}");
+                    throw; // Re-throw para ver o erro completo
+                }
 
                 return Ok(new ApiResponse<bool>
                 {
@@ -252,6 +274,9 @@ namespace HotelWebApp.Controllers.Api
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"❌ EXCEPTION: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+
                 return StatusCode(500, new ApiResponse<bool>
                 {
                     Success = false,

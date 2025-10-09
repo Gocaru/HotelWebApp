@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HotelWebApp.Mobile.Services;
+using HotelWebApp.Mobile.Views;
 
 namespace HotelWebApp.Mobile.ViewModels
 {
@@ -101,8 +102,7 @@ namespace HotelWebApp.Mobile.ViewModels
         [RelayCommand]
         private async Task ForgotPasswordAsync()
         {
-            // TODO: Implementar mais tarde
-            await Shell.Current.DisplayAlert("Info", "Funcionalidade em desenvolvimento", "OK");
+            await Shell.Current.GoToAsync(nameof(ForgotPasswordPage));
         }
 
         [RelayCommand]
