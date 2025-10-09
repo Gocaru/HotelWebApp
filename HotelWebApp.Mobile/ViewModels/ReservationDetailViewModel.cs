@@ -123,7 +123,9 @@ namespace HotelWebApp.Mobile.ViewModels
                 if (result.Success)
                 {
                     await Shell.Current.DisplayAlert("Success", "Check-in successful! Welcome!", "OK");
-                    await LoadReservationDetailsAsync();
+
+                    // Navegar de volta e voltar para forçar reload completo
+                    await Shell.Current.GoToAsync("..");
                 }
                 else
                 {

@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:HotelWebApp.Mobile.ViewModels"
+             xmlns:models="clr-namespace:HotelWebApp.Mobile.Models"
+             x:Class="HotelWebApp.Mobile.Views.InvoiceDetailPage"
+             x:DataType="viewmodels:InvoiceDetailViewModel"
+             Title="Invoice Details"
+             BackgroundColor="#F5F5F5">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               Color="#1E3A8A"
+                               HeightRequest="50"/>
+
+            <Frame IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotEmptyConverter}}"
+                   BackgroundColor="#FEE2E2"
+                   BorderColor="#EF4444"
+                   CornerRadius="10"
+                   Padding="15"
+                   HasShadow="False">
+                <Label Text="{Binding ErrorMessage}"
+                       TextColor="#991B1B"
+                       FontSize="14"/>
+            </Frame>
+
+            <VerticalStackLayout IsVisible="{Binding Invoice, Converter={StaticResource ObjectNotNullConverter}}"
+                                 Spacing="15">
+
+                <Frame CornerRadius="15" HasShadow="True" Padding="20" BorderColor="Transparent">
+                    <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="15">
+                        <HorizontalStackLayout Grid.Row="0" Spacing="10">
+                            <Label Text="📄" FontSize="32"/>
+                            <VerticalStackLayout>
+                                <Label Text="{Binding Invoice.Id, StringFormat='Invoice #{0}'}" 
+                                       FontSize="24" 
+                                       FontAttributes="Bold"/>
+                                <Label Text="{Binding Invoice.InvoiceDateFormatted}" 
+                                       FontSize="14" 
+                                       TextColor="#6B7280"/>
+                            </VerticalStackLayout>
+                        </HorizontalStackLayout>
+
+                        <Frame Grid.Row="1" 
+                               Padding="10,5" 
+                               CornerRadius="8"
+                               BackgroundColor="{Binding Invoice.StatusColor}"
+                               HasShadow="False"
+                               HorizontalOptions="Start">
+                            <Label Text="{Binding Invoice.StatusDisplayText}" 
+                                   TextColor="White" 
+                                   FontSize="14"
+                                   FontAttributes="Bold"/>
+                        </Frame>
+
+                        <HorizontalStackLayout Grid.Row="2" Spacing="5">
+                            <Label Text="🏨" FontSize="16"/>
+                            <Label Text="{Binding Invoice.RoomNumber, StringFormat='Room {0}'}" 
+                                   FontSize="16" 
+                                   TextColor="#6B7280"/>
+                            <Label Text="•" TextColor="#6B7280"/>
+                            <Label Text="{Binding Invoice.CheckInFormatted}" 
+                                   FontSize="14" 
+                                   TextColor="#6B7280"/>
+                            <Label Text="→" TextColor="#6B7280"/>
+                            <Label Text="{Binding Invoice.CheckOutFormatted}" 
+                                   FontSize="14" 
+                                   TextColor="#6B7280"/>
+                        </HorizontalStackLayout>
+                    </Grid>
+                </Frame>
+
+                <Frame CornerRadius="15" HasShadow="True" Padding="20" BorderColor="Transparent"
+                       IsVisible="{Binding Items.Count, Converter={StaticResource IntToBoolConverter}}">
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="📋 Invoice Items" 
+                               FontSize="18" 
+                               FontAttributes="Bold"/>
+
+                        <CollectionView ItemsSource="{Binding Items}">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:InvoiceItemDto">
+                                    <Grid ColumnDefinitions="*,Auto" 
+                                          Padding="0,5"
+                                          ColumnSpacing="10">
+                                        <VerticalStackLayout Grid.Column="0">
+                                            <Label Text="{Binding Description}" 
+                                                   FontSize="14"
+                                                   FontAttributes="Bold"/>
+                                            <HorizontalStackLayout Spacing="3">
+                                                <Label Text="Qty:" FontSize="12" TextColor="#6B7280"/>
+                                                <Label Text="{Binding Quantity}" FontSize="12" TextColor="#6B7280"/>
+                                                <Label Text="×" FontSize="12" TextColor="#6B7280"/>
+                                                <Label Text="{Binding UnitPriceFormatted}" FontSize="12" TextColor="#6B7280"/>
+                                            </HorizontalStackLayout>
+                                        </VerticalStackLayout>
+                                        <Label Grid.Column="1"
+                                               Text="{Binding TotalPriceFormatted}" 
+                                               FontSize="14" 
+                                               FontAttributes="Bold"
+                                               VerticalOptions="Center"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Frame CornerRadius="15" HasShadow="True" Padding="20" BorderColor="Transparent"
+                       IsVisible="{Binding Invoice.ReservationAmenities.Count, Converter={StaticResource IntToBoolConverter}}">
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="✨ Amenities" 
+                               FontSize="18" 
+                               FontAttributes="Bold"/>
+
+                        <CollectionView ItemsSource="{Binding Invoice.ReservationAmenities}">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:ReservationAmenityDto">
+                                    <Grid ColumnDefinitions="*,Auto" 
+                                          Padding="0,5"
+                                          ColumnSpacing="10">
+                                        <Label Grid.Column="0"
+                                               Text="{Binding AmenityName}" 
+                                               FontSize="14"
+                                               VerticalOptions="Center"/>
+                                        <Label Grid.Column="1"
+                                               Text="{Binding Price, StringFormat='€{0:N2}'}" 
+                                               FontSize="14" 
+                                               FontAttributes="Bold"
+                                               VerticalOptions="Center"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Frame CornerRadius="15" HasShadow="True" Padding="20" BorderColor="Transparent"
+                       BackgroundColor="#F9FAFB">
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="12">
+                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                            <Label Grid.Column="0" Text="Total Amount:" FontSize="16"/>
+                            <Label Grid.Column="1" 
+                                   Text="{Binding Invoice.TotalAmountFormatted}" 
+                                   FontSize="16" 
+                                   FontAttributes="Bold"/>
+                        </Grid>
+
+                        <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+                            <Label Grid.Column="0" Text="Amount Paid:" FontSize="16"/>
+                            <Label Grid.Column="1" 
+                                   Text="{Binding Invoice.AmountPaidFormatted}" 
+                                   FontSize="16" 
+                                   FontAttributes="Bold"
+                                   TextColor="#10B981"/>
+                        </Grid>
+
+                        <BoxView Grid.Row="2" 
+                                 HeightRequest="1" 
+                                 Color="#E5E7EB"
+                                 Margin="0,5"/>
+
+                        <Grid Grid.Row="3" ColumnDefinitions="*,Auto">
+                            <Label Grid.Column="0" 
+                                   Text="Balance Due:" 
+                                   FontSize="18" 
+                                   FontAttributes="Bold"/>
+                            <Label Grid.Column="1" 
+                                   Text="{Binding Invoice.BalanceDueFormatted}" 
+                                   FontSize="20" 
+                                   FontAttributes="Bold"
+                                   TextColor="#EF4444"/>
+                        </Grid>
+                    </Grid>
+                </Frame>
+
+                <Frame CornerRadius="15" HasShadow="True" Padding="20" BorderColor="Transparent"
+                       IsVisible="{Binding Invoice.Payments.Count, Converter={StaticResource IntToBoolConverter}}">
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="💳 Payment History" 
+                               FontSize="18" 
+                               FontAttributes="Bold"/>
+
+                        <CollectionView ItemsSource="{Binding Invoice.Payments}">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:PaymentDto">
+                                    <Frame Padding="12" 
+                                           Margin="0,0,0,8"
+                                           CornerRadius="8"
+                                           BackgroundColor="#F9FAFB"
+                                           HasShadow="False"
+                                           BorderColor="#E5E7EB">
+                                        <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="5">
+                                            <HorizontalStackLayout Grid.Row="0" Spacing="10">
+                                                <Label Text="✅" FontSize="16"/>
+                                                <Label Text="{Binding AmountFormatted}" 
+                                                       FontSize="16" 
+                                                       FontAttributes="Bold"
+                                                       TextColor="#10B981"/>
+                                            </HorizontalStackLayout>
+
+                                            <Label Grid.Row="1"
+                                                   Text="{Binding PaymentDateFormatted}" 
+                                                   FontSize="12" 
+                                                   TextColor="#6B7280"/>
+
+                                            <HorizontalStackLayout Grid.Row="2" Spacing="5">
+                                                <Label Text="{Binding PaymentMethod}" 
+                                                       FontSize="12" 
+                                                       TextColor="#6B7280"/>
+                                                <Label Text="•" 
+                                                       FontSize="12" 
+                                                       TextColor="#6B7280"
+                                                       IsVisible="{Binding TransactionId, Converter={StaticResource StringNotEmptyConverter}}"/>
+                                                <Label Text="{Binding TransactionId}" 
+                                                       FontSize="12" 
+                                                       TextColor="#6B7280"
+                                                       IsVisible="{Binding TransactionId, Converter={StaticResource StringNotEmptyConverter}}"/>
+                                            </HorizontalStackLayout>
+                                        </Grid>
+                                    </Frame>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <VerticalStackLayout Spacing="10" Margin="0,10,0,0">
+
+                    <Button Text="💳 Pay Invoice"
+                            Command="{Binding PayInvoiceCommand}"
+                            IsVisible="{Binding Invoice.HasBalance}"
+                            BackgroundColor="#1E3A8A"
+                            TextColor="White"
+                            FontSize="16"
+                            FontAttributes="Bold"
+                            HeightRequest="50"
+                            CornerRadius="10"/>
+
+                    <Button Text="🔄 Refresh"
+                            Command="{Binding RefreshCommand}"
+                            BackgroundColor="#6B7280"
+                            TextColor="White"
+                            FontSize="14"
+                            HeightRequest="45"
+                            CornerRadius="10"/>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

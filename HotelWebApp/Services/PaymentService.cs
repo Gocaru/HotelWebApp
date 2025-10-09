@@ -35,9 +35,16 @@ namespace HotelWebApp.Services
                 return Result<Invoice>.Success(reservation.Invoice);
             }
 
-            // Calculate the final total amount, summing the base price and all associated amenities.
+            // Calculate amenities total
             decimal amenitiesTotal = reservation.ReservationAmenities.Sum(ra => ra.PriceAtTimeOfBooking * ra.Quantity);
-            decimal finalInvoiceAmount = reservation.TotalPrice + amenitiesTotal;
+
+            // Calculate activities total (only Completed activities linked to this reservation)
+            decimal activitiesTotal = await _context.ActivityBookings
+                .Where(ab => ab.ReservationId == reservationId && ab.Status == ActivityBookingStatus.Completed)
+                .SumAsync(ab => ab.TotalPrice);
+
+            // Calculate final amount including activities
+            decimal finalInvoiceAmount = reservation.TotalPrice + amenitiesTotal + activitiesTotal;
 
             var invoice = new Invoice
             {
