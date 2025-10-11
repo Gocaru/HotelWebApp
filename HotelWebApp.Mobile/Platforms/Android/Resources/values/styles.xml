@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<style name="MainTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+		<item name="android:statusBarColor">@android:color/transparent</item>
+		<item name="android:navigationBarColor">@android:color/black</item>
+	</style>
+
+	<!-- TabBar customization -->
+	<style name="BottomNavigationView" parent="">
+		<item name="android:paddingTop">8dp</item>
+		<item name="android:paddingBottom">12dp</item>
+		<item name="itemTextAppearanceActive">@style/BottomNavigationTextAppearance</item>
+		<item name="itemTextAppearanceInactive">@style/BottomNavigationTextAppearance</item>
+	</style>
+
+	<style name="BottomNavigationTextAppearance" parent="TextAppearance.AppCompat">
+		<item name="android:textSize">12sp</item>
+	</style>
+</resources>

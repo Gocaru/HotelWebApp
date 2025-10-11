@@ -164,6 +164,7 @@ namespace HotelWebApp.Mobile
 
 
             // Registar ViewModels
+            builder.Services.AddTransient<LandingViewModel>();
             builder.Services.AddTransient<LoginViewModel>();
             builder.Services.AddTransient<HomeViewModel>();
             builder.Services.AddTransient<ProfileViewModel>();
@@ -173,7 +174,6 @@ namespace HotelWebApp.Mobile
             builder.Services.AddTransient<ActivityDetailViewModel>();
             builder.Services.AddTransient<MyActivityBookingsViewModel>();
             builder.Services.AddTransient<PromotionsViewModel>();
-            builder.Services.AddTransient<PromotionDetailViewModel>();
             builder.Services.AddTransient<RegisterViewModel>();
             builder.Services.AddTransient<ConfirmEmailViewModel>();
             builder.Services.AddTransient<ChangePasswordViewModel>();
@@ -185,6 +185,7 @@ namespace HotelWebApp.Mobile
             builder.Services.AddTransient<AboutViewModel>();
 
             // Registar Views
+            builder.Services.AddTransient<LandingPage>();
             builder.Services.AddTransient<LoginPage>();
             builder.Services.AddTransient<HomePage>();
             builder.Services.AddTransient<ProfilePage>();
@@ -194,7 +195,6 @@ namespace HotelWebApp.Mobile
             builder.Services.AddTransient<ActivityDetailPage>();
             builder.Services.AddTransient<MyActivityBookingsPage>();
             builder.Services.AddTransient<PromotionsPage>();
-            builder.Services.AddTransient<PromotionDetailPage>();
             builder.Services.AddTransient<RegisterPage>();
             builder.Services.AddTransient<ConfirmEmailPage>();
             builder.Services.AddTransient<ChangePasswordPage>();

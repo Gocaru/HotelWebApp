@@ -7,7 +7,7 @@
              x:DataType="vm:ProfileViewModel"
              Shell.NavBarIsVisible="True"
              Title="My Profile"
-             BackgroundColor="White">
+             BackgroundColor="{AppThemeBinding Light=White, Dark=#121212}">
 
     <ContentPage.Resources>
         <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
@@ -16,366 +16,371 @@
     <ScrollView>
         <VerticalStackLayout Spacing="0">
 
-            <!-- HERO HEADER -->
-            <Grid RowDefinitions="220" Padding="0">
-                <!-- Background Gradient -->
-                <Grid.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Color="#1E3A8A" Offset="0.0" />
-                        <GradientStop Color="#3B82F6" Offset="1.0" />
-                    </LinearGradientBrush>
-                </Grid.Background>
+            <!-- HERO SECTION WITH IMAGE BACKGROUND -->
+            <Grid RowDefinitions="240">
+                <!-- Background Image -->
+                <Image Source="hotel_lobby.jpg"
+                       Aspect="AspectFill"/>
+
+                <!-- White Overlay -->
+                <BoxView BackgroundColor="White"
+                         Opacity="0.70"/>
 
                 <!-- Content -->
                 <VerticalStackLayout VerticalOptions="Center" 
-                         HorizontalOptions="Center" 
-                         Spacing="12">
+                                     Spacing="15"
+                                     Padding="40,0">
 
-                    <!-- Profile Photo with Camera Button -->
-                    <Grid WidthRequest="80" HeightRequest="80">
-                        <Frame WidthRequest="80"
-                   HeightRequest="80"
-                   CornerRadius="40"
-                   Padding="0"
-                   HasShadow="True"
-                   HorizontalOptions="Center"
-                   BorderColor="White">
+                    <!-- Profile Photo with Edit Button -->
+                    <Grid WidthRequest="90" HeightRequest="90">
+                        <Border StrokeThickness="3"
+                                Stroke="#1E3A8A"
+                                StrokeShape="RoundRectangle 45"
+                                Padding="0"
+                                WidthRequest="90"
+                                HeightRequest="90">
+                            <Border.Shadow>
+                                <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2"/>
+                            </Border.Shadow>
                             <Image Source="{Binding Profile.ProfilePictureUrl}"
-                       Aspect="AspectFill"/>
-                        </Frame>
+                                   Aspect="AspectFill"/>
+                        </Border>
 
-                        <!-- Camera Button -->
-                        <Frame CornerRadius="18"
-                   Padding="0"
-                   HasShadow="True"
-                   BackgroundColor="#D4AF37"
-                   VerticalOptions="End"
-                   HorizontalOptions="End"
-                   WidthRequest="36"
-                   HeightRequest="36"
-                   Margin="0,0,5,5">
-                            <Label Text="📷"
-                       FontSize="18"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center"/>
-                            <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding ChangePhotoCommand}" />
-                            </Frame.GestureRecognizers>
-                        </Frame>
+                        <!-- Edit Photo Button -->
+                        <Border StrokeThickness="0"
+                                StrokeShape="RoundRectangle 16"
+                                Padding="8"
+                                BackgroundColor="#1E3A8A"
+                                VerticalOptions="End"
+                                HorizontalOptions="End"
+                                WidthRequest="32"
+                                HeightRequest="32">
+                            <Border.Shadow>
+                                <Shadow Brush="Black" Opacity="0.2" Radius="4" Offset="0,2"/>
+                            </Border.Shadow>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ChangePhotoCommand}"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="✎"
+                                   FontSize="14"
+                                   TextColor="White"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
                     </Grid>
 
                     <!-- Name and Email -->
                     <Label Text="{Binding Profile.FullName}"
-               FontSize="24"
-               FontAttributes="Bold"
-               TextColor="White"
-               HorizontalOptions="Center"/>
+                           FontSize="22"
+                           FontAttributes="Bold"
+                           TextColor="#1E3A8A"
+                           HorizontalTextAlignment="Center"/>
 
                     <Label Text="{Binding Profile.Email}"
-               FontSize="14"
-               TextColor="White"
-               Opacity="0.8"
-               HorizontalOptions="Center"/>
+                           FontSize="14"
+                           TextColor="#6B7280"
+                           HorizontalTextAlignment="Center"/>
+
                 </VerticalStackLayout>
             </Grid>
 
-            <!-- STATISTICS CARDS -->
-            <Grid ColumnDefinitions="*,*,*"
-                  ColumnSpacing="12"
-                  Padding="20"
-                  Margin="0,-30,0,0">
+            <!-- CONTENT -->
+            <VerticalStackLayout Padding="40,30"
+                                 Spacing="25">
 
-                <!-- Total Reservations -->
-                <Frame Grid.Column="0"
-                       Padding="15"
-                       BackgroundColor="White"
-                       BorderColor="#E5E7EB"
-                       CornerRadius="12"
-                       HasShadow="True">
-                    <VerticalStackLayout Spacing="5">
-                        <Label Text="{Binding Profile.TotalReservations}"
-                               FontSize="28"
-                               FontAttributes="Bold"
-                               TextColor="#1E3A8A"
-                               HorizontalOptions="Center"/>
-                        <Label Text="All Stays"
-                               FontSize="11"
-                               TextColor="#6B7280"
-                               HorizontalOptions="Center"/>
-                    </VerticalStackLayout>
-                </Frame>
+                <!-- STATISTICS CARDS -->
+                <Grid ColumnDefinitions="*,*,*"
+                      ColumnSpacing="12">
 
-                <!-- Completed -->
-                <Frame Grid.Column="1"
-                       Padding="15"
-                       BackgroundColor="White"
-                       BorderColor="#E5E7EB"
-                       CornerRadius="12"
-                       HasShadow="True">
-                    <VerticalStackLayout Spacing="5">
-                        <Label Text="{Binding Profile.CompletedStays}"
-                               FontSize="28"
-                               FontAttributes="Bold"
-                               TextColor="#059669"
-                               HorizontalOptions="Center"/>
-                        <Label Text="Past Stays"
-                               FontSize="11"
-                               TextColor="#6B7280"
-                               HorizontalOptions="Center"/>
-                    </VerticalStackLayout>
-                </Frame>
-
-                <!-- Upcoming -->
-                <Frame Grid.Column="2"
-                       Padding="15"
-                       BackgroundColor="White"
-                       BorderColor="#E5E7EB"
-                       CornerRadius="12"
-                       HasShadow="True">
-                    <VerticalStackLayout Spacing="5">
-                        <Label Text="{Binding Profile.UpcomingReservations}"
-                               FontSize="28"
-                               FontAttributes="Bold"
-                               TextColor="#F59E0B"
-                               HorizontalOptions="Center"/>
-                        <Label Text="Upcoming"
-                               FontSize="11"
-                               TextColor="#6B7280"
-                               HorizontalOptions="Center"/>
-                    </VerticalStackLayout>
-                </Frame>
-            </Grid>
-
-            <!-- CONTENT AREA -->
-            <VerticalStackLayout Padding="20,10,20,20" Spacing="20">
-
-                <!-- PERSONAL INFORMATION CARD -->
-                <Frame Padding="20"
-                       BackgroundColor="White"
-                       BorderColor="#E5E7EB"
-                       CornerRadius="12"
-                       HasShadow="True">
-                    <VerticalStackLayout Spacing="20">
-
-                        <!-- Header with Edit Button -->
-                        <Grid ColumnDefinitions="*,Auto">
-                            <Label Grid.Column="0"
-                                   Text="Personal Information"
-                                   FontSize="18"
+                    <!-- Total Reservations -->
+                    <Border Grid.Column="0"
+                            StrokeThickness="1"
+                            Stroke="{AppThemeBinding Light=#E5E7EB, Dark=#374151}"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="12"
+                            BackgroundColor="{AppThemeBinding Light=#F9FAFB, Dark=#1F2937}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{Binding Profile.TotalReservations}"
+                                   FontSize="24"
                                    FontAttributes="Bold"
-                                   TextColor="#1F2937"/>
+                                   TextColor="{AppThemeBinding Light=#1E3A8A, Dark=#60A5FA}"
+                                   HorizontalOptions="Center"/>
+                            <Label Text="All Stays"
+                                   FontSize="10"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"
+                                   HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Border>
 
-                            <Button Grid.Column="1"
-                                    Text="Edit"
-                                    Command="{Binding ToggleEditCommand}"
-                                    BackgroundColor="Transparent"
-                                    TextColor="#1E3A8A"
-                                    FontSize="14"
-                                    FontAttributes="Bold"
-                                    Padding="12,0"
-                                    IsVisible="{Binding IsEditing, Converter={StaticResource InvertedBoolConverter}}" />
+                    <!-- Completed -->
+                    <Border Grid.Column="1"
+                            StrokeThickness="1"
+                            Stroke="{AppThemeBinding Light=#E5E7EB, Dark=#374151}"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="12"
+                            BackgroundColor="{AppThemeBinding Light=#F9FAFB, Dark=#1F2937}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{Binding Profile.CompletedStays}"
+                                   FontSize="24"
+                                   FontAttributes="Bold"
+                                   TextColor="#059669"
+                                   HorizontalOptions="Center"/>
+                            <Label Text="Past Stays"
+                                   FontSize="10"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"
+                                   HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Border>
 
-                            <Button Grid.Column="1"
-                                    Text="Cancel"
-                                    Command="{Binding ToggleEditCommand}"
-                                    BackgroundColor="Transparent"
-                                    TextColor="#DC2626"
-                                    FontSize="14"
-                                    FontAttributes="Bold"
-                                    Padding="12,0"
-                                    IsVisible="{Binding IsEditing}" />
-                        </Grid>
+                    <!-- Upcoming -->
+                    <Border Grid.Column="2"
+                            StrokeThickness="1"
+                            Stroke="{AppThemeBinding Light=#E5E7EB, Dark=#374151}"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="12"
+                            BackgroundColor="{AppThemeBinding Light=#F9FAFB, Dark=#1F2937}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{Binding Profile.UpcomingReservations}"
+                                   FontSize="24"
+                                   FontAttributes="Bold"
+                                   TextColor="#F59E0B"
+                                   HorizontalOptions="Center"/>
+                            <Label Text="Upcoming"
+                                   FontSize="10"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"
+                                   HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
 
-                        <!-- VIEW MODE -->
-                        <VerticalStackLayout Spacing="20"
-                                           IsVisible="{Binding IsEditing, Converter={StaticResource InvertedBoolConverter}}">
+                <!-- PERSONAL INFORMATION -->
+                <VerticalStackLayout Spacing="20">
 
-                            <!-- Full Name -->
-                            <VerticalStackLayout Spacing="8">
-                                <Label Text="Full Name"
-                                       FontSize="12"
-                                       FontAttributes="Bold"
-                                       TextColor="#6B7280"/>
-                                <Label Text="{Binding Profile.FullName}"
-                                       FontSize="16"
-                                       TextColor="#1F2937"/>
-                            </VerticalStackLayout>
+                    <!-- Header with Edit Button -->
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0"
+                               Text="Personal Information"
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light=#1E3A8A, Dark=#60A5FA}"/>
 
-                            <!-- Phone -->
-                            <VerticalStackLayout Spacing="8">
-                                <Label Text="Phone Number"
-                                       FontSize="12"
-                                       FontAttributes="Bold"
-                                       TextColor="#6B7280"/>
-                                <Label Text="{Binding Profile.DisplayPhoneNumber}"
-                                       FontSize="16"
-                                       TextColor="#1F2937"/>
-                            </VerticalStackLayout>
+                        <Label Grid.Column="1"
+                               Text="Edit"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light=#1E3A8A, Dark=#60A5FA}"
+                               VerticalOptions="Center"
+                               IsVisible="{Binding IsEditing, Converter={StaticResource InvertedBoolConverter}}">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ToggleEditCommand}"/>
+                            </Label.GestureRecognizers>
+                        </Label>
 
-                            <!-- Document -->
-                            <VerticalStackLayout Spacing="8">
-                                <Label Text="Identification Document"
-                                       FontSize="12"
-                                       FontAttributes="Bold"
-                                       TextColor="#6B7280"/>
-                                <Label Text="{Binding Profile.DisplayDocument}"
-                                       FontSize="16"
-                                       TextColor="#1F2937"/>
-                            </VerticalStackLayout>
+                        <Label Grid.Column="1"
+                               Text="Cancel"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="#DC2626"
+                               VerticalOptions="Center"
+                               IsVisible="{Binding IsEditing}">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ToggleEditCommand}"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Grid>
+
+                    <!-- VIEW MODE -->
+                    <VerticalStackLayout Spacing="16"
+                                         IsVisible="{Binding IsEditing, Converter={StaticResource InvertedBoolConverter}}">
+
+                        <!-- Full Name -->
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Full Name"
+                                   FontSize="12"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"/>
+                            <Label Text="{Binding Profile.FullName}"
+                                   FontSize="16"
+                                   TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"/>
                         </VerticalStackLayout>
 
-                        <!-- EDIT MODE -->
-                        <VerticalStackLayout Spacing="18"
-                                           IsVisible="{Binding IsEditing}">
-
-                            <!-- Full Name -->
-                            <VerticalStackLayout Spacing="8">
-                                <Label Text="Full Name *"
-                                       FontSize="12"
-                                       FontAttributes="Bold"
-                                       TextColor="#6B7280"/>
-                                <Frame Padding="12"
-                                       BackgroundColor="#F9FAFB"
-                                       BorderColor="#E5E7EB"
-                                       CornerRadius="8"
-                                       HasShadow="False">
-                                    <Entry Text="{Binding FullName}"
-                                           Placeholder="Enter your full name"
-                                           FontSize="16"
-                                           TextColor="#1F2937"/>
-                                </Frame>
-                            </VerticalStackLayout>
-
-                            <!-- Phone -->
-                            <VerticalStackLayout Spacing="8">
-                                <Label Text="Phone Number"
-                                       FontSize="12"
-                                       FontAttributes="Bold"
-                                       TextColor="#6B7280"/>
-                                <Frame Padding="12"
-                                       BackgroundColor="#F9FAFB"
-                                       BorderColor="#E5E7EB"
-                                       CornerRadius="8"
-                                       HasShadow="False">
-                                    <Entry Text="{Binding PhoneNumber}"
-                                           Placeholder="Enter your phone number"
-                                           Keyboard="Telephone"
-                                           FontSize="16"
-                                           TextColor="#1F2937"/>
-                                </Frame>
-                            </VerticalStackLayout>
-
-                            <!-- Document -->
-                            <VerticalStackLayout Spacing="8">
-                                <Label Text="Identification Document"
-                                       FontSize="12"
-                                       FontAttributes="Bold"
-                                       TextColor="#6B7280"/>
-                                <Frame Padding="12"
-                                       BackgroundColor="#F9FAFB"
-                                       BorderColor="#E5E7EB"
-                                       CornerRadius="8"
-                                       HasShadow="False">
-                                    <Entry Text="{Binding IdentificationDocument}"
-                                           Placeholder="Enter document number"
-                                           FontSize="16"
-                                           TextColor="#1F2937"/>
-                                </Frame>
-                            </VerticalStackLayout>
-
-                            <!-- Save Button -->
-                            <Button Text="Save Changes"
-                                    Command="{Binding SaveProfileCommand}"
-                                    BackgroundColor="#1E3A8A"
-                                    TextColor="White"
-                                    CornerRadius="10"
-                                    HeightRequest="50"
-                                    FontAttributes="Bold"
-                                    Margin="0,10,0,0"/>
+                        <!-- Phone -->
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Phone Number"
+                                   FontSize="12"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"/>
+                            <Label Text="{Binding Profile.DisplayPhoneNumber}"
+                                   FontSize="16"
+                                   TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"/>
                         </VerticalStackLayout>
 
+                        <!-- Document -->
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Identification Document"
+                                   FontSize="12"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"/>
+                            <Label Text="{Binding Profile.DisplayDocument}"
+                                   FontSize="16"
+                                   TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"/>
+                        </VerticalStackLayout>
                     </VerticalStackLayout>
-                </Frame>
+
+                    <!-- EDIT MODE -->
+                    <VerticalStackLayout Spacing="16"
+                                         IsVisible="{Binding IsEditing}">
+
+                        <!-- Full Name -->
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Full Name *"
+                                   FontSize="12"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"/>
+                            <Border StrokeThickness="1"
+                                    Stroke="{AppThemeBinding Light=#E5E7EB, Dark=#374151}"
+                                    StrokeShape="RoundRectangle 10"
+                                    BackgroundColor="{AppThemeBinding Light=#F9FAFB, Dark=#1F2937}">
+                                <Entry Text="{Binding FullName}"
+                                       Placeholder="Enter your full name"
+                                       FontSize="15"
+                                       TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"
+                                       PlaceholderColor="{AppThemeBinding Light=#9CA3AF, Dark=#6B7280}"
+                                       Margin="12,8"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Phone -->
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Phone Number"
+                                   FontSize="12"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"/>
+                            <Border StrokeThickness="1"
+                                    Stroke="{AppThemeBinding Light=#E5E7EB, Dark=#374151}"
+                                    StrokeShape="RoundRectangle 10"
+                                    BackgroundColor="{AppThemeBinding Light=#F9FAFB, Dark=#1F2937}">
+                                <Entry Text="{Binding PhoneNumber}"
+                                       Placeholder="Enter your phone number"
+                                       Keyboard="Telephone"
+                                       FontSize="15"
+                                       TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"
+                                       PlaceholderColor="{AppThemeBinding Light=#9CA3AF, Dark=#6B7280}"
+                                       Margin="12,8"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Document -->
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Identification Document"
+                                   FontSize="12"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"/>
+                            <Border StrokeThickness="1"
+                                    Stroke="{AppThemeBinding Light=#E5E7EB, Dark=#374151}"
+                                    StrokeShape="RoundRectangle 10"
+                                    BackgroundColor="{AppThemeBinding Light=#F9FAFB, Dark=#1F2937}">
+                                <Entry Text="{Binding IdentificationDocument}"
+                                       Placeholder="Enter document number"
+                                       FontSize="15"
+                                       TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"
+                                       PlaceholderColor="{AppThemeBinding Light=#9CA3AF, Dark=#6B7280}"
+                                       Margin="12,8"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Save Button -->
+                        <Border StrokeThickness="0"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="0"
+                                HeightRequest="52"
+                                BackgroundColor="#1E3A8A"
+                                Margin="0,10,0,0">
+                            <Border.Shadow>
+                                <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2"/>
+                            </Border.Shadow>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SaveProfileCommand}"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="Save Changes"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   TextColor="White"
+                                   HorizontalTextAlignment="Center"
+                                   VerticalTextAlignment="Center"/>
+                        </Border>
+                    </VerticalStackLayout>
+
+                </VerticalStackLayout>
+
+                <!-- Divider -->
+                <BoxView HeightRequest="1"
+                         Color="{AppThemeBinding Light=#E5E7EB, Dark=#374151}"
+                         Margin="0,10"/>
 
                 <!-- QUICK ACTIONS -->
                 <VerticalStackLayout Spacing="12">
 
                     <!-- View Reservations -->
-                    <Frame Padding="18"
-                           BackgroundColor="White"
-                           BorderColor="#E5E7EB"
-                           CornerRadius="12"
-                           HasShadow="True">
-                        <Frame.GestureRecognizers>
+                    <Border StrokeThickness="1"
+                            Stroke="{AppThemeBinding Light=#E5E7EB, Dark=#374151}"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="18"
+                            BackgroundColor="{AppThemeBinding Light=White, Dark=#1F2937}">
+                        <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding ViewReservationsCommand}"/>
-                        </Frame.GestureRecognizers>
-                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="15">
-                            <Frame Grid.Column="0"
-                                   Padding="10"
-                                   BackgroundColor="#EEF2FF"
-                                   BorderColor="Transparent"
-                                   CornerRadius="8"
-                                   HasShadow="False">
-                                <Label Text="📅"
-                                       FontSize="22"/>
-                            </Frame>
-                            <Label Grid.Column="1"
+                        </Border.GestureRecognizers>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Grid.Column="0"
                                    Text="View All Reservations"
-                                   FontSize="16"
+                                   FontSize="15"
                                    FontAttributes="Bold"
-                                   TextColor="#1F2937"
+                                   TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"
                                    VerticalOptions="Center"/>
-                            <Label Grid.Column="2"
+                            <Label Grid.Column="1"
                                    Text="›"
                                    FontSize="24"
-                                   TextColor="#9CA3AF"
+                                   TextColor="{AppThemeBinding Light=#9CA3AF, Dark=#6B7280}"
                                    VerticalOptions="Center"/>
                         </Grid>
-                    </Frame>
+                    </Border>
 
                     <!-- Change Password -->
-                    <Frame Padding="18"
-                           BackgroundColor="White"
-                           BorderColor="#E5E7EB"
-                           CornerRadius="12"
-                           HasShadow="True">
-                        <Frame.GestureRecognizers>
+                    <Border StrokeThickness="1"
+                            Stroke="{AppThemeBinding Light=#E5E7EB, Dark=#374151}"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="18"
+                            BackgroundColor="{AppThemeBinding Light=White, Dark=#1F2937}">
+                        <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding NavigateToChangePasswordCommand}"/>
-                        </Frame.GestureRecognizers>
-                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="15">
-                            <Frame Grid.Column="0"
-                                   Padding="10"
-                                   BackgroundColor="#FEF3C7"
-                                   BorderColor="Transparent"
-                                   CornerRadius="8"
-                                   HasShadow="False">
-                                <Label Text="🔒"
-                                       FontSize="22"/>
-                            </Frame>
-                            <Label Grid.Column="1"
+                        </Border.GestureRecognizers>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Grid.Column="0"
                                    Text="Change Password"
-                                   FontSize="16"
+                                   FontSize="15"
                                    FontAttributes="Bold"
-                                   TextColor="#1F2937"
+                                   TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"
                                    VerticalOptions="Center"/>
-                            <Label Grid.Column="2"
+                            <Label Grid.Column="1"
                                    Text="›"
                                    FontSize="24"
-                                   TextColor="#9CA3AF"
+                                   TextColor="{AppThemeBinding Light=#9CA3AF, Dark=#6B7280}"
                                    VerticalOptions="Center"/>
                         </Grid>
-                    </Frame>
+                    </Border>
                 </VerticalStackLayout>
 
-            </VerticalStackLayout>
+                <!-- Loading Indicator -->
+                <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                   IsVisible="{Binding IsBusy}"
+                                   Color="#1E3A8A"
+                                   HeightRequest="50"
+                                   Margin="0,20,0,20"/>
 
-            <!-- Loading Indicator -->
-            <ActivityIndicator IsRunning="{Binding IsBusy}"
-                             IsVisible="{Binding IsBusy}"
-                             Color="#1E3A8A"
-                             VerticalOptions="Center"
-                             Margin="0,50,0,0"
-                             HeightRequest="50" />
+            </VerticalStackLayout>
 
         </VerticalStackLayout>
     </ScrollView>

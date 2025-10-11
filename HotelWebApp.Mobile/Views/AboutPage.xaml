@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:HotelWebApp.Mobile.ViewModels"
+             x:Class="HotelWebApp.Mobile.Views.AboutPage"
+             x:DataType="viewmodels:AboutViewModel"
+             Shell.NavBarIsVisible="True"
+             Title="About Us"
+             BackgroundColor="{AppThemeBinding Light=White, Dark=#121212}">
+
+    <ScrollView>
+        <Grid RowDefinitions="Auto,*">
+
+            <!-- HERO SECTION WITH IMAGE BACKGROUND -->
+            <Grid Grid.Row="0" RowDefinitions="280">
+                <!-- Background Image -->
+                <Image Source="hotel_lobby.jpg"
+                       Aspect="AspectFill"/>
+
+                <!-- White Overlay -->
+                <BoxView BackgroundColor="White"
+                         Opacity="0.70"/>
+
+                <!-- Content -->
+                <VerticalStackLayout VerticalOptions="Center" 
+                                     Spacing="20"
+                                     Padding="40,0">
+
+                    <!-- Title -->
+                    <Label Text="Welcome to Our Hotel"
+                           FontSize="32"
+                           FontAttributes="Bold"
+                           TextColor="#1E3A8A"
+                           HorizontalTextAlignment="Center"
+                           LineHeight="1.2"/>
+
+                    <Label Text="Where luxury meets comfort and exceptional service"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           TextColor="#000000"
+                           LineHeight="1.4"
+                           HorizontalTextAlignment="Center"
+                           Margin="10,0"/>
+
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- CONTENT SECTION -->
+            <VerticalStackLayout Grid.Row="1" 
+                                 Padding="40,30"
+                                 Spacing="35">
+
+                <!-- About Description -->
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="About Us"
+                           FontSize="24"
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light=#1E3A8A, Dark=#60A5FA}"/>
+
+                    <Label Text="Nestled in the heart of the city, our luxury hotel combines timeless elegance with modern sophistication. For over three decades, we have been the preferred destination for discerning travelers seeking an unforgettable experience.&#x0a;&#x0a;Our meticulously designed rooms and suites offer breathtaking views, premium amenities, and unparalleled comfort. From our award-winning restaurant serving exquisite cuisine to our world-class spa and fitness center, every detail has been crafted to exceed your expectations.&#x0a;&#x0a;Whether you're here for business or pleasure, our dedicated team is committed to providing personalized service that anticipates your every need. Experience the perfect blend of luxury, comfort, and genuine hospitality."
+                           TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"
+                           FontSize="15"
+                           LineHeight="1.6"/>
+                </VerticalStackLayout>
+
+                <!-- Divider -->
+                <BoxView HeightRequest="1"
+                         Color="{AppThemeBinding Light=#E5E7EB, Dark=#374151}"
+                         Margin="0,10"/>
+
+                <!-- Contact Information -->
+                <VerticalStackLayout Spacing="20">
+                    <Label Text="Contact Us"
+                           FontSize="24"
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light=#1E3A8A, Dark=#60A5FA}"/>
+
+                    <!-- Address -->
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Address"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"/>
+                        <Label Text="123 Luxury Avenue&#x0a;Downtown District&#x0a;City, Country 12345"
+                               FontSize="15"
+                               TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"
+                               LineHeight="1.5"/>
+                    </VerticalStackLayout>
+
+                    <!-- Phone -->
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Phone"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"/>
+                        <Label Text="+1 (555) 123-4567"
+                               FontSize="15"
+                               TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"/>
+                    </VerticalStackLayout>
+
+                    <!-- Email -->
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Email"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"/>
+                        <Label Text="info@luxuryhotel.com"
+                               FontSize="15"
+                               TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"/>
+                    </VerticalStackLayout>
+
+                    <!-- Working Hours -->
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Reception Hours"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"/>
+                        <Label Text="24/7 - We're always here for you"
+                               FontSize="15"
+                               TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"/>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+
+                <!-- Divider -->
+                <BoxView HeightRequest="1"
+                         Color="{AppThemeBinding Light=#E5E7EB, Dark=#374151}"
+                         Margin="0,10"/>
+
+                <!-- App Information -->
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="App Information"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light=#1E3A8A, Dark=#60A5FA}"/>
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Version:"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"/>
+                        <Label Text="{Binding AppVersion}"
+                               FontSize="14"
+                               TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"/>
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Built with:"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"/>
+                        <Label Text=".NET MAUI"
+                               FontSize="14"
+                               TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+
+                <!-- Copyright -->
+                <Label Text="{Binding Author, StringFormat='© 2025 {0}. All rights reserved.'}"
+                       FontSize="12"
+                       TextColor="#9CA3AF"
+                       HorizontalTextAlignment="Center"
+                       Margin="0,20,0,0"/>
+
+            </VerticalStackLayout>
+
+        </Grid>
+    </ScrollView>
+</ContentPage>

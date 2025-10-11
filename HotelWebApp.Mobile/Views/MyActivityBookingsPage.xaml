@@ -7,46 +7,41 @@
              x:DataType="viewmodels:MyActivityBookingsViewModel"
              Shell.NavBarIsVisible="True"
              Title="My Bookings"
-             BackgroundColor="White">
+             BackgroundColor="{AppThemeBinding Light=White, Dark=#121212}">
 
     <Grid RowDefinitions="Auto,*,Auto">
 
-        <!-- HERO HEADER -->
-        <Grid Grid.Row="0" RowDefinitions="140" Padding="0">
-            <Grid.Background>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="#1E3A8A" Offset="0.0" />
-                    <GradientStop Color="#3B82F6" Offset="1.0" />
-                </LinearGradientBrush>
-            </Grid.Background>
+        <!-- HERO SECTION WITH IMAGE BACKGROUND -->
+        <Grid Grid.Row="0" RowDefinitions="220">
+            <!-- Background Image -->
+            <Image Source="hotel_lobby.jpg"
+                   Aspect="AspectFill"/>
 
-            <Grid VerticalOptions="Center" Padding="20">
-                <VerticalStackLayout Grid.Column="0" 
-                                     Spacing="8"
-                                     HorizontalOptions="Start">
-                    <Label Text="My Activity Bookings"
-                           FontSize="28"
-                           FontAttributes="Bold"
-                           TextColor="White"/>
-                    <Label Text="View and manage your reservations"
-                           FontSize="14"
-                           TextColor="White"
-                           Opacity="0.9"/>
-                </VerticalStackLayout>
+            <!-- White Overlay -->
+            <BoxView BackgroundColor="White"
+                     Opacity="0.70"/>
 
-                <!-- Clear Cancelled Button -->
-                <Button HorizontalOptions="End"
-                        VerticalOptions="Center"
-                        Text="🗑️"
-                        Command="{Binding ClearCancelledBookingsCommand}"
-                        BackgroundColor="#EF4444"
-                        TextColor="White"
-                        FontSize="20"
-                        WidthRequest="50"
-                        HeightRequest="50"
-                        CornerRadius="25"
-                        Padding="0"/>
-            </Grid>
+            <!-- Content -->
+            <VerticalStackLayout VerticalOptions="Center" 
+                                 Spacing="12"
+                                 Padding="40,0">
+
+                <Label Text="My Activity Bookings"
+                       FontSize="32"
+                       FontAttributes="Bold"
+                       TextColor="#1E3A8A"
+                       HorizontalTextAlignment="Center"
+                       LineHeight="1.2"/>
+
+                <Label Text="View and manage your activity reservations"
+                       FontSize="15"
+                       FontAttributes="Bold"
+                       TextColor="#000000"
+                       LineHeight="1.4"
+                       HorizontalTextAlignment="Center"
+                       Margin="10,0"/>
+
+            </VerticalStackLayout>
         </Grid>
 
         <!-- CONTENT -->
@@ -55,30 +50,30 @@
                      IsRefreshing="{Binding IsRefreshing}">
 
             <ScrollView>
-                <VerticalStackLayout Padding="20" Spacing="15">
+                <VerticalStackLayout Padding="40,30"
+                                     Spacing="20">
 
                     <!-- Loading Indicator -->
                     <ActivityIndicator IsRunning="{Binding IsBusy}"
                                        IsVisible="{Binding IsBusy}"
                                        Color="#1E3A8A"
-                                       HeightRequest="50"
-                                       Margin="0,20,0,0"/>
+                                       HeightRequest="50"/>
 
                     <!-- Cancelling Indicator -->
                     <Frame IsVisible="{Binding IsCancelling}"
                            BackgroundColor="#FEF3C7"
                            BorderColor="#F59E0B"
-                           CornerRadius="10"
-                           Padding="15"
+                           CornerRadius="12"
+                           Padding="20"
                            HasShadow="False">
-                        <HorizontalStackLayout Spacing="10">
+                        <HorizontalStackLayout Spacing="12">
                             <ActivityIndicator IsRunning="True"
                                                Color="#F59E0B"
-                                               WidthRequest="20"
-                                               HeightRequest="20"/>
+                                               WidthRequest="24"
+                                               HeightRequest="24"/>
                             <Label Text="Cancelling booking..."
                                    TextColor="#92400E"
-                                   FontSize="14"
+                                   FontSize="15"
                                    VerticalOptions="Center"/>
                         </HorizontalStackLayout>
                     </Frame>
@@ -87,214 +82,223 @@
                     <Frame IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotEmptyConverter}}"
                            BackgroundColor="#FEE2E2"
                            BorderColor="#EF4444"
-                           CornerRadius="10"
-                           Padding="15"
+                           CornerRadius="12"
+                           Padding="20"
                            HasShadow="False">
                         <Label Text="{Binding ErrorMessage}"
                                TextColor="#991B1B"
-                               FontSize="14"/>
+                               FontSize="14"
+                               LineHeight="1.5"/>
                     </Frame>
+
+                    <!-- Clear Cancelled Button -->
+                    <Border StrokeThickness="0"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="0"
+                            HeightRequest="48"
+                            BackgroundColor="#EF4444"
+                            IsVisible="{Binding HasCancelledBookings}">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2"/>
+                        </Border.Shadow>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ClearCancelledBookingsCommand}"/>
+                        </Border.GestureRecognizers>
+                        <Label Text="Clear Cancelled Bookings"
+                               FontSize="15"
+                               FontAttributes="Bold"
+                               TextColor="White"
+                               HorizontalTextAlignment="Center"
+                               VerticalTextAlignment="Center"/>
+                    </Border>
 
                     <!-- Empty State -->
                     <VerticalStackLayout IsVisible="{Binding HasBookings, Converter={StaticResource InvertedBoolConverter}}"
-                                         Padding="20"
-                                         Spacing="15"
+                                         Spacing="20"
                                          VerticalOptions="Center"
-                                         HorizontalOptions="Center"
-                                         Margin="0,50,0,0">
-                        <Frame Padding="30"
-                               BackgroundColor="#F9FAFB"
-                               BorderColor="Transparent"
-                               CornerRadius="20"
-                               HasShadow="False">
-                            <VerticalStackLayout Spacing="12">
-                                <Label Text="🎯"
-                                       FontSize="64"
-                                       HorizontalOptions="Center"/>
-                                <Label Text="No activity bookings yet"
-                                       FontSize="18"
-                                       FontAttributes="Bold"
-                                       TextColor="#1F2937"
-                                       HorizontalOptions="Center"/>
-                                <Label Text="Book your first activity to see it here"
-                                       FontSize="14"
-                                       TextColor="#6B7280"
-                                       HorizontalOptions="Center"/>
-                            </VerticalStackLayout>
-                        </Frame>
+                                         Margin="0,40,0,0">
+                        <Label Text="No Activity Bookings Yet"
+                               FontSize="22"
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light=#1E3A8A, Dark=#60A5FA}"
+                               HorizontalTextAlignment="Center"/>
+                        <Label Text="Book your first activity to see it here"
+                               FontSize="15"
+                               TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"
+                               HorizontalTextAlignment="Center"
+                               LineHeight="1.5"/>
 
                         <!-- Browse Activities Button -->
-                        <Button Text="🎯 Browse Activities"
-                                Command="{Binding NavigateToActivitiesCommand}"
+                        <Border StrokeThickness="0"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="0"
+                                HeightRequest="56"
                                 BackgroundColor="#1E3A8A"
-                                TextColor="White"
-                                FontSize="16"
-                                FontAttributes="Bold"
-                                HeightRequest="50"
-                                CornerRadius="10"
                                 Margin="0,20,0,0"
-                                HorizontalOptions="Center"
-                                WidthRequest="250"/>
+                                WidthRequest="280"
+                                HorizontalOptions="Center">
+                            <Border.Shadow>
+                                <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2"/>
+                            </Border.Shadow>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding NavigateToActivitiesCommand}"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="Browse Activities"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   TextColor="White"
+                                   HorizontalTextAlignment="Center"
+                                   VerticalTextAlignment="Center"/>
+                        </Border>
                     </VerticalStackLayout>
 
                     <!-- Bookings List -->
                     <VerticalStackLayout IsVisible="{Binding HasBookings}"
-                                         Spacing="12">
+                                         Spacing="20">
                         <CollectionView ItemsSource="{Binding Bookings}"
                                         SelectionMode="None">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate x:DataType="models:ActivityBookingDto">
-                                    <Frame Padding="0"
-                                           Margin="0,0,0,12"
-                                           CornerRadius="15"
-                                           HasShadow="True"
-                                           BorderColor="Transparent"
-                                           BackgroundColor="White">
+                                    <Border StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 16"
+                                            Padding="0"
+                                            Margin="0,0,0,20"
+                                            BackgroundColor="{AppThemeBinding Light=White, Dark=#1F2937}">
+                                        <Border.Shadow>
+                                            <Shadow Brush="Black" 
+                                                    Opacity="0.1" 
+                                                    Radius="10" 
+                                                    Offset="0,4"/>
+                                        </Border.Shadow>
 
-                                        <Grid RowDefinitions="Auto,Auto,Auto,Auto"
-                                              Padding="20"
-                                              RowSpacing="12">
+                                        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                                              Padding="24"
+                                              RowSpacing="16">
 
-                                            <!-- Booking Header -->
+                                            <!-- Activity Header with Status -->
                                             <Grid Grid.Row="0"
-                                                  ColumnDefinitions="Auto,*,Auto">
-                                                <Frame Grid.Column="0"
-                                                       Padding="12"
-                                                       BackgroundColor="#FEF3C7"
-                                                       BorderColor="Transparent"
-                                                       CornerRadius="10"
-                                                       HasShadow="False">
-                                                    <Label Text="🎯"
-                                                           FontSize="24"/>
-                                                </Frame>
-
-                                                <VerticalStackLayout Grid.Column="1"
-                                                                     Spacing="2"
-                                                                     VerticalOptions="Center"
-                                                                     Margin="12,0,0,0">
+                                                  ColumnDefinitions="*,Auto">
+                                                <VerticalStackLayout Grid.Column="0"
+                                                                     Spacing="4">
                                                     <Label Text="{Binding ActivityName}"
-                                                           FontSize="18"
+                                                           FontSize="20"
                                                            FontAttributes="Bold"
-                                                           TextColor="#1F2937"/>
+                                                           TextColor="{AppThemeBinding Light=#1E3A8A, Dark=#60A5FA}"/>
                                                     <Label Text="{Binding ActivityLocation}"
-                                                           FontSize="12"
-                                                           TextColor="#6B7280"
+                                                           FontSize="14"
+                                                           TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"
                                                            IsVisible="{Binding ActivityLocation, Converter={StaticResource StringNotEmptyConverter}}"/>
                                                 </VerticalStackLayout>
 
-                                                <Frame Grid.Column="2"
-                                                       Padding="8,4"
-                                                       CornerRadius="5"
-                                                       BackgroundColor="{Binding StatusColor}"
-                                                       HasShadow="False"
-                                                       VerticalOptions="Start">
+                                                <Border Grid.Column="1"
+                                                        StrokeThickness="0"
+                                                        StrokeShape="RoundRectangle 8"
+                                                        Padding="12,6"
+                                                        BackgroundColor="{Binding StatusColor}"
+                                                        VerticalOptions="Start">
                                                     <Label Text="{Binding StatusText}"
                                                            TextColor="White"
-                                                           FontSize="10"
+                                                           FontSize="12"
                                                            FontAttributes="Bold"/>
-                                                </Frame>
+                                                </Border>
                                             </Grid>
 
-                                            <!-- Date and Time Cards -->
+                                            <!-- Date and Time -->
                                             <Grid Grid.Row="1"
                                                   ColumnDefinitions="*,*"
-                                                  ColumnSpacing="10">
+                                                  ColumnSpacing="12">
+
                                                 <!-- Date -->
-                                                <Frame Grid.Column="0"
-                                                       Padding="12"
-                                                       BackgroundColor="#F9FAFB"
-                                                       BorderColor="Transparent"
-                                                       CornerRadius="8"
-                                                       HasShadow="False">
-                                                    <VerticalStackLayout Spacing="4">
-                                                        <Label Text="📅 Date"
-                                                               FontSize="11"
-                                                               TextColor="#6B7280"/>
-                                                        <Label Text="{Binding FormattedDate}"
-                                                               FontSize="14"
-                                                               FontAttributes="Bold"
-                                                               TextColor="#1F2937"
-                                                               LineBreakMode="TailTruncation"/>
-                                                    </VerticalStackLayout>
-                                                </Frame>
+                                                <VerticalStackLayout Grid.Column="0"
+                                                                     Spacing="6">
+                                                    <Label Text="Date"
+                                                           FontSize="12"
+                                                           FontAttributes="Bold"
+                                                           TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"/>
+                                                    <Label Text="{Binding FormattedDate}"
+                                                           FontSize="15"
+                                                           FontAttributes="Bold"
+                                                           TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"
+                                                           LineBreakMode="WordWrap"
+                                                           MaxLines="2"/>
+                                                </VerticalStackLayout>
 
                                                 <!-- Time -->
-                                                <Frame Grid.Column="1"
-                                                       Padding="12"
-                                                       BackgroundColor="#F9FAFB"
-                                                       BorderColor="Transparent"
-                                                       CornerRadius="8"
-                                                       HasShadow="False">
-                                                    <VerticalStackLayout Spacing="4">
-                                                        <Label Text="🕐 Time"
-                                                               FontSize="11"
-                                                               TextColor="#6B7280"/>
-                                                        <Label Text="{Binding TimeRange}"
-                                                               FontSize="14"
-                                                               FontAttributes="Bold"
-                                                               TextColor="#1F2937"
-                                                               LineBreakMode="TailTruncation"/>
-                                                    </VerticalStackLayout>
-                                                </Frame>
+                                                <VerticalStackLayout Grid.Column="1"
+                                                                     Spacing="6">
+                                                    <Label Text="Time"
+                                                           FontSize="12"
+                                                           FontAttributes="Bold"
+                                                           TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"/>
+                                                    <Label Text="{Binding TimeRange}"
+                                                           FontSize="15"
+                                                           FontAttributes="Bold"
+                                                           TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"
+                                                           LineBreakMode="WordWrap"
+                                                           MaxLines="2"/>
+                                                </VerticalStackLayout>
                                             </Grid>
 
-                                            <!-- Participants Info -->
-                                            <Frame Grid.Row="2"
-                                                   Padding="12"
-                                                   BackgroundColor="#F9FAFB"
-                                                   BorderColor="Transparent"
-                                                   CornerRadius="8"
-                                                   HasShadow="False">
-                                                <HorizontalStackLayout Spacing="8">
-                                                    <Label Text="👥"
-                                                           FontSize="16"
-                                                           VerticalOptions="Center"/>
-                                                    <Label Text="{Binding ParticipantsText}"
-                                                           FontSize="14"
-                                                           TextColor="#1F2937"
-                                                           FontAttributes="Bold"
-                                                           VerticalOptions="Center"/>
-                                                </HorizontalStackLayout>
-                                            </Frame>
+                                            <!-- Participants -->
+                                            <HorizontalStackLayout Grid.Row="2"
+                                                                   Spacing="8">
+                                                <Label Text="Participants:"
+                                                       FontSize="14"
+                                                       TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"/>
+                                                <Label Text="{Binding ParticipantsText}"
+                                                       FontSize="14"
+                                                       FontAttributes="Bold"
+                                                       TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"/>
+                                            </HorizontalStackLayout>
 
-                                            <!-- Price and Cancel Button -->
-                                            <Grid Grid.Row="3"
+                                            <!-- Divider -->
+                                            <BoxView Grid.Row="3"
+                                                     HeightRequest="1"
+                                                     Color="{AppThemeBinding Light=#E5E7EB, Dark=#374151}"/>
+
+                                            <!-- Price and Cancel -->
+                                            <Grid Grid.Row="4"
                                                   ColumnDefinitions="*,Auto">
+
                                                 <Label Grid.Column="0"
                                                        Text="{Binding FormattedTotalPrice}"
-                                                       FontSize="20"
+                                                       FontSize="22"
                                                        FontAttributes="Bold"
-                                                       TextColor="#1E3A8A"
+                                                       TextColor="{AppThemeBinding Light=#1E3A8A, Dark=#60A5FA}"
                                                        VerticalOptions="Center"/>
 
                                                 <!-- Cancel Button -->
-                                                <Button Grid.Column="1"
-                                                        Text="Cancel"
-                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:MyActivityBookingsViewModel}}, Path=CancelBookingCommand}"
-                                                        CommandParameter="{Binding .}"
+                                                <Border Grid.Column="1"
+                                                        StrokeThickness="0"
+                                                        StrokeShape="RoundRectangle 10"
+                                                        Padding="16,10"
                                                         BackgroundColor="#EF4444"
-                                                        TextColor="White"
-                                                        FontSize="14"
-                                                        FontAttributes="Bold"
-                                                        Padding="15,8"
-                                                        CornerRadius="8">
-                                                    <Button.Triggers>
-                                                        <DataTrigger TargetType="Button"
+                                                        VerticalOptions="Center">
+                                                    <Border.GestureRecognizers>
+                                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:MyActivityBookingsViewModel}}, Path=CancelBookingCommand}"
+                                                                              CommandParameter="{Binding .}"/>
+                                                    </Border.GestureRecognizers>
+                                                    <Label Text="Cancel"
+                                                           FontSize="14"
+                                                           FontAttributes="Bold"
+                                                           TextColor="White"/>
+                                                    <Border.Triggers>
+                                                        <DataTrigger TargetType="Border"
                                                                      Binding="{Binding Status}"
                                                                      Value="Cancelled">
                                                             <Setter Property="IsVisible" Value="False"/>
                                                         </DataTrigger>
-                                                        <DataTrigger TargetType="Button"
+                                                        <DataTrigger TargetType="Border"
                                                                      Binding="{Binding Status}"
                                                                      Value="Completed">
                                                             <Setter Property="IsVisible" Value="False"/>
                                                         </DataTrigger>
-                                                    </Button.Triggers>
-                                                </Button>
+                                                    </Border.Triggers>
+                                                </Border>
                                             </Grid>
 
                                         </Grid>
-                                    </Frame>
+                                    </Border>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>
@@ -305,24 +309,26 @@
         </RefreshView>
 
         <!-- Floating Action Button -->
-        <Button Grid.Row="2"
-                Text="+ Browse Activities"
-                Command="{Binding NavigateToActivitiesCommand}"
-                BackgroundColor="#10B981"
-                TextColor="White"
-                FontSize="16"
-                FontAttributes="Bold"
+        <Border Grid.Row="2"
+                StrokeThickness="0"
+                StrokeShape="RoundRectangle 15"
+                Padding="0"
                 HeightRequest="60"
-                CornerRadius="15"
-                Margin="20,10,20,20"
-                HorizontalOptions="Fill"
+                BackgroundColor="#10B981"
+                Margin="40,10,40,30"
                 IsVisible="{Binding HasBookings}">
-            <Button.Shadow>
-                <Shadow Brush="Black"
-                        Offset="0,4"
-                        Radius="8"
-                        Opacity="0.3"/>
-            </Button.Shadow>
-        </Button>
+            <Border.Shadow>
+                <Shadow Brush="Black" Opacity="0.15" Radius="10" Offset="0,4"/>
+            </Border.Shadow>
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding NavigateToActivitiesCommand}"/>
+            </Border.GestureRecognizers>
+            <Label Text="+ Browse Activities"
+                   FontSize="16"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   HorizontalTextAlignment="Center"
+                   VerticalTextAlignment="Center"/>
+        </Border>
     </Grid>
 </ContentPage>

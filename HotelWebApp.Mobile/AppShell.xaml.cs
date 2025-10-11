@@ -12,6 +12,7 @@ namespace HotelWebApp.Mobile
             Services = serviceProvider;
 
             // Registar rotas
+            Routing.RegisterRoute(nameof(LandingPage), typeof(LandingPage));
             Routing.RegisterRoute(nameof(LoginPage), typeof(LoginPage));
             Routing.RegisterRoute(nameof(HomePage), typeof(HomePage));
             Routing.RegisterRoute(nameof(ProfilePage), typeof(ProfilePage));
@@ -21,7 +22,6 @@ namespace HotelWebApp.Mobile
             Routing.RegisterRoute(nameof(ActivityDetailPage), typeof(ActivityDetailPage));
             Routing.RegisterRoute(nameof(MyActivityBookingsPage), typeof(MyActivityBookingsPage));
             Routing.RegisterRoute(nameof(PromotionsPage), typeof(PromotionsPage));
-            Routing.RegisterRoute(nameof(PromotionDetailPage), typeof(PromotionDetailPage));
             Routing.RegisterRoute(nameof(RegisterPage), typeof(RegisterPage));
             Routing.RegisterRoute(nameof(ConfirmEmailPage), typeof(ConfirmEmailPage));
             Routing.RegisterRoute(nameof(ChangePasswordPage), typeof(ChangePasswordPage));
@@ -54,6 +54,7 @@ namespace HotelWebApp.Mobile
             Items.Add(new Tab
             {
                 Title = "Home",
+                Icon = "home.png", // Adicione ícones se tiver
                 Items =
         {
             new ShellContent
@@ -65,32 +66,18 @@ namespace HotelWebApp.Mobile
         }
             });
 
-            // Reservations Tab
+            // Reservations Tab (inclui room reservations)
             Items.Add(new Tab
             {
-                Title = "Reservations",
+                Title = "Bookings",
+                Icon = "calendar.png",
                 Items =
         {
             new ShellContent
             {
-                Title = "My Reservations",
+                Title = "My Bookings",
                 Route = "Reservations",
                 ContentTemplate = new DataTemplate(() => sp.GetRequiredService<ReservationsPage>())
-            }
-        }
-            });
-
-            // Invoices Tab
-            Items.Add(new Tab
-            {
-                Title = "Invoices",
-                Items =
-        {
-            new ShellContent
-            {
-                Title = "My Invoices",
-                Route = "Invoices",
-                ContentTemplate = new DataTemplate(() => sp.GetRequiredService<InvoicesPage>())
             }
         }
             });
@@ -99,6 +86,7 @@ namespace HotelWebApp.Mobile
             Items.Add(new Tab
             {
                 Title = "Activities",
+                Icon = "activity.png",
                 Items =
         {
             new ShellContent
@@ -110,10 +98,11 @@ namespace HotelWebApp.Mobile
         }
             });
 
-            // Profile Tab
+            // Profile Tab (inclui invoices, settings)
             Items.Add(new Tab
             {
                 Title = "Profile",
+                Icon = "profile.png",
                 Items =
         {
             new ShellContent
@@ -130,15 +119,15 @@ namespace HotelWebApp.Mobile
         {
             Items.Clear();
 
-            var loginShell = new ShellContent
+            var landingShell = new ShellContent
             {
-                Title = "Login",
-                Route = nameof(LoginPage),
-                ContentTemplate = new DataTemplate(() => sp.GetRequiredService<LoginPage>())
+                Title = "Welcome",
+                Route = "Landing",
+                ContentTemplate = new DataTemplate(() => sp.GetRequiredService<LandingPage>())
             };
 
-            Items.Add(loginShell);
-            CurrentItem = loginShell;
+            Items.Add(landingShell);
+            CurrentItem = landingShell;
         }
     }
 }

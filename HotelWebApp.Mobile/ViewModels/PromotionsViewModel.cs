@@ -93,15 +93,5 @@ namespace HotelWebApp.Mobile.ViewModels
             }
         }
 
-        [RelayCommand]
-        private async Task ViewPromotionDetailsAsync(PromotionDto promotion)
-        {
-            if (promotion == null) return;
-
-            await Shell.Current.GoToAsync(nameof(PromotionDetailPage), new Dictionary<string, object>
-            {
-                { "PromotionId", promotion.PromotionId }
-            });
-        }
     }
 }

@@ -65,14 +65,24 @@ namespace HotelWebApp.Mobile.ViewModels
                 {
                     System.Diagnostics.Debug.WriteLine("Login SUCCESS - Reconfiguring Shell");
 
+                    // Garantir que Shell existe
+                    if (Shell.Current == null)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Creating new AppShell instance");
+                        Application.Current.MainPage = new AppShell(AppShell.Services);
+                    }
+
+                    // Reconfigurar Shell para utilizador autenticado
                     if (Shell.Current is AppShell appShell)
                     {
+                        System.Diagnostics.Debug.WriteLine("Reconfiguring AppShell for authenticated user");
                         appShell.ConfigureShellForAuthenticatedUser(AppShell.Services);
                     }
 
+                    // Navegar para Home
                     await Shell.Current.GoToAsync("///Home");
 
-                    System.Diagnostics.Debug.WriteLine("Navigation to HomePage completed");
+                    System.Diagnostics.Debug.WriteLine("Navigation completed");
 
                     Email = string.Empty;
                     Password = string.Empty;
@@ -124,18 +134,6 @@ namespace HotelWebApp.Mobile.ViewModels
         private async Task NavigateToRegisterAsync()
         {
             await Shell.Current.GoToAsync(nameof(RegisterPage));
-        }
-
-        [RelayCommand]
-        private async Task GuestAccessAsync()
-        {
-            // Acesso como convidado - reconfigurar Shell sem autenticação
-            System.Diagnostics.Debug.WriteLine("Guest access - showing home without authentication");
-
-            if (Shell.Current is AppShell appShell)
-            {
-                appShell.ConfigureShellForAuthenticatedUser(AppShell.Services);
-            }
         }
     }
 }

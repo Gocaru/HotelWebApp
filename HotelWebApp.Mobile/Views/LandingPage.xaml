@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:HotelWebApp.Mobile.ViewModels"
+             x:Class="HotelWebApp.Mobile.Views.LandingPage"
+             x:DataType="viewmodels:LandingViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="White">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <!-- HERO SECTION WITH IMAGE BACKGROUND -->
+        <Grid Grid.Row="0">
+            <!-- Background Image -->
+            <Image Source="hotel_lobby.jpg"
+                   Aspect="AspectFill"/>
+
+            <!-- White Strong Overlay -->
+            <BoxView BackgroundColor="White"
+                     Opacity="0.70"/>
+
+            <!-- Content -->
+            <VerticalStackLayout VerticalOptions="Center" 
+                                 Spacing="30"
+                                 Padding="40,0">
+
+                <!-- Badge -->
+                <Border Padding="15,8"
+                        Stroke="#1E3A8A"
+                        StrokeThickness="2"
+                        StrokeShape="RoundRectangle 25"
+                        HorizontalOptions="Center">
+                    <Border.BackgroundColor>
+                        <Color>#1E3A8A</Color>
+                    </Border.BackgroundColor>
+                    <Label Text="PREMIUM GUEST EXPERIENCE"
+                           FontSize="11"
+                           FontAttributes="Bold"
+                           TextColor="White"/>
+                </Border>
+
+                <!-- Main Title -->
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Your Luxury Stay, Simplified"
+                           FontSize="36"
+                           FontAttributes="Bold"
+                           TextColor="#1E3A8A"
+                           HorizontalTextAlignment="Center"
+                           LineHeight="1.2"/>
+
+                    <Label Text="Everything you need for the perfect stay, right at your fingertips."
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="#000000"
+                           LineHeight="1.4"
+                           HorizontalTextAlignment="Center"
+                           Margin="10,0"/>
+                </VerticalStackLayout>
+
+                <!-- Quick Access Buttons -->
+                <VerticalStackLayout Spacing="10" 
+                                     Margin="0,70,0,0">
+
+                    <Border StrokeThickness="0"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="0"
+                            HeightRequest="48"
+                            BackgroundColor="#1E3A8A"
+                            Opacity="0.9">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2"/>
+                        </Border.Shadow>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding BrowseActivitiesCommand}"/>
+                        </Border.GestureRecognizers>
+                        <Label Text="Explore Activities"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="White"
+                               HorizontalTextAlignment="Center"
+                               VerticalTextAlignment="Center"/>
+                    </Border>
+
+                    <Border StrokeThickness="0"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="0"
+                            HeightRequest="48"
+                            BackgroundColor="#1E3A8A"
+                            Opacity="0.9">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2"/>
+                        </Border.Shadow>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ViewPromotionsCommand}"/>
+                        </Border.GestureRecognizers>
+                        <Label Text="View Special Offers"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="White"
+                               HorizontalTextAlignment="Center"
+                               VerticalTextAlignment="Center"/>
+                    </Border>
+
+                    <Border StrokeThickness="0"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="0"
+                            HeightRequest="48"
+                            BackgroundColor="#1E3A8A"
+                            Opacity="0.9">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2"/>
+                        </Border.Shadow>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ViewAboutCommand}"/>
+                        </Border.GestureRecognizers>
+                        <Label Text="About Our Hotel"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="White"
+                               HorizontalTextAlignment="Center"
+                               VerticalTextAlignment="Center"/>
+                    </Border>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- BOTTOM BUTTONS -->
+        <Grid Grid.Row="1" 
+              ColumnDefinitions="*,*"
+              ColumnSpacing="15"
+              Padding="25,20,25,40"
+              BackgroundColor="White">
+
+            <Border Grid.Column="0"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="0"
+                    HeightRequest="52"
+                    BackgroundColor="#1E3A8A">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2"/>
+                </Border.Shadow>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding NavigateToRegisterCommand}"/>
+                </Border.GestureRecognizers>
+                <Label Text="Get Started"
+                       FontSize="15"
+                       FontAttributes="Bold"
+                       TextColor="White"
+                       HorizontalTextAlignment="Center"
+                       VerticalTextAlignment="Center"/>
+            </Border>
+
+            <Border Grid.Column="1"
+                    Stroke="#1E3A8A"
+                    StrokeThickness="2"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="0"
+                    HeightRequest="52"
+                    BackgroundColor="White">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Opacity="0.05" Radius="8" Offset="0,2"/>
+                </Border.Shadow>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding NavigateToLoginCommand}"/>
+                </Border.GestureRecognizers>
+                <Label Text="Sign In"
+                       FontSize="15"
+                       FontAttributes="Bold"
+                       TextColor="#1E3A8A"
+                       HorizontalTextAlignment="Center"
+                       VerticalTextAlignment="Center"/>
+            </Border>
+        </Grid>
+
+    </Grid>
+</ContentPage>

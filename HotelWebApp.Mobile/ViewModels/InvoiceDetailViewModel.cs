@@ -97,10 +97,5 @@ namespace HotelWebApp.Mobile.ViewModels
             });
         }
 
-        [RelayCommand]
-        private async Task RefreshAsync()
-        {
-            await LoadInvoiceDetailsAsync();
-        }
     }
 }

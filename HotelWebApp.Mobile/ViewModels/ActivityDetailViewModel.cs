@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using HotelWebApp.Mobile.Models;
 using HotelWebApp.Mobile.Services;
+using HotelWebApp.Mobile.Views;
 
 namespace HotelWebApp.Mobile.ViewModels
 {
@@ -160,6 +161,23 @@ namespace HotelWebApp.Mobile.ViewModels
         [RelayCommand]
         private async Task BookActivityAsync()
         {
+            var token = await SecureStorage.GetAsync("auth_token");
+
+            if (string.IsNullOrEmpty(token))
+            {
+                var result = await Shell.Current.DisplayAlert(
+                    "Login Required",
+                    "Please login or create an account to book this activity",
+                    "Login",
+                    "Cancel");
+
+                if (result)
+                {
+                    await Shell.Current.GoToAsync(nameof(LoginPage));
+                }
+                return;
+            }
+
             if (IsBooking || Activity == null) return;
 
             if (NumberOfParticipants < 1)

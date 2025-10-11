@@ -27,6 +27,9 @@ namespace HotelWebApp.Mobile.ViewModels
         private bool hasBookings;
 
         [ObservableProperty]
+        private bool hasCancelledBookings;
+
+        [ObservableProperty]
         private string errorMessage = string.Empty;
 
         // Chave para guardar preferência
@@ -89,6 +92,7 @@ namespace HotelWebApp.Mobile.ViewModels
                     }
 
                     HasBookings = Bookings.Any();
+                    HasCancelledBookings = Bookings.Any(b => b.Status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase));
                     System.Diagnostics.Debug.WriteLine($"Loaded {Bookings.Count} bookings (hideCancelled={HideCancelled})");
                 }
                 else
@@ -180,10 +184,10 @@ namespace HotelWebApp.Mobile.ViewModels
                 Bookings.Remove(booking);
             }
 
-            // ✅ ATIVAR FLAG e PERSISTIR em Preferences
             HideCancelled = true;
 
             HasBookings = Bookings.Any();
+            HasCancelledBookings = false;
             System.Diagnostics.Debug.WriteLine($"Cleared {cancelledBookings.Count}, filter saved to Preferences");
         }
 

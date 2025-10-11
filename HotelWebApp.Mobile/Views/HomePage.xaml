@@ -5,406 +5,341 @@
              x:Class="HotelWebApp.Mobile.Views.HomePage"
              x:DataType="viewmodels:HomeViewModel"
              Shell.NavBarIsVisible="False"
-             BackgroundColor="White">
+             BackgroundColor="{AppThemeBinding Light=White, Dark=#121212}">
 
     <ScrollView>
         <VerticalStackLayout Spacing="0">
 
-            <!-- HERO HEADER -->
-            <Grid RowDefinitions="200" Padding="0">
-                <!-- Background Image with Overlay -->
-                <Image Source="hotel_lobby.jpg" 
-                       Aspect="AspectFill"
-                       Opacity="0.3"/>
-                <BoxView BackgroundColor="#1E3A8A" 
-                         Opacity="0.7"/>
+            <!-- HERO SECTION WITH IMAGE BACKGROUND -->
+            <Grid RowDefinitions="220">
+                <!-- Background Image -->
+                <Image Source="hotel_lobby.jpg"
+                       Aspect="AspectFill"/>
+
+                <!-- White Overlay -->
+                <BoxView BackgroundColor="White"
+                         Opacity="0.70"/>
 
                 <!-- Content -->
                 <VerticalStackLayout VerticalOptions="Center" 
-                                     HorizontalOptions="Center" 
-                                     Spacing="5">
+                                     Spacing="10"
+                                     Padding="40,0">
+
                     <Label Text="Welcome Back"
-                           FontSize="32"
+                           FontSize="28"
                            FontAttributes="Bold"
-                           TextColor="White"
-                           HorizontalOptions="Center"/>
+                           TextColor="#1E3A8A"
+                           HorizontalTextAlignment="Center"
+                           LineHeight="1.2"/>
+
                     <Label Text="{Binding UserFullName}"
-                           FontSize="18"
-                           TextColor="#D4AF37"
-                           HorizontalOptions="Center"/>
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           TextColor="#000000"
+                           HorizontalTextAlignment="Center"/>
+
                     <Label Text="Grand Luxury Hotel &amp; Spa"
                            FontSize="14"
-                           TextColor="White"
-                           Opacity="0.8"
-                           HorizontalOptions="Center"
+                           TextColor="#6B7280"
+                           HorizontalTextAlignment="Center"
                            Margin="0,5,0,0"/>
+
                 </VerticalStackLayout>
             </Grid>
 
-            <!-- YOUR CURRENT STAY CARD -->
-            <Frame Margin="20,20,20,10"
-                   Padding="25"
-                   BackgroundColor="#1E3A8A"
-                   BorderColor="Transparent"
-                   CornerRadius="12"
-                   HasShadow="True">
-                <VerticalStackLayout Spacing="15">
-                    <Label Text="Your Current Stay"
-                           FontSize="18"
-                           FontAttributes="Bold"
-                           TextColor="White"/>
+            <!-- CONTENT -->
+            <VerticalStackLayout Padding="40,30"
+                                 Spacing="30">
 
-                    <!-- Room Number -->
-                    <HorizontalStackLayout Spacing="12">
-                        <Label Text="📍"
-                               FontSize="20"
-                               VerticalOptions="Center"/>
-                        <VerticalStackLayout Spacing="2">
+                <!-- YOUR CURRENT STAY CARD -->
+                <Border StrokeThickness="0"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="24"
+                        BackgroundColor="#1E3A8A">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.15" Radius="10" Offset="0,4"/>
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="18">
+                        <Label Text="Your Current Stay"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               TextColor="White"/>
+
+                        <!-- Room Number -->
+                        <VerticalStackLayout Spacing="6">
                             <Label Text="Room Number"
                                    FontSize="12"
+                                   FontAttributes="Bold"
                                    TextColor="White"
                                    Opacity="0.7"/>
                             <Label Text="Suite 1402"
-                                   FontSize="16"
+                                   FontSize="18"
                                    FontAttributes="Bold"
                                    TextColor="White"/>
                         </VerticalStackLayout>
-                    </HorizontalStackLayout>
 
-                    <!-- Check-out Date -->
-                    <HorizontalStackLayout Spacing="12">
-                        <Label Text="📅"
-                               FontSize="20"
-                               VerticalOptions="Center"/>
-                        <VerticalStackLayout Spacing="2">
+                        <!-- Check-out Date -->
+                        <VerticalStackLayout Spacing="6">
                             <Label Text="Check-out"
                                    FontSize="12"
+                                   FontAttributes="Bold"
                                    TextColor="White"
                                    Opacity="0.7"/>
                             <Label Text="October 15, 2025"
-                                   FontSize="16"
+                                   FontSize="18"
                                    FontAttributes="Bold"
                                    TextColor="White"/>
                         </VerticalStackLayout>
-                    </HorizontalStackLayout>
-                </VerticalStackLayout>
-            </Frame>
-
-            <!-- STATISTICS -->
-            <Grid ColumnDefinitions="*,*"
-                  ColumnSpacing="15"
-                  Padding="20,10,20,20">
-
-                <!-- Upcoming -->
-                <Frame Grid.Column="0"
-                       Padding="20"
-                       BackgroundColor="White"
-                       BorderColor="#E5E7EB"
-                       CornerRadius="12"
-                       HasShadow="True">
-                    <VerticalStackLayout Spacing="8">
-                        <Label Text="📅"
-                               FontSize="28"
-                               HorizontalOptions="Center"/>
-                        <Label Text="{Binding UpcomingReservations}"
-                               FontSize="36"
-                               FontAttributes="Bold"
-                               TextColor="#1E3A8A"
-                               HorizontalOptions="Center"/>
-                        <Label Text="Upcoming"
-                               FontSize="13"
-                               TextColor="#6B7280"
-                               HorizontalOptions="Center"/>
                     </VerticalStackLayout>
-                </Frame>
+                </Border>
 
-                <!-- Completed -->
-                <Frame Grid.Column="1"
-                       Padding="20"
-                       BackgroundColor="White"
-                       BorderColor="#E5E7EB"
-                       CornerRadius="12"
-                       HasShadow="True">
-                    <VerticalStackLayout Spacing="8">
-                        <Label Text="✅"
-                               FontSize="28"
-                               HorizontalOptions="Center"/>
-                        <Label Text="{Binding CompletedStays}"
-                               FontSize="36"
-                               FontAttributes="Bold"
-                               TextColor="#059669"
-                               HorizontalOptions="Center"/>
-                        <Label Text="Completed"
-                               FontSize="13"
-                               TextColor="#6B7280"
-                               HorizontalOptions="Center"/>
-                    </VerticalStackLayout>
-                </Frame>
-            </Grid>
+                <!-- STATISTICS -->
+                <Grid ColumnDefinitions="*,*"
+                      ColumnSpacing="15">
 
-            <!-- SERVICES SECTION -->
-            <VerticalStackLayout Padding="20,10,20,20" Spacing="20">
-
-                <Label Text="Services"
-           FontSize="20"
-           FontAttributes="Bold"
-           TextColor="#1F2937"/>
-
-                <!-- Services Grid 2x2 -->
-                <Grid RowDefinitions="Auto,Auto"
-      ColumnDefinitions="*,*"
-      RowSpacing="15"
-      ColumnSpacing="15">
-
-                    <!-- My Profile -->
-                    <Frame Grid.Row="0" Grid.Column="0"
-           Padding="0"
-           BackgroundColor="White"
-           BorderColor="#E5E7EB"
-           CornerRadius="12"
-           HasShadow="True">
-                        <Frame.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding NavigateToProfileCommand}"/>
-                        </Frame.GestureRecognizers>
-                        <VerticalStackLayout Padding="20,25,20,20" Spacing="15">
-                            <Frame Padding="0"
-                   BackgroundColor="#D4AF37"
-                   BorderColor="Transparent"
-                   CornerRadius="35"
-                   WidthRequest="70"
-                   HeightRequest="70"
-                   HorizontalOptions="Center"
-                   HasShadow="False">
-                                <Label Text="👤"
-                       FontSize="32"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center"
-                       Margin="0,5,0,0"/>
-                            </Frame>
-                            <Label Text="My Profile"
-                   FontSize="15"
-                   FontAttributes="Bold"
-                   TextColor="#1F2937"
-                   HorizontalOptions="Center"/>
-                            <Label Text="View &amp; edit profile"
-                   FontSize="11"
-                   TextColor="#9CA3AF"
-                   HorizontalOptions="Center"
-                   Margin="0,-8,0,0"/>
+                    <!-- Upcoming -->
+                    <Border Grid.Column="0"
+                            StrokeThickness="1"
+                            Stroke="{AppThemeBinding Light=#E5E7EB, Dark=#374151}"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="20"
+                            BackgroundColor="{AppThemeBinding Light=#F9FAFB, Dark=#1F2937}">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="{Binding UpcomingReservations}"
+                                   FontSize="32"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#1E3A8A, Dark=#60A5FA}"
+                                   HorizontalOptions="Center"/>
+                            <Label Text="Upcoming"
+                                   FontSize="13"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"
+                                   HorizontalOptions="Center"/>
                         </VerticalStackLayout>
-                    </Frame>
+                    </Border>
 
-                    <!-- Reservations -->
-                    <Frame Grid.Row="0" Grid.Column="1"
-           Padding="0"
-           BackgroundColor="White"
-           BorderColor="#E5E7EB"
-           CornerRadius="12"
-           HasShadow="True">
-                        <Frame.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding NavigateToReservationsCommand}"/>
-                        </Frame.GestureRecognizers>
-                        <VerticalStackLayout Padding="20,25,20,20" Spacing="15">
-                            <Frame Padding="0"
-                   BackgroundColor="#D4AF37"
-                   BorderColor="Transparent"
-                   CornerRadius="35"
-                   WidthRequest="70"
-                   HeightRequest="70"
-                   HorizontalOptions="Center"
-                   HasShadow="False">
-                                <Label Text="📅"
-                       FontSize="32"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center"
-                       Margin="0,5,0,0"/>
-                            </Frame>
-                            <Label Text="Reservations"
-                   FontSize="15"
-                   FontAttributes="Bold"
-                   TextColor="#1F2937"
-                   HorizontalOptions="Center"/>
-                            <Label Text="View bookings"
-                   FontSize="11"
-                   TextColor="#9CA3AF"
-                   HorizontalOptions="Center"
-                   Margin="0,-8,0,0"/>
+                    <!-- Completed -->
+                    <Border Grid.Column="1"
+                            StrokeThickness="1"
+                            Stroke="{AppThemeBinding Light=#E5E7EB, Dark=#374151}"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="20"
+                            BackgroundColor="{AppThemeBinding Light=#F9FAFB, Dark=#1F2937}">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="{Binding CompletedStays}"
+                                   FontSize="32"
+                                   FontAttributes="Bold"
+                                   TextColor="#059669"
+                                   HorizontalOptions="Center"/>
+                            <Label Text="Completed"
+                                   FontSize="13"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"
+                                   HorizontalOptions="Center"/>
                         </VerticalStackLayout>
-                    </Frame>
-
-                    <!-- Activities -->
-                    <Frame Grid.Row="1" Grid.Column="0"
-           Padding="0"
-           BackgroundColor="White"
-           BorderColor="#E5E7EB"
-           CornerRadius="12"
-           HasShadow="True">
-                        <Frame.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding NavigateToActivitiesCommand}"/>
-                        </Frame.GestureRecognizers>
-                        <VerticalStackLayout Padding="20,25,20,20" Spacing="15">
-                            <Frame Padding="0"
-                   BackgroundColor="#D4AF37"
-                   BorderColor="Transparent"
-                   CornerRadius="35"
-                   WidthRequest="70"
-                   HeightRequest="70"
-                   HorizontalOptions="Center"
-                   HasShadow="False">
-                                <Label Text="🎯"
-                       FontSize="32"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center"
-                       Margin="0,5,0,0"/>
-                            </Frame>
-                            <Label Text="Activities"
-                   FontSize="15"
-                   FontAttributes="Bold"
-                   TextColor="#1F2937"
-                   HorizontalOptions="Center"/>
-                            <Label Text="Pool, spa &amp; gym"
-                   FontSize="11"
-                   TextColor="#9CA3AF"
-                   HorizontalOptions="Center"
-                   Margin="0,-8,0,0"/>
-                        </VerticalStackLayout>
-                    </Frame>
-
-                    <!-- Promotions -->
-                    <Frame Grid.Row="1" Grid.Column="1"
-           Padding="0"
-           BackgroundColor="White"
-           BorderColor="#E5E7EB"
-           CornerRadius="12"
-           HasShadow="True">
-                        <Frame.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding NavigateToPromotionsCommand}"/>
-                        </Frame.GestureRecognizers>
-                        <VerticalStackLayout Padding="20,25,20,20" Spacing="15">
-                            <Frame Padding="0"
-                   BackgroundColor="#D4AF37"
-                   BorderColor="Transparent"
-                   CornerRadius="35"
-                   WidthRequest="70"
-                   HeightRequest="70"
-                   HorizontalOptions="Center"
-                   HasShadow="False">
-                                <Label Text="🎁"
-                       FontSize="32"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center"
-                       Margin="0,5,0,0"/>
-                            </Frame>
-                            <Label Text="Promotions"
-                   FontSize="15"
-                   FontAttributes="Bold"
-                   TextColor="#1F2937"
-                   HorizontalOptions="Center"/>
-                            <Label Text="Special offers"
-                   FontSize="11"
-                   TextColor="#9CA3AF"
-                   HorizontalOptions="Center"
-                   Margin="0,-8,0,0"/>
-                        </VerticalStackLayout>
-                    </Frame>
+                    </Border>
                 </Grid>
 
-                <!-- Additional Options -->
-                <VerticalStackLayout Spacing="12" Margin="0,10,0,0">
+                <!-- SERVICES SECTION -->
+                <VerticalStackLayout Spacing="20">
 
-                    <!-- Invoices -->
-                    <Frame Padding="18"
-               BackgroundColor="White"
-               BorderColor="#E5E7EB"
-               CornerRadius="12"
-               HasShadow="True">
-                        <Frame.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding NavigateToInvoicesCommand}"/>
-                        </Frame.GestureRecognizers>
-                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="15">
-                            <Label Grid.Column="0"
-                       Text="💳"
-                       FontSize="24"
-                       VerticalOptions="Center"/>
-                            <Label Grid.Column="1"
-                       Text="Invoices &amp; Payments"
-                       FontSize="16"
-                       TextColor="#1F2937"
-                       VerticalOptions="Center"/>
-                            <Label Grid.Column="2"
-                       Text="›"
-                       FontSize="24"
-                       TextColor="#9CA3AF"
-                       VerticalOptions="Center"/>
-                        </Grid>
-                    </Frame>
+                    <Label Text="Services"
+                           FontSize="22"
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light=#1E3A8A, Dark=#60A5FA}"/>
 
-                    <!-- My Activity Bookings -->
-                    <Frame Padding="18"
-               BackgroundColor="White"
-               BorderColor="#E5E7EB"
-               CornerRadius="12"
-               HasShadow="True">
-                        <Frame.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding NavigateToMyActivityBookingsCommand}"/>
-                        </Frame.GestureRecognizers>
-                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="15">
-                            <Label Grid.Column="0"
-                       Text="📋"
-                       FontSize="24"
-                       VerticalOptions="Center"/>
-                            <Label Grid.Column="1"
-                       Text="My Activity Bookings"
-                       FontSize="16"
-                       TextColor="#1F2937"
-                       VerticalOptions="Center"/>
-                            <Label Grid.Column="2"
-                       Text="›"
-                       FontSize="24"
-                       TextColor="#9CA3AF"
-                       VerticalOptions="Center"/>
-                        </Grid>
-                    </Frame>
+                    <!-- Services Grid -->
+                    <Grid RowDefinitions="Auto,Auto"
+                          ColumnDefinitions="*,*"
+                          RowSpacing="15"
+                          ColumnSpacing="15">
 
-                    <!-- About -->
-                    <Frame Padding="18"
-               BackgroundColor="White"
-               BorderColor="#E5E7EB"
-               CornerRadius="12"
-               HasShadow="True">
-                        <Frame.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding NavigateToAboutCommand}"/>
-                        </Frame.GestureRecognizers>
-                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="15">
-                            <Label Grid.Column="0"
-                       Text="ℹ️"
-                       FontSize="24"
-                       VerticalOptions="Center"/>
-                            <Label Grid.Column="1"
-                       Text="About"
-                       FontSize="16"
-                       TextColor="#1F2937"
-                       VerticalOptions="Center"/>
-                            <Label Grid.Column="2"
-                       Text="›"
-                       FontSize="24"
-                       TextColor="#9CA3AF"
-                       VerticalOptions="Center"/>
-                        </Grid>
-                    </Frame>
+                        <!-- My Profile -->
+                        <Border Grid.Row="0" Grid.Column="0"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="0"
+                                BackgroundColor="{AppThemeBinding Light=White, Dark=#1F2937}">
+                            <Border.Shadow>
+                                <Shadow Brush="Black" Opacity="0.08" Radius="8" Offset="0,2"/>
+                            </Border.Shadow>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding NavigateToProfileCommand}"/>
+                            </Border.GestureRecognizers>
+                            <VerticalStackLayout Padding="20" Spacing="12">
+                                <Label Text="My Profile"
+                                       FontSize="15"
+                                       FontAttributes="Bold"
+                                       TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"/>
+                                <Label Text="View &amp; edit profile"
+                                       FontSize="12"
+                                       TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Reservations -->
+                        <Border Grid.Row="0" Grid.Column="1"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="0"
+                                BackgroundColor="{AppThemeBinding Light=White, Dark=#1F2937}">
+                            <Border.Shadow>
+                                <Shadow Brush="Black" Opacity="0.08" Radius="8" Offset="0,2"/>
+                            </Border.Shadow>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding NavigateToReservationsCommand}"/>
+                            </Border.GestureRecognizers>
+                            <VerticalStackLayout Padding="20" Spacing="12">
+                                <Label Text="Reservations"
+                                       FontSize="15"
+                                       FontAttributes="Bold"
+                                       TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"/>
+                                <Label Text="View bookings"
+                                       FontSize="12"
+                                       TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Activities -->
+                        <Border Grid.Row="1" Grid.Column="0"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="0"
+                                BackgroundColor="{AppThemeBinding Light=White, Dark=#1F2937}">
+                            <Border.Shadow>
+                                <Shadow Brush="Black" Opacity="0.08" Radius="8" Offset="0,2"/>
+                            </Border.Shadow>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding NavigateToActivitiesCommand}"/>
+                            </Border.GestureRecognizers>
+                            <VerticalStackLayout Padding="20" Spacing="12">
+                                <Label Text="Activities"
+                                       FontSize="15"
+                                       FontAttributes="Bold"
+                                       TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"/>
+                                <Label Text="Pool, spa &amp; gym"
+                                       FontSize="12"
+                                       TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Promotions -->
+                        <Border Grid.Row="1" Grid.Column="1"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="0"
+                                BackgroundColor="{AppThemeBinding Light=White, Dark=#1F2937}">
+                            <Border.Shadow>
+                                <Shadow Brush="Black" Opacity="0.08" Radius="8" Offset="0,2"/>
+                            </Border.Shadow>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding NavigateToPromotionsCommand}"/>
+                            </Border.GestureRecognizers>
+                            <VerticalStackLayout Padding="20" Spacing="12">
+                                <Label Text="Promotions"
+                                       FontSize="15"
+                                       FontAttributes="Bold"
+                                       TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"/>
+                                <Label Text="Special offers"
+                                       FontSize="12"
+                                       TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"/>
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+
+                    <!-- Additional Options -->
+                    <VerticalStackLayout Spacing="12" Margin="0,10,0,0">
+
+                        <!-- Invoices -->
+                        <Border StrokeThickness="1"
+                                Stroke="{AppThemeBinding Light=#E5E7EB, Dark=#374151}"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="18"
+                                BackgroundColor="{AppThemeBinding Light=White, Dark=#1F2937}">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding NavigateToInvoicesCommand}"/>
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0"
+                                       Text="Invoices &amp; Payments"
+                                       FontSize="15"
+                                       TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"
+                                       VerticalOptions="Center"/>
+                                <Label Grid.Column="1"
+                                       Text="›"
+                                       FontSize="24"
+                                       TextColor="{AppThemeBinding Light=#9CA3AF, Dark=#6B7280}"
+                                       VerticalOptions="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- My Activity Bookings -->
+                        <Border StrokeThickness="1"
+                                Stroke="{AppThemeBinding Light=#E5E7EB, Dark=#374151}"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="18"
+                                BackgroundColor="{AppThemeBinding Light=White, Dark=#1F2937}">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding NavigateToMyActivityBookingsCommand}"/>
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0"
+                                       Text="My Activity Bookings"
+                                       FontSize="15"
+                                       TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"
+                                       VerticalOptions="Center"/>
+                                <Label Grid.Column="1"
+                                       Text="›"
+                                       FontSize="24"
+                                       TextColor="{AppThemeBinding Light=#9CA3AF, Dark=#6B7280}"
+                                       VerticalOptions="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- About -->
+                        <Border StrokeThickness="1"
+                                Stroke="{AppThemeBinding Light=#E5E7EB, Dark=#374151}"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="18"
+                                BackgroundColor="{AppThemeBinding Light=White, Dark=#1F2937}">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding NavigateToAboutCommand}"/>
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0"
+                                       Text="About"
+                                       FontSize="15"
+                                       TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"
+                                       VerticalOptions="Center"/>
+                                <Label Grid.Column="1"
+                                       Text="›"
+                                       FontSize="24"
+                                       TextColor="{AppThemeBinding Light=#9CA3AF, Dark=#6B7280}"
+                                       VerticalOptions="Center"/>
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Sign Out -->
+                    <Border StrokeThickness="2"
+                            Stroke="#DC2626"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="0"
+                            HeightRequest="52"
+                            BackgroundColor="Transparent"
+                            Margin="0,20,0,20">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding LogoutCommand}"/>
+                        </Border.GestureRecognizers>
+                        <Label Text="Sign Out"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               TextColor="#DC2626"
+                               HorizontalTextAlignment="Center"
+                               VerticalTextAlignment="Center"/>
+                    </Border>
+
                 </VerticalStackLayout>
-
-                <!-- Logout -->
-                <Button Text="Sign Out"
-            Command="{Binding LogoutCommand}"
-            BackgroundColor="Transparent"
-            TextColor="#DC2626"
-            FontSize="16"
-            BorderColor="#DC2626"
-            BorderWidth="1"
-            CornerRadius="8"
-            HeightRequest="48"
-            Margin="0,10,0,20"/>
 
             </VerticalStackLayout>
 

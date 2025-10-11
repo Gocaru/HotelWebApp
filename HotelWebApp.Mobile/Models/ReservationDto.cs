@@ -57,7 +57,7 @@ namespace HotelWebApp.Mobile.Models
 
         public string RoomNumber => Room?.RoomNumber ?? "N/A";
         public string RoomType => Room?.Type ?? "N/A";
-        public int NumberOfNights => (CheckOutDate - CheckInDate).Days;
+        public int NumberOfNights => (CheckOutDate.Date - CheckInDate.Date).Days;
         public string CheckInFormatted => CheckInDate.ToString("dd MMM yyyy");
         public string CheckOutFormatted => CheckOutDate.ToString("dd MMM yyyy");
         public string PriceFormatted => $"€{TotalPrice:N2}";
