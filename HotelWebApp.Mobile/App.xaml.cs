@@ -1,11 +1,16 @@
-﻿namespace HotelWebApp.Mobile
+﻿using HotelWebApp.Mobile.Services;
+
+namespace HotelWebApp.Mobile
 {
     public partial class App : Application
     {
-        public App(IServiceProvider serviceProvider)
+        private readonly IServiceProvider _services;
+
+        public App(IServiceProvider services)
         {
             InitializeComponent();
-            MainPage = serviceProvider.GetRequiredService<AppShell>();
+            _services = services;
+            MainPage = _services.GetRequiredService<AppShell>();
         }
     }
 }

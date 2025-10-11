@@ -60,22 +60,22 @@ namespace HotelWebApp.Mobile.ViewModels
 
                 if (!string.IsNullOrWhiteSpace(Profile.ProfilePictureUrl))
                 {
-                    // ✅ USAR A CONSTANT
+                    // USAR A CONSTANT
                     if (!Profile.ProfilePictureUrl.StartsWith("http"))
                     {
                         var relativePath = Profile.ProfilePictureUrl.TrimStart('/');
                         Profile.ProfilePictureUrl = $"{Constants.ApiBaseUrl}/{relativePath}";
                     }
 
-                    // ✅ Cache buster
+                    // Cache buster
                     Profile.ProfilePictureUrl += $"?t={DateTime.Now.Ticks}";
 
-                    System.Diagnostics.Debug.WriteLine($"✅ Final URL: {Profile.ProfilePictureUrl}");
+                    System.Diagnostics.Debug.WriteLine($"Final URL: {Profile.ProfilePictureUrl}");
                 }
                 else
                 {
                     Profile.ProfilePictureUrl = "https://via.placeholder.com/150/6366F1/FFFFFF?text=No+Photo";
-                    System.Diagnostics.Debug.WriteLine("✅ Using placeholder");
+                    System.Diagnostics.Debug.WriteLine("Using placeholder");
                 }
 
                 System.Diagnostics.Debug.WriteLine($"=== END DEBUG ===\n");
@@ -243,7 +243,7 @@ namespace HotelWebApp.Mobile.ViewModels
                             var relativePath = uploadResponse.Data.TrimStart('/');
                             Profile.ProfilePictureUrl = $"{Constants.ApiBaseUrl}/{relativePath}?t={DateTime.Now.Ticks}";
 
-                            System.Diagnostics.Debug.WriteLine($"✅ Photo URL updated: {Profile.ProfilePictureUrl}");
+                            System.Diagnostics.Debug.WriteLine($"Photo URL updated: {Profile.ProfilePictureUrl}");
                             OnPropertyChanged(nameof(Profile));
                         }
 

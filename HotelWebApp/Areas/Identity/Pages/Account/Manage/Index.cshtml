@@ -31,10 +31,19 @@
         <div class="text-center">
             <h4>Profile Picture</h4>
 
-            @* 1. Mostrar a imagem atual ou uma imagem padrão *@
             @{
-                // O caminho para a foto é construído a partir da propriedade do InputModel
-                var photoPath = "~/images/profiles/" + (Model.Input.ProfilePictureUrl ?? "default.png");
+                string photoPath;
+                if (!string.IsNullOrEmpty(Model.Input.ProfilePictureUrl))
+                {
+                    // Se já tem barra, usa direto; senão, adiciona o prefixo
+                    photoPath = Model.Input.ProfilePictureUrl.StartsWith("/")
+                    ? Model.Input.ProfilePictureUrl
+                    : $"/images/profiles/{Model.Input.ProfilePictureUrl}";
+                }
+                else
+                {
+                    photoPath = "/images/profiles/default.png";
+                }
             }
             <img src="@photoPath" class="img-fluid rounded-circle mb-3 shadow-sm"
                  style="width: 150px; height: 150px; object-fit: cover;" alt="Profile Picture" asp-append-version="true" />

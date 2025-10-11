@@ -3,6 +3,7 @@ using HotelWebApp.Mobile.Services;
 using HotelWebApp.Mobile.ViewModels;
 using HotelWebApp.Mobile.Views;
 using Microsoft.Extensions.Logging;
+//using Plugin.LocalNotification;
 
 namespace HotelWebApp.Mobile
 {
@@ -159,6 +160,8 @@ namespace HotelWebApp.Mobile
             #endif
             });
 
+            builder.Services.AddSingleton<INotificationService, NotificationService>();
+
 
             // Registar ViewModels
             builder.Services.AddTransient<LoginViewModel>();
@@ -201,6 +204,8 @@ namespace HotelWebApp.Mobile
             builder.Services.AddTransient<InvoiceDetailPage>();
             builder.Services.AddTransient<PaymentPage>();
             builder.Services.AddTransient<AboutPage>();
+
+            builder.Services.AddSingleton<App>();
 
             // AppShell
             builder.Services.AddSingleton<AppShell>(sp => new AppShell(sp));

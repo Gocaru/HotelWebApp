@@ -9,6 +9,7 @@ namespace HotelWebApp.Mobile.ViewModels
     public partial class PaymentViewModel : ObservableObject
     {
         private readonly PaymentService _paymentService;
+        private readonly INotificationService _notificationService;
 
         [ObservableProperty]
         private InvoiceDto? invoice;
@@ -34,9 +35,12 @@ namespace HotelWebApp.Mobile.ViewModels
         [ObservableProperty]
         private string errorMessage = string.Empty;
 
-        public PaymentViewModel(PaymentService paymentService)
+        public PaymentViewModel(
+            PaymentService paymentService,
+            INotificationService notificationService)
         {
             _paymentService = paymentService;
+            _notificationService = notificationService;
         }
 
         partial void OnInvoiceChanged(InvoiceDto? value)
@@ -87,6 +91,12 @@ namespace HotelWebApp.Mobile.ViewModels
                 if (result.Success)
                 {
                     System.Diagnostics.Debug.WriteLine("Payment successful");
+
+                    // Mostrar notificação de pagamento bem-sucedido
+                    await _notificationService.ShowPaymentSuccessAsync(
+                        PaymentAmount,
+                        result.Data?.TransactionId ?? "N/A"
+                    );
 
                     await Shell.Current.DisplayAlert(
                         "Payment Successful",
@@ -159,7 +169,7 @@ namespace HotelWebApp.Mobile.ViewModels
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(ExpiryDate) || !System.Text.RegularExpressions.Regex.IsMatch(ExpiryDate, @"^(0[1-9]|1[0-2])\/([0-9]{2})$"))
+            if (string.IsNullOrWhiteSpace(ExpiryDate) || ExpiryDate.Length < 4)
             {
                 ErrorMessage = "Please enter expiry date in MM/YY format";
                 return false;

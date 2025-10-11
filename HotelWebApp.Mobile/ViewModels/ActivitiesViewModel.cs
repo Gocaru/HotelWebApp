@@ -51,38 +51,37 @@ namespace HotelWebApp.Mobile.ViewModels
             IsBusy = true;
             IsRefreshing = true;
             ErrorMessage = string.Empty;
-            System.Diagnostics.Debug.WriteLine("🔵 Making API call...");
+            System.Diagnostics.Debug.WriteLine("Making API call...");
 
             try
             {
                 var result = await _activityService.GetActivitiesAsync();
 
-                System.Diagnostics.Debug.WriteLine($"🔵 API Result - Success: {result.Success}");
-                System.Diagnostics.Debug.WriteLine($"🔵 API Result - Data is null: {result.Data == null}");
+                System.Diagnostics.Debug.WriteLine($"API Result - Success: {result.Success}");
+                System.Diagnostics.Debug.WriteLine($"API Result - Data is null: {result.Data == null}");
 
                 if (result.Success && result.Data != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🔵 Data count: {result.Data.Count}");
+                    System.Diagnostics.Debug.WriteLine($"Data count: {result.Data.Count}");
 
                     Activities.Clear();
 
-                    // ✅ SEM FILTRO - API já retorna só ativas
                     foreach (var activity in result.Data)
                     {
-                        System.Diagnostics.Debug.WriteLine($"🔵 Adding activity: {activity.Name} (IsActive={activity.IsActive})");
+                        System.Diagnostics.Debug.WriteLine($"Adding activity: {activity.Name} (IsActive={activity.IsActive})");
                         Activities.Add(activity);
                     }
 
                     HasActivities = Activities.Any();
 
-                    System.Diagnostics.Debug.WriteLine($"✅ Final count: {Activities.Count}, HasActivities: {HasActivities}");
+                    System.Diagnostics.Debug.WriteLine($"Final count: {Activities.Count}, HasActivities: {HasActivities}");
                 }
                 else
                 {
                     ErrorMessage = result.Message ?? "Failed to load activities";
                     HasActivities = false;
 
-                    System.Diagnostics.Debug.WriteLine($"❌ Error: {ErrorMessage}");
+                    System.Diagnostics.Debug.WriteLine($"Error: {ErrorMessage}");
                 }
             }
             catch (Exception ex)
@@ -90,14 +89,14 @@ namespace HotelWebApp.Mobile.ViewModels
                 ErrorMessage = $"Error: {ex.Message}";
                 HasActivities = false;
 
-                System.Diagnostics.Debug.WriteLine($"❌ Exception: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"❌ StackTrace: {ex.StackTrace}");
+                System.Diagnostics.Debug.WriteLine($"Exception: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"StackTrace: {ex.StackTrace}");
             }
             finally
             {
                 IsBusy = false;
                 IsRefreshing = false;
-                System.Diagnostics.Debug.WriteLine("🔵 IsBusy = false");
+                System.Diagnostics.Debug.WriteLine("IsBusy = false");
             }
         }
 

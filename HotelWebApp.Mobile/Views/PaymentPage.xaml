@@ -110,7 +110,7 @@
                             <Label Text="Expiry Date" FontSize="14" TextColor="#6B7280"/>
                             <Entry Text="{Binding ExpiryDate}"
                                    Placeholder="MM/YY"
-                                   Keyboard="Numeric"
+                                   Keyboard="Default"
                                    MaxLength="5"/>
                         </VerticalStackLayout>
 
