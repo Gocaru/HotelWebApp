@@ -4,40 +4,50 @@
              xmlns:viewmodels="clr-namespace:HotelWebApp.Mobile.ViewModels"
              xmlns:models="clr-namespace:HotelWebApp.Mobile.Models"
              x:Class="HotelWebApp.Mobile.Views.PromotionsPage"
+             x:DataType="viewmodels:PromotionsViewModel"
+             Shell.NavBarIsVisible="True"
              Title="Promotions"
-             BackgroundColor="#F5F5F5">
+             BackgroundColor="White">
 
-    <Grid RowDefinitions="Auto,*">
+    <RefreshView Command="{Binding LoadPromotionsCommand}"
+                 IsRefreshing="{Binding IsRefreshing}">
+        <ScrollView>
+            <VerticalStackLayout Spacing="0">
 
-        <Frame Grid.Row="0" 
-               Padding="20" 
-               BackgroundColor="#1E3A8A" 
-               CornerRadius="0"
-               HasShadow="False">
-            <VerticalStackLayout Spacing="5">
-                <Label Text="Special Promotions" 
-                       FontSize="24" 
-                       FontAttributes="Bold" 
-                       TextColor="White"/>
-                <Label Text="Exclusive offers and discounts" 
-                       FontSize="14" 
-                       TextColor="White" 
-                       Opacity="0.9"/>
-            </VerticalStackLayout>
-        </Frame>
+                <!-- HERO HEADER -->
+                <Grid RowDefinitions="140" Padding="0">
+                    <Grid.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#1E3A8A" Offset="0.0" />
+                            <GradientStop Color="#3B82F6" Offset="1.0" />
+                        </LinearGradientBrush>
+                    </Grid.Background>
 
-        <RefreshView Grid.Row="1"
-                     Command="{Binding LoadPromotionsCommand}"
-                     IsRefreshing="{Binding IsRefreshing}">
+                    <VerticalStackLayout VerticalOptions="Center" 
+                                         Padding="20"
+                                         Spacing="8">
+                        <Label Text="Special Promotions"
+                               FontSize="28"
+                               FontAttributes="Bold"
+                               TextColor="White"/>
+                        <Label Text="Exclusive offers and discounts"
+                               FontSize="14"
+                               TextColor="White"
+                               Opacity="0.9"/>
+                    </VerticalStackLayout>
+                </Grid>
 
-            <ScrollView>
-                <VerticalStackLayout Padding="15" Spacing="15">
+                <!-- CONTENT -->
+                <VerticalStackLayout Padding="20" Spacing="15">
 
+                    <!-- Loading Indicator -->
                     <ActivityIndicator IsRunning="{Binding IsBusy}"
                                        IsVisible="{Binding IsBusy}"
                                        Color="#1E3A8A"
-                                       HeightRequest="50"/>
+                                       HeightRequest="50"
+                                       Margin="0,20,0,0"/>
 
+                    <!-- Error Message -->
                     <Frame IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotEmptyConverter}}"
                            BackgroundColor="#FEE2E2"
                            BorderColor="#EF4444"
@@ -49,107 +59,174 @@
                                FontSize="14"/>
                     </Frame>
 
+                    <!-- Empty State -->
                     <VerticalStackLayout IsVisible="{Binding HasPromotions, Converter={StaticResource InvertedBoolConverter}}"
                                          Padding="20"
                                          Spacing="15"
                                          VerticalOptions="Center"
                                          HorizontalOptions="Center"
                                          Margin="0,50,0,0">
-                        <Label Text="🎁" 
-                               FontSize="48" 
-                               HorizontalOptions="Center"/>
-                        <Label Text="No promotions available" 
-                               FontSize="18" 
-                               FontAttributes="Bold"
-                               HorizontalOptions="Center"/>
-                        <Label Text="Check back later for special offers" 
-                               FontSize="14" 
-                               TextColor="#6B7280"
-                               HorizontalOptions="Center"/>
+                        <Frame Padding="30"
+                               BackgroundColor="#F9FAFB"
+                               BorderColor="Transparent"
+                               CornerRadius="20"
+                               HasShadow="False">
+                            <VerticalStackLayout Spacing="12">
+                                <Label Text="🎁"
+                                       FontSize="64"
+                                       HorizontalOptions="Center"/>
+                                <Label Text="No promotions available"
+                                       FontSize="18"
+                                       FontAttributes="Bold"
+                                       TextColor="#1F2937"
+                                       HorizontalOptions="Center"/>
+                                <Label Text="Check back later for special offers"
+                                       FontSize="14"
+                                       TextColor="#6B7280"
+                                       HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </Frame>
                     </VerticalStackLayout>
 
-                    <CollectionView ItemsSource="{Binding Promotions}"
-                                    IsVisible="{Binding HasPromotions}"
-                                    SelectionMode="None">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="models:PromotionDto">
-                                <Frame Padding="0" 
-                                       Margin="0,0,0,15" 
-                                       CornerRadius="15" 
-                                       HasShadow="True"
-                                       BorderColor="Transparent">
-                                    <Frame.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:PromotionsViewModel}}, Path=ViewPromotionDetailsCommand}"
-                                                              CommandParameter="{Binding .}"/>
-                                    </Frame.GestureRecognizers>
+                    <!-- Promotions List -->
+                    <VerticalStackLayout IsVisible="{Binding HasPromotions}"
+                                         Spacing="12">
+                        <CollectionView ItemsSource="{Binding Promotions}"
+                                        SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:PromotionDto">
+                                    <Frame Padding="0"
+                                           Margin="0,0,0,12"
+                                           CornerRadius="15"
+                                           HasShadow="True"
+                                           BorderColor="Transparent"
+                                           BackgroundColor="White">
+                                        <Frame.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:PromotionsViewModel}}, Path=ViewPromotionDetailsCommand}"
+                                                                  CommandParameter="{Binding .}"/>
+                                        </Frame.GestureRecognizers>
 
-                                    <Grid RowDefinitions="Auto,Auto">
+                                        <Grid RowDefinitions="Auto,Auto,Auto,Auto"
+                                              Padding="20"
+                                              RowSpacing="12">
 
-                                        <Frame Grid.Row="0"
-                                               Padding="0"
-                                               CornerRadius="15"
-                                               HasShadow="False"
-                                               HeightRequest="120"
-                                               BackgroundColor="#E0E7FF">
-                                            <Label Text="🎁" 
-                                                   FontSize="64" 
-                                                   HorizontalOptions="Center"
-                                                   VerticalOptions="Center"/>
-                                        </Frame>
-
-                                        <Grid Grid.Row="1" 
-                                              RowDefinitions="Auto,Auto,Auto"
-                                              Padding="15">
-
-                                            <HorizontalStackLayout Grid.Row="0" 
-                                                                   Spacing="10"
-                                                                   Margin="0,0,0,5">
-                                                <Label Text="{Binding Title}" 
-                                                       FontSize="18" 
-                                                       FontAttributes="Bold"
-                                                       VerticalOptions="Center"/>
-                                                <Frame Padding="6,3" 
-                                                       CornerRadius="5"
-                                                       BackgroundColor="{Binding StatusColor}"
-                                                       HasShadow="False"
-                                                       VerticalOptions="Center">
-                                                    <Label Text="{Binding StatusText}" 
-                                                           TextColor="White" 
-                                                           FontSize="10"
-                                                           FontAttributes="Bold"/>
+                                            <!-- Promotion Header -->
+                                            <HorizontalStackLayout Grid.Row="0"
+                                                                   Spacing="12">
+                                                <Frame Padding="12"
+                                                       BackgroundColor="#FEF3C7"
+                                                       BorderColor="Transparent"
+                                                       CornerRadius="10"
+                                                       HasShadow="False">
+                                                    <Label Text="🎁"
+                                                           FontSize="24"/>
                                                 </Frame>
+                                                <VerticalStackLayout Spacing="4"
+                                                                     VerticalOptions="Center">
+                                                    <Label Text="{Binding Title}"
+                                                           FontSize="18"
+                                                           FontAttributes="Bold"
+                                                           TextColor="#1F2937"/>
+                                                    <Frame Padding="6,3"
+                                                           CornerRadius="5"
+                                                           BackgroundColor="{Binding StatusColor}"
+                                                           HasShadow="False"
+                                                           HorizontalOptions="Start">
+                                                        <Label Text="{Binding StatusText}"
+                                                               TextColor="White"
+                                                               FontSize="10"
+                                                               FontAttributes="Bold"/>
+                                                    </Frame>
+                                                </VerticalStackLayout>
                                             </HorizontalStackLayout>
 
+                                            <!-- Description -->
                                             <Label Grid.Row="1"
-                                                   Text="{Binding Description}" 
-                                                   FontSize="14" 
+                                                   Text="{Binding Description}"
+                                                   FontSize="14"
                                                    TextColor="#6B7280"
-                                                   LineBreakMode="TailTruncation"
+                                                   LineBreakMode="WordWrap"
                                                    MaxLines="2"
-                                                   Margin="0,0,0,10"/>
+                                                   IsVisible="{Binding Description, Converter={StaticResource StringNotEmptyConverter}}"/>
 
-                                            <HorizontalStackLayout Grid.Row="2" 
-                                                                   Spacing="10"
-                                                                   HorizontalOptions="End">
-                                                <Label Text="{Binding ValidPeriod}" 
-                                                       FontSize="12" 
-                                                       TextColor="#6B7280"
-                                                       VerticalOptions="Center"/>
-                                                <Label Text="{Binding FormattedDiscount}" 
-                                                       FontSize="20" 
-                                                       FontAttributes="Bold"
-                                                       TextColor="#10B981"
-                                                       VerticalOptions="Center"/>
-                                            </HorizontalStackLayout>
+                                            <!-- Info Cards -->
+                                            <Grid Grid.Row="2"
+                                                  ColumnDefinitions="*,*"
+                                                  ColumnSpacing="10">
+                                                <!-- Valid Period (Dates) -->
+                                                <Frame Grid.Column="0"
+                                                       Padding="12"
+                                                       BackgroundColor="#F9FAFB"
+                                                       BorderColor="Transparent"
+                                                       CornerRadius="8"
+                                                       HasShadow="False">
+                                                    <VerticalStackLayout Spacing="4">
+                                                        <Label Text="📅 Valid Period"
+                                                               FontSize="11"
+                                                               TextColor="#6B7280"/>
+                                                        <Label Text="{Binding DateRangeFormatted}"
+                                                               FontSize="13"
+                                                               FontAttributes="Bold"
+                                                               TextColor="#1F2937"
+                                                               LineBreakMode="TailTruncation"/>
+                                                    </VerticalStackLayout>
+                                                </Frame>
+
+                                                <!-- Discount -->
+                                                <Frame Grid.Column="1"
+                                                       Padding="12"
+                                                       BackgroundColor="#F9FAFB"
+                                                       BorderColor="Transparent"
+                                                       CornerRadius="8"
+                                                       HasShadow="False">
+                                                    <VerticalStackLayout Spacing="4">
+                                                        <Label Text="💰 Discount"
+                                                               FontSize="11"
+                                                               TextColor="#6B7280"/>
+                                                        <Label Text="{Binding FormattedDiscount}"
+                                                               FontSize="14"
+                                                               FontAttributes="Bold"
+                                                               TextColor="#10B981"/>
+                                                    </VerticalStackLayout>
+                                                </Frame>
+                                            </Grid>
+
+                                            <!-- Terms with Marquee Effect -->
+                                            <Frame Grid.Row="3"
+                                                   Padding="12,8"
+                                                   BackgroundColor="#EFF6FF"
+                                                   BorderColor="Transparent"
+                                                   CornerRadius="8"
+                                                   HasShadow="False"
+                                                   IsVisible="{Binding Terms, Converter={StaticResource StringNotEmptyConverter}}">
+                                                <HorizontalStackLayout Spacing="8">
+                                                    <Label Text="ℹ️"
+                                                           FontSize="14"
+                                                           VerticalOptions="Center"/>
+                                                    <ScrollView Orientation="Horizontal"
+                                                                HorizontalScrollBarVisibility="Never"
+                                                                VerticalOptions="Center">
+                                                        <Label Text="{Binding Terms}"
+                                                               FontSize="12"
+                                                               TextColor="#1E3A8A"
+                                                               LineBreakMode="NoWrap"
+                                                               VerticalOptions="Center"
+                                                               Padding="0,2"/>
+                                                    </ScrollView>
+                                                </HorizontalStackLayout>
+                                            </Frame>
+
                                         </Grid>
-                                    </Grid>
-                                </Frame>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
+                                    </Frame>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
 
                 </VerticalStackLayout>
-            </ScrollView>
-        </RefreshView>
-    </Grid>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+
 </ContentPage>

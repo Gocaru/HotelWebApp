@@ -342,7 +342,15 @@ namespace HotelWebApp.Controllers.Api
                 if (invoice.Reservation?.Room != null)
                 {
                     var nights = (invoice.Reservation.CheckOutDate - invoice.Reservation.CheckInDate).Days;
-                    var roomPricePerNight = invoice.Reservation.Room.PricePerNight;
+
+                    // Garantir que nights nunca é zero
+                    if (nights <= 0) nights = 1;
+
+                    System.Diagnostics.Debug.WriteLine($"Nights (corrected): {nights}");
+
+                    var roomPricePerNight = invoice.Reservation.OriginalPrice.HasValue
+                        ? invoice.Reservation.OriginalPrice.Value / nights
+                        : invoice.Reservation.Room.PricePerNight;
 
                     items.Add(new InvoiceItemDto
                     {
@@ -388,12 +396,19 @@ namespace HotelWebApp.Controllers.Api
                 // 4. Discount (if any promotion applied)
                 if (invoice.Reservation?.DiscountPercentage.HasValue == true && invoice.Reservation.DiscountPercentage > 0)
                 {
-                    var discountAmount = (invoice.Reservation.OriginalPrice ?? invoice.Reservation.TotalPrice) - invoice.Reservation.TotalPrice;
+                    var discountAmount = invoice.Reservation.OriginalPrice.HasValue
+                        ? (invoice.Reservation.OriginalPrice.Value - invoice.Reservation.TotalPrice)
+                        : 0;
+
+                    // Formatar percentagem sem decimais desnecessários
+                    var discountPercent = invoice.Reservation.DiscountPercentage.Value % 1 == 0
+                        ? invoice.Reservation.DiscountPercentage.Value.ToString("0")
+                        : invoice.Reservation.DiscountPercentage.Value.ToString("0.##");
 
                     items.Add(new InvoiceItemDto
                     {
-                        Description = $"Discount ({invoice.Reservation.DiscountPercentage}%)",
-                        UnitPrice = -discountAmount,
+                        Description = $"Discount ({discountPercent}%)",
+                        UnitPrice = -discountAmount,  // Negativo para dedução
                         Quantity = 1,
                         TotalPrice = -discountAmount
                     });

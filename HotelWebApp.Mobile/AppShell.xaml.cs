@@ -27,6 +27,7 @@ namespace HotelWebApp.Mobile
             Routing.RegisterRoute(nameof(ChangePasswordPage), typeof(ChangePasswordPage));
             Routing.RegisterRoute(nameof(ForgotPasswordPage), typeof(ForgotPasswordPage));
             Routing.RegisterRoute(nameof(ResetPasswordPage), typeof(ResetPasswordPage));
+            Routing.RegisterRoute(nameof(InvoicesPage), typeof(InvoicesPage));
             Routing.RegisterRoute(nameof(InvoiceDetailPage), typeof(InvoiceDetailPage));
             Routing.RegisterRoute(nameof(PaymentPage), typeof(PaymentPage));
             Routing.RegisterRoute(nameof(AboutPage), typeof(AboutPage));

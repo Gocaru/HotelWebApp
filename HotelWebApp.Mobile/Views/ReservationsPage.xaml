@@ -5,40 +5,49 @@
              xmlns:models="clr-namespace:HotelWebApp.Mobile.Models"
              x:Class="HotelWebApp.Mobile.Views.ReservationsPage"
              x:DataType="viewmodels:ReservationsViewModel"
+             Shell.NavBarIsVisible="True"
              Title="My Reservations"
-             BackgroundColor="#F5F5F5">
+             BackgroundColor="White">
 
-    <Grid RowDefinitions="Auto,*">
+    <RefreshView Command="{Binding LoadReservationsCommand}"
+                 IsRefreshing="{Binding IsRefreshing}">
+        <ScrollView>
+            <VerticalStackLayout Spacing="0">
 
-        <Frame Grid.Row="0" 
-               Padding="20" 
-               BackgroundColor="#1E3A8A" 
-               CornerRadius="0"
-               HasShadow="False">
-            <VerticalStackLayout Spacing="5">
-                <Label Text="My Reservations" 
-                       FontSize="24" 
-                       FontAttributes="Bold" 
-                       TextColor="White"/>
-                <Label Text="View and manage your bookings" 
-                       FontSize="14" 
-                       TextColor="White" 
-                       Opacity="0.9"/>
-            </VerticalStackLayout>
-        </Frame>
+                <!-- HERO HEADER -->
+                <Grid RowDefinitions="140" Padding="0">
+                    <Grid.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#1E3A8A" Offset="0.0" />
+                            <GradientStop Color="#3B82F6" Offset="1.0" />
+                        </LinearGradientBrush>
+                    </Grid.Background>
 
-        <RefreshView Grid.Row="1"
-                     Command="{Binding LoadReservationsCommand}"
-                     IsRefreshing="{Binding IsRefreshing}">
+                    <VerticalStackLayout VerticalOptions="Center" 
+                                         Padding="20"
+                                         Spacing="8">
+                        <Label Text="My Reservations"
+                               FontSize="28"
+                               FontAttributes="Bold"
+                               TextColor="White"/>
+                        <Label Text="View and manage your bookings"
+                               FontSize="14"
+                               TextColor="White"
+                               Opacity="0.9"/>
+                    </VerticalStackLayout>
+                </Grid>
 
-            <ScrollView>
-                <VerticalStackLayout Padding="15" Spacing="15">
+                <!-- CONTENT -->
+                <VerticalStackLayout Padding="20" Spacing="15">
 
+                    <!-- Loading Indicator -->
                     <ActivityIndicator IsRunning="{Binding IsBusy}"
                                        IsVisible="{Binding IsBusy}"
                                        Color="#1E3A8A"
-                                       HeightRequest="50"/>
+                                       HeightRequest="50"
+                                       Margin="0,20,0,0"/>
 
+                    <!-- Error Message -->
                     <Frame IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotEmptyConverter}}"
                            BackgroundColor="#FEE2E2"
                            BorderColor="#EF4444"
@@ -50,111 +59,168 @@
                                FontSize="14"/>
                     </Frame>
 
+                    <!-- Empty State -->
                     <VerticalStackLayout IsVisible="{Binding HasReservations, Converter={StaticResource InvertedBoolConverter}}"
                                          Padding="20"
                                          Spacing="15"
                                          VerticalOptions="Center"
                                          HorizontalOptions="Center"
                                          Margin="0,50,0,0">
-                        <Label Text="📅" 
-                               FontSize="48" 
-                               HorizontalOptions="Center"/>
-                        <Label Text="No reservations yet" 
-                               FontSize="18" 
-                               FontAttributes="Bold"
-                               HorizontalOptions="Center"/>
-                        <Label Text="Book your first room to see it here" 
-                               FontSize="14" 
-                               TextColor="#6B7280"
-                               HorizontalOptions="Center"/>
+                        <Frame Padding="30"
+                               BackgroundColor="#F9FAFB"
+                               BorderColor="Transparent"
+                               CornerRadius="20"
+                               HasShadow="False">
+                            <VerticalStackLayout Spacing="12">
+                                <Label Text="📅"
+                                       FontSize="64"
+                                       HorizontalOptions="Center"/>
+                                <Label Text="No reservations yet"
+                                       FontSize="18"
+                                       FontAttributes="Bold"
+                                       TextColor="#1F2937"
+                                       HorizontalOptions="Center"/>
+                                <Label Text="Book your first room to see it here"
+                                       FontSize="14"
+                                       TextColor="#6B7280"
+                                       HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </Frame>
                     </VerticalStackLayout>
 
-                    <CollectionView ItemsSource="{Binding Reservations}"
-                                    IsVisible="{Binding HasReservations}"
-                                    SelectionMode="None">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="models:ReservationDto">
-                                <Frame Padding="0" 
-                                       Margin="0,0,0,10" 
-                                       CornerRadius="15" 
-                                       HasShadow="True"
-                                       BorderColor="Transparent">
-                                    <Frame.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ReservationsViewModel}}, Path=ViewReservationDetailsCommand}"
-                                                              CommandParameter="{Binding .}"/>
-                                    </Frame.GestureRecognizers>
+                    <!-- Reservations List -->
+                    <VerticalStackLayout IsVisible="{Binding HasReservations}"
+                                         Spacing="12">
+                        <CollectionView ItemsSource="{Binding Reservations}"
+                                        SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:ReservationDto">
+                                    <Frame Padding="0"
+                                           Margin="0,0,0,12"
+                                           CornerRadius="15"
+                                           HasShadow="True"
+                                           BorderColor="Transparent"
+                                           BackgroundColor="White">
+                                        <Frame.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ReservationsViewModel}}, Path=ViewReservationDetailsCommand}"
+                                                                  CommandParameter="{Binding .}"/>
+                                        </Frame.GestureRecognizers>
 
-                                    <Grid RowDefinitions="Auto,Auto,Auto" 
-                                          Padding="15">
+                                        <Grid RowDefinitions="Auto,Auto,Auto,Auto"
+                                              Padding="20"
+                                              RowSpacing="12">
 
-                                        <HorizontalStackLayout Grid.Row="0" 
-                                                               Spacing="10"
-                                                               Margin="0,0,0,10">
-                                            <Label Text="🏨" FontSize="24"/>
-                                            <VerticalStackLayout>
-                                                <Label Text="{Binding RoomType}" 
-                                                       FontSize="18" 
-                                                       FontAttributes="Bold"/>
-                                                <Label Text="{Binding RoomNumber, StringFormat='Room {0}'}" 
-                                                       FontSize="14" 
-                                                       TextColor="#6B7280"/>
-                                            </VerticalStackLayout>
-                                        </HorizontalStackLayout>
+                                            <!-- Room Header -->
+                                            <HorizontalStackLayout Grid.Row="0"
+                                                                   Spacing="12">
+                                                <Frame Padding="12"
+                                                       BackgroundColor="#EEF2FF"
+                                                       BorderColor="Transparent"
+                                                       CornerRadius="10"
+                                                       HasShadow="False">
+                                                    <Label Text="🏨"
+                                                           FontSize="24"/>
+                                                </Frame>
+                                                <VerticalStackLayout VerticalOptions="Center"
+                                                                     Spacing="2">
+                                                    <Label Text="{Binding RoomType}"
+                                                           FontSize="18"
+                                                           FontAttributes="Bold"
+                                                           TextColor="#1F2937"/>
+                                                    <Label Text="{Binding RoomNumber, StringFormat='Room {0}'}"
+                                                           FontSize="13"
+                                                           TextColor="#6B7280"/>
+                                                </VerticalStackLayout>
+                                            </HorizontalStackLayout>
 
-                                        <Grid Grid.Row="1" 
-                                              ColumnDefinitions="*,Auto,*"
-                                              Margin="0,0,0,10">
-                                            <VerticalStackLayout Grid.Column="0">
-                                                <Label Text="Check-in" 
-                                                       FontSize="12" 
-                                                       TextColor="#6B7280"/>
-                                                <Label Text="{Binding CheckInFormatted}" 
-                                                       FontSize="14" 
-                                                       FontAttributes="Bold"/>
-                                            </VerticalStackLayout>
-
-                                            <Label Grid.Column="1" 
-                                                   Text="→" 
-                                                   FontSize="20" 
-                                                   VerticalOptions="Center"
-                                                   Margin="10,0"/>
-
-                                            <VerticalStackLayout Grid.Column="2">
-                                                <Label Text="Check-out" 
-                                                       FontSize="12" 
-                                                       TextColor="#6B7280"/>
-                                                <Label Text="{Binding CheckOutFormatted}" 
-                                                       FontSize="14" 
-                                                       FontAttributes="Bold"/>
-                                            </VerticalStackLayout>
-                                        </Grid>
-
-                                        <HorizontalStackLayout Grid.Row="2" 
-                                                               Spacing="10"
-                                                               HorizontalOptions="End">
-                                            <Frame Padding="8,4" 
-                                                   CornerRadius="5"
-                                                   BackgroundColor="{Binding StatusColor}"
+                                            <!-- Dates -->
+                                            <Frame Grid.Row="1"
+                                                   Padding="15"
+                                                   BackgroundColor="#F9FAFB"
+                                                   BorderColor="Transparent"
+                                                   CornerRadius="10"
                                                    HasShadow="False">
-                                                <Label Text="{Binding Status}" 
-                                                       TextColor="White" 
-                                                       FontSize="12"
-                                                       FontAttributes="Bold"/>
+                                                <Grid ColumnDefinitions="*,Auto,*"
+                                                      ColumnSpacing="10">
+                                                    <VerticalStackLayout Grid.Column="0"
+                                                                         Spacing="4">
+                                                        <Label Text="Check-in"
+                                                               FontSize="11"
+                                                               TextColor="#6B7280"/>
+                                                        <Label Text="{Binding CheckInFormatted}"
+                                                               FontSize="14"
+                                                               FontAttributes="Bold"
+                                                               TextColor="#1F2937"/>
+                                                    </VerticalStackLayout>
+
+                                                    <Label Grid.Column="1"
+                                                           Text="→"
+                                                           FontSize="20"
+                                                           TextColor="#9CA3AF"
+                                                           VerticalOptions="Center"/>
+
+                                                    <VerticalStackLayout Grid.Column="2"
+                                                                         Spacing="4">
+                                                        <Label Text="Check-out"
+                                                               FontSize="11"
+                                                               TextColor="#6B7280"/>
+                                                        <Label Text="{Binding CheckOutFormatted}"
+                                                               FontSize="14"
+                                                               FontAttributes="Bold"
+                                                               TextColor="#1F2937"/>
+                                                    </VerticalStackLayout>
+                                                </Grid>
                                             </Frame>
-                                            <Label Text="{Binding PriceFormatted}" 
-                                                   FontSize="18" 
-                                                   FontAttributes="Bold"
-                                                   TextColor="#1E3A8A"
-                                                   VerticalOptions="Center"/>
-                                        </HorizontalStackLayout>
-                                    </Grid>
-                                </Frame>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
+
+                                            <!-- Status and Price -->
+                                            <Grid Grid.Row="2"
+                                                  ColumnDefinitions="Auto,*,Auto"
+                                                  ColumnSpacing="10">
+                                                <Frame Grid.Column="0"
+                                                       Padding="10,6"
+                                                       CornerRadius="8"
+                                                       BackgroundColor="{Binding StatusColor}"
+                                                       HasShadow="False">
+                                                    <Label Text="{Binding Status}"
+                                                           TextColor="White"
+                                                           FontSize="12"
+                                                           FontAttributes="Bold"/>
+                                                </Frame>
+
+                                                <Label Grid.Column="2"
+                                                       Text="{Binding PriceFormatted}"
+                                                       FontSize="20"
+                                                       FontAttributes="Bold"
+                                                       TextColor="#1E3A8A"
+                                                       VerticalOptions="Center"/>
+                                            </Grid>
+
+                                            <!-- View Details -->
+                                            <HorizontalStackLayout Grid.Row="3"
+                                                                   HorizontalOptions="End"
+                                                                   Spacing="8">
+                                                <Label Text="View Details"
+                                                       FontSize="14"
+                                                       FontAttributes="Bold"
+                                                       TextColor="#3B82F6"
+                                                       VerticalOptions="Center"/>
+                                                <Label Text="›"
+                                                       FontSize="20"
+                                                       TextColor="#3B82F6"
+                                                       VerticalOptions="Center"/>
+                                            </HorizontalStackLayout>
+
+                                        </Grid>
+                                    </Frame>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
 
                 </VerticalStackLayout>
-            </ScrollView>
-        </RefreshView>
-    </Grid>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+
 </ContentPage>

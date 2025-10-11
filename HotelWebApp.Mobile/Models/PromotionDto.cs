@@ -41,6 +41,8 @@ namespace HotelWebApp.Mobile.Models
 
         public string ValidPeriod => $"Valid until {EndDate:MMM dd, yyyy}";
 
+        public string DateRangeFormatted => $"{StartDate:dd MMM} - {EndDate:dd MMM}";
+
         public bool IsExpired => DateTime.Today > EndDate.Date;
 
         public bool IsUpcoming => DateTime.Today < StartDate.Date;

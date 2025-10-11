@@ -1,12 +1,22 @@
 using HotelWebApp.Mobile.ViewModels;
 
-namespace HotelWebApp.Mobile.Views;
-
-public partial class HomePage : ContentPage
+namespace HotelWebApp.Mobile.Views
 {
-    public HomePage(HomeViewModel viewModel)
+    public partial class HomePage : ContentPage
     {
-        InitializeComponent();
-        BindingContext = viewModel;
+        private readonly HomeViewModel _viewModel;
+
+        public HomePage(HomeViewModel viewModel)
+        {
+            InitializeComponent();
+            _viewModel = viewModel;
+            BindingContext = _viewModel;
+        }
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+            await _viewModel.InitializeAsync();
+        }
     }
 }
