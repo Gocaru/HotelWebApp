@@ -163,7 +163,7 @@ namespace HotelWebApp.Areas.Identity.Pages.Account.Manage
             }
 
             // Guarda o nome do ficheiro na base de dados do utilizador
-            user.ProfilePictureUrl = uniqueFileName;
+            user.ProfilePictureUrl = $"/images/profiles/{uniqueFileName}";
             await _userManager.UpdateAsync(user);
 
             await _signInManager.RefreshSignInAsync(user);

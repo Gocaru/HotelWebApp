@@ -1,6 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using HotelWebApp.Data.Entities
-
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
@@ -8,22 +7,28 @@
     @if (SignInManager.IsSignedIn(User))
     {
         var user = await UserManager.GetUserAsync(User);
-        var photoPath = !string.IsNullOrEmpty(user?.ProfilePictureUrl)
-        ? $"~/images/profiles/{user.ProfilePictureUrl}"
-        : "~/images/profiles/default.png";
+
+        string photoPath;
+        if (!string.IsNullOrEmpty(user?.ProfilePictureUrl))
+        {
+            // Se já começa com barra, usa direto; senão adiciona o prefixo
+            photoPath = user.ProfilePictureUrl.StartsWith("/")
+            ? user.ProfilePictureUrl
+            : $"/images/profiles/{user.ProfilePictureUrl}";
+        }
+        else
+        {
+            photoPath = "/images/profiles/default.png";
+        }
 
         <li class="nav-item d-flex align-items-center">
-
             <a id="manage" class="nav-link text-dark d-flex align-items-center" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
-                <img src="@Url.Content(photoPath)" class="rounded-circle me-2" style="width:40px; height:40px; object-fit:cover;" asp-append-version="true" />
-
+                <img src="@photoPath" class="rounded-circle me-2" style="width:40px; height:40px; object-fit:cover;" asp-append-version="true" />
                 <span class="d-none d-sm-inline">Hello @(user?.FullName ?? user?.UserName)!</span>
             </a>
-
             <form id="logoutForm" class="form-inline ms-2" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
                 <button id="logout" type="submit" class="nav-link btn btn-link text-dark border-0">Logout</button>
             </form>
-
         </li>
     }
     else
@@ -35,4 +40,4 @@
             <a class="nav-link text-dark" id="login" asp-area="Identity" asp-page="/Account/Login">Login</a>
         </li>
     }
-    </ul>
+</ul>

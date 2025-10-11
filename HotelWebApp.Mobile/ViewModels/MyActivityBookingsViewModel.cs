@@ -29,10 +29,10 @@ namespace HotelWebApp.Mobile.ViewModels
         [ObservableProperty]
         private string errorMessage = string.Empty;
 
-        // ✅ Chave para guardar preferência
+        // Chave para guardar preferência
         private const string HideCancelledKey = "HideCancelledBookings";
 
-        // ✅ Propriedade que lê e grava em Preferences
+        // Propriedade que lê e grava em Preferences
         private bool HideCancelled
         {
             get => Preferences.Get(HideCancelledKey, false);
@@ -64,19 +64,18 @@ namespace HotelWebApp.Mobile.ViewModels
 
             try
             {
-                System.Diagnostics.Debug.WriteLine("🔵 Loading activity bookings...");
+                System.Diagnostics.Debug.WriteLine("Loading activity bookings...");
 
                 var result = await _activityService.GetMyBookingsAsync();
 
-                System.Diagnostics.Debug.WriteLine($"🔵 Result Success: {result.Success}");
-                System.Diagnostics.Debug.WriteLine($"🔵 Data count: {result.Data?.Count ?? 0}");
+                System.Diagnostics.Debug.WriteLine($"Result Success: {result.Success}");
+                System.Diagnostics.Debug.WriteLine($"Data count: {result.Data?.Count ?? 0}");
 
                 if (result.Success && result.Data != null)
                 {
                     Bookings.Clear();
                     await Task.Delay(50);
 
-                    // ✅ FILTRAR canceladas se o flag estiver ativo (persistido)
                     var bookingsToShow = HideCancelled
                         ? result.Data.Where(b => !b.Status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase))
                         : result.Data;
@@ -85,25 +84,25 @@ namespace HotelWebApp.Mobile.ViewModels
 
                     foreach (var booking in orderedBookings)
                     {
-                        System.Diagnostics.Debug.WriteLine($"🔵 Adding: {booking.ActivityName} - Status: {booking.Status}");
+                        System.Diagnostics.Debug.WriteLine($"Adding: {booking.ActivityName} - Status: {booking.Status}");
                         Bookings.Add(booking);
                     }
 
                     HasBookings = Bookings.Any();
-                    System.Diagnostics.Debug.WriteLine($"✅ Loaded {Bookings.Count} bookings (hideCancelled={HideCancelled})");
+                    System.Diagnostics.Debug.WriteLine($"Loaded {Bookings.Count} bookings (hideCancelled={HideCancelled})");
                 }
                 else
                 {
                     ErrorMessage = result.Message ?? "Failed to load bookings";
                     HasBookings = false;
-                    System.Diagnostics.Debug.WriteLine($"❌ Error: {ErrorMessage}");
+                    System.Diagnostics.Debug.WriteLine($"Error: {ErrorMessage}");
                 }
             }
             catch (Exception ex)
             {
                 ErrorMessage = $"Error: {ex.Message}";
                 HasBookings = false;
-                System.Diagnostics.Debug.WriteLine($"❌ Exception: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Exception: {ex.Message}");
             }
             finally
             {
@@ -117,7 +116,7 @@ namespace HotelWebApp.Mobile.ViewModels
         {
             if (booking == null || IsCancelling) return;
 
-            System.Diagnostics.Debug.WriteLine($"🔵 Cancel booking: {booking.ActivityBookingId}");
+            System.Diagnostics.Debug.WriteLine($"Cancel booking: {booking.ActivityBookingId}");
 
             bool confirm = await Shell.Current.DisplayAlert(
                 "Cancel Booking",
@@ -127,7 +126,7 @@ namespace HotelWebApp.Mobile.ViewModels
 
             if (!confirm)
             {
-                System.Diagnostics.Debug.WriteLine("⚠️ User cancelled");
+                System.Diagnostics.Debug.WriteLine("⚠User cancelled");
                 return;
             }
 
@@ -138,11 +137,11 @@ namespace HotelWebApp.Mobile.ViewModels
             {
                 var result = await _activityService.CancelBookingAsync(booking.ActivityBookingId);
 
-                System.Diagnostics.Debug.WriteLine($"🔵 Result: {result.Success}");
+                System.Diagnostics.Debug.WriteLine($"Result: {result.Success}");
 
                 if (result.Success)
                 {
-                    System.Diagnostics.Debug.WriteLine("✅ Cancelled, reloading...");
+                    System.Diagnostics.Debug.WriteLine("Cancelled, reloading...");
 
                     await LoadBookingsInternalAsync();
 
@@ -169,7 +168,7 @@ namespace HotelWebApp.Mobile.ViewModels
         [RelayCommand]
         private void ClearCancelledBookings()
         {
-            System.Diagnostics.Debug.WriteLine("🔵 Activating hide cancelled filter");
+            System.Diagnostics.Debug.WriteLine("Activating hide cancelled filter");
 
             var cancelledBookings = Bookings
                 .Where(b => b.Status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase))
@@ -177,7 +176,7 @@ namespace HotelWebApp.Mobile.ViewModels
 
             foreach (var booking in cancelledBookings)
             {
-                System.Diagnostics.Debug.WriteLine($"🔵 Removing: {booking.ActivityName}");
+                System.Diagnostics.Debug.WriteLine($"Removing: {booking.ActivityName}");
                 Bookings.Remove(booking);
             }
 
@@ -185,7 +184,7 @@ namespace HotelWebApp.Mobile.ViewModels
             HideCancelled = true;
 
             HasBookings = Bookings.Any();
-            System.Diagnostics.Debug.WriteLine($"✅ Cleared {cancelledBookings.Count}, filter saved to Preferences");
+            System.Diagnostics.Debug.WriteLine($"Cleared {cancelledBookings.Count}, filter saved to Preferences");
         }
 
         [RelayCommand]
