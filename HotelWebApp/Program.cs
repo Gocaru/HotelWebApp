@@ -34,7 +34,7 @@ namespace HotelWebApp
             // Configure Identity
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
-                options.SignIn.RequireConfirmedAccount = false;
+                options.SignIn.RequireConfirmedAccount = true;
             })
             .AddEntityFrameworkStores<HotelWebAppContext>()
             .AddDefaultUI() // Adiciona a UI padrão do Identity
@@ -70,6 +70,7 @@ namespace HotelWebApp
             // Add repositories
             builder.Services.AddScoped<IRoomRepository, RoomRepository>();
             builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+            builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
             builder.Services.AddScoped<IReservationService, ReservationService>();
             builder.Services.AddScoped<IAmenityRepository, AmenityRepository>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();

@@ -9,9 +9,6 @@ using System.Security.Claims;
 
 namespace HotelWebApp.Controllers.Api
 {
-    /// <summary>
-    /// Manages room reservations for guests including viewing, creating, canceling, and check-in operations
-    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(AuthenticationSchemes = "ApiScheme")]
@@ -34,11 +31,6 @@ namespace HotelWebApp.Controllers.Api
             _reservationService = reservationService;
         }
 
-        /// <summary>
-        /// Retrieves all reservations for the authenticated guest
-        /// </summary>
-        /// <returns>Complete reservation history including room details and amenities</returns>
-        // GET: api/reservations
         [HttpGet]
         public async Task<ActionResult<ApiResponse<List<ReservationDto>>>> GetMyReservations()
         {
@@ -103,12 +95,6 @@ namespace HotelWebApp.Controllers.Api
             }
         }
 
-        /// <summary>
-        /// Retrieves detailed information about a specific reservation
-        /// </summary>
-        /// <param name="id">The reservation ID</param>
-        /// <returns>Complete reservation details including room and amenities</returns>
-        // GET: api/reservations/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<ReservationDto>>> GetReservation(int id)
         {
@@ -186,13 +172,6 @@ namespace HotelWebApp.Controllers.Api
             }
         }
 
-        /// <summary>
-        /// Cancels a confirmed reservation
-        /// </summary>
-        /// <param name="id">The reservation ID to cancel</param>
-        /// <returns>Confirmation of cancellation</returns>
-        /// <remarks>Only confirmed reservations can be cancelled, and not on or after the check-in date</remarks>
-        // POST: api/reservations/{id}/cancel
         [HttpPost("{id}/cancel")]
         public async Task<ActionResult<ApiResponse<bool>>> CancelReservation(int id)
         {
@@ -269,13 +248,6 @@ namespace HotelWebApp.Controllers.Api
             }
         }
 
-        /// <summary>
-        /// Performs check-in for a confirmed reservation via the mobile app
-        /// </summary>
-        /// <param name="id">The reservation ID to check in</param>
-        /// <returns>Confirmation of check-in</returns>
-        /// <remarks>Check-in is only available on the reservation date for confirmed reservations</remarks>
-        // POST: api/reservations/{id}/check-in
         [HttpPost("{id}/check-in")]
         public async Task<ActionResult<ApiResponse<bool>>> CheckIn(int id)
         {
@@ -350,16 +322,6 @@ namespace HotelWebApp.Controllers.Api
             }
         }
 
-        /// <summary>
-        /// Creates a new room reservation for the authenticated guest
-        /// </summary>
-        /// <param name="request">Reservation details including room, dates, and number of guests</param>
-        /// <returns>The created reservation with confirmation details</returns>
-        /// <remarks>
-        /// Check-in time is automatically set to 12:00 PM and check-out to 11:00 AM.
-        /// The room must be available for the requested dates and have sufficient capacity.
-        /// </remarks>
-        // POST: api/reservations
         [HttpPost]
         public async Task<ActionResult<ApiResponse<ReservationDto>>> CreateReservation([FromBody] CreateReservationRequest request)
         {
@@ -375,7 +337,6 @@ namespace HotelWebApp.Controllers.Api
                     });
                 }
 
-                // Validar datas
                 if (request.CheckInDate < DateTime.Today)
                 {
                     return BadRequest(new ApiResponse<ReservationDto>
@@ -394,7 +355,6 @@ namespace HotelWebApp.Controllers.Api
                     });
                 }
 
-                // Verificar disponibilidade do quarto
                 var checkInWithTime = new DateTime(request.CheckInDate.Year, request.CheckInDate.Month, request.CheckInDate.Day, 12, 0, 0);
                 var checkOutWithTime = new DateTime(request.CheckOutDate.Year, request.CheckOutDate.Month, request.CheckOutDate.Day, 11, 0, 0);
 
@@ -413,7 +373,6 @@ namespace HotelWebApp.Controllers.Api
                     });
                 }
 
-                // Verificar capacidade do quarto
                 var room = await _roomRepo.GetByIdAsync(request.RoomId);
                 if (room == null)
                 {
@@ -433,7 +392,6 @@ namespace HotelWebApp.Controllers.Api
                     });
                 }
 
-                // Criar reserva usando o serviço
                 var viewModel = new HotelWebApp.Models.ReservationViewModel
                 {
                     GuestId = userId,
@@ -454,7 +412,6 @@ namespace HotelWebApp.Controllers.Api
                     });
                 }
 
-                // Buscar a última reserva criada por este utilizador (a que acabou de criar)
                 var userReservations = await _reservationRepo.GetReservationsByGuestIdWithDetailsAsync(userId);
                 var reservation = userReservations
                     .OrderByDescending(r => r.ReservationDate)

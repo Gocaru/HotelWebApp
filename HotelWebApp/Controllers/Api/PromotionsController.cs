@@ -1,4 +1,5 @@
 ﻿using HotelWebApp.Data;
+using HotelWebApp.Data.Repositories;
 using HotelWebApp.Models.Api;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +15,12 @@ namespace HotelWebApp.Controllers.Api
     public class PromotionsController : ControllerBase
     {
         private readonly HotelWebAppContext _context;
+        private readonly IPromotionRepository _promotionRepo;
 
-        public PromotionsController(HotelWebAppContext context)
+        public PromotionsController(HotelWebAppContext context, IPromotionRepository promotionRepo)
         {
             _context = context;
+            _promotionRepo = promotionRepo;
         }
 
         /// <summary>
@@ -47,7 +50,10 @@ namespace HotelWebApp.Controllers.Api
                     DiscountPercentage = p.DiscountPercentage,
                     ImageUrl = p.ImageUrl,
                     Terms = p.Terms,
-                    IsActive = p.IsActive
+                    IsActive = p.IsActive,
+                    Type = p.Type,
+                    MinimumNights = p.MinimumNights,
+                    MinimumDaysInAdvance = p.MinimumDaysInAdvance
                 }).ToList();
 
                 return Ok(new ApiResponse<List<PromotionDto>>
@@ -102,7 +108,10 @@ namespace HotelWebApp.Controllers.Api
                     DiscountPercentage = promotion.DiscountPercentage,
                     ImageUrl = promotion.ImageUrl,
                     Terms = promotion.Terms,
-                    IsActive = promotion.IsActive
+                    IsActive = promotion.IsActive,
+                    Type = promotion.Type,
+                    MinimumNights = promotion.MinimumNights,
+                    MinimumDaysInAdvance = promotion.MinimumDaysInAdvance
                 };
 
                 return Ok(new ApiResponse<PromotionDto>
@@ -124,12 +133,8 @@ namespace HotelWebApp.Controllers.Api
         }
 
         /// <summary>
-        /// Gets promotions valid for specific dates
+        /// Gets promotions valid for specific dates with business rule validation
         /// </summary>
-        /// <param name="checkInDate">Check-in date</param>
-        /// <param name="checkOutDate">Check-out date</param>
-        /// <returns>List of applicable promotions</returns>
-        // GET: api/promotions/available?checkInDate=2025-10-01&checkOutDate=2025-10-05
         [HttpGet("available")]
         [AllowAnonymous]
         public async Task<ActionResult<ApiResponse<List<PromotionDto>>>> GetAvailablePromotions(
@@ -150,12 +155,8 @@ namespace HotelWebApp.Controllers.Api
                     });
                 }
 
-                var promotions = await _context.Promotions
-                    .Where(p => p.IsActive
-                        && p.StartDate <= checkInDate  // Promoção já começou
-                        && p.EndDate >= checkInDate)   // Promoção ainda não acabou no check-in
-                    .OrderByDescending(p => p.DiscountPercentage)
-                    .ToListAsync();
+                // Usar o repository que já tem a lógica!
+                var promotions = await _promotionRepo.GetPromotionsForDateRangeAsync(checkInDate, checkOutDate);
 
                 var promotionDtos = promotions.Select(p => new PromotionDto
                 {
@@ -167,7 +168,10 @@ namespace HotelWebApp.Controllers.Api
                     DiscountPercentage = p.DiscountPercentage,
                     ImageUrl = p.ImageUrl,
                     Terms = p.Terms,
-                    IsActive = p.IsActive
+                    IsActive = p.IsActive,
+                    Type = p.Type,                               
+                    MinimumNights = p.MinimumNights,           
+                    MinimumDaysInAdvance = p.MinimumDaysInAdvance
                 }).ToList();
 
                 return Ok(new ApiResponse<List<PromotionDto>>

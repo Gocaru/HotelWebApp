@@ -98,5 +98,13 @@ namespace HotelWebApp.Data.Repositories
         /// <returns>A task that represents the asynchronous operation. The task result contains a collection of past-due confirmed reservations.</returns>
         Task<IEnumerable<Reservation>> GetPastConfirmedReservationsAsync();
 
+        /// <summary>
+        /// Asynchronously cancels all pending or confirmed activity bookings associated with a reservation.
+        /// Used when a reservation is cancelled to free up activity spots.
+        /// </summary>
+        /// <param name="reservationId">The ID of the reservation whose activities should be cancelled.</param>
+        /// <returns>A task that represents the asynchronous save operation.</returns>
+        Task CancelActivityBookingsForReservationAsync(int reservationId);
+
     }
 }

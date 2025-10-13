@@ -144,38 +144,43 @@ namespace HotelWebApp.Data.Seed
             if (!_context.Promotions.Any())
             {
                 var promotions = new List<Promotion>
-                {
-                    new Promotion
-                    {
-                        Title = "Autumn Special - 20% Off",
-                        Description = "Book 3 nights or more and get 20% discount on your stay",
-                        StartDate = new DateTime(2025, 9, 30),
-                        EndDate = new DateTime(2025, 11, 30),
-                        DiscountPercentage = 20,
-                        IsActive = true,
-                        Terms = "Valid for bookings made between September and November. Cannot be combined with other offers."
-                    },
-                    new Promotion
-                    {
-                        Title = "Weekend Getaway",
-                        Description = "Special weekend rates for Friday and Saturday nights",
-                        StartDate = new DateTime(2025, 1, 1),
-                        EndDate = new DateTime(2025, 12, 31),
-                        DiscountPercentage = 15,
-                        IsActive = true,
-                        Terms = "Valid only for weekend stays (Friday-Sunday). Subject to availability."
-                    },
-                    new Promotion
-                    {
-                        Title = "Early Bird Discount",
-                        Description = "Book 30 days in advance and save 10%",
-                        StartDate = new DateTime(2025, 1, 1),
-                        EndDate = new DateTime(2025, 12, 31),
-                        DiscountPercentage = 10,
-                        IsActive = true,
-                        Terms = "Must be booked at least 30 days before check-in date. Non-refundable."
-                    }
-                };
+        {
+            new Promotion
+            {
+                Title = "Autumn Special - 20% Off",
+                Description = "Book 3 nights or more and get 20% discount on your stay",
+                StartDate = new DateTime(2025, 9, 30),
+                EndDate = new DateTime(2025, 11, 30),
+                DiscountPercentage = 20,
+                IsActive = true,
+                Type = PromotionType.LongStay,         
+                MinimumNights = 3,                   
+                Terms = "Valid for bookings made between September and November. Cannot be combined with other offers."
+            },
+            new Promotion
+            {
+                Title = "Weekend Getaway",
+                Description = "Special weekend rates for Friday and Saturday nights",
+                StartDate = new DateTime(2025, 1, 1),
+                EndDate = new DateTime(2025, 12, 31),
+                DiscountPercentage = 15,
+                IsActive = true,
+                Type = PromotionType.Weekend,        
+                Terms = "Valid only for weekend stays (Friday-Sunday). Subject to availability."
+            },
+            new Promotion
+            {
+                Title = "Early Bird Discount",
+                Description = "Book 30 days in advance and save 10%",
+                StartDate = new DateTime(2025, 1, 1),
+                EndDate = new DateTime(2025, 12, 31),
+                DiscountPercentage = 10,
+                IsActive = true,
+                Type = PromotionType.EarlyBird,         
+                MinimumDaysInAdvance = 30,           
+                Terms = "Must be booked at least 30 days before check-in date. Non-refundable."
+            }
+        };
 
                 await _context.Promotions.AddRangeAsync(promotions);
                 await _context.SaveChangesAsync();

@@ -1,4 +1,6 @@
-﻿namespace HotelWebApp.Models.Api
+﻿using HotelWebApp.Data.Entities;
+
+namespace HotelWebApp.Models.Api
 {
     /// <summary>
     /// Represents a promotional offer or special deal available at the hotel
@@ -14,5 +16,8 @@
         public string? ImageUrl { get; set; }
         public string? Terms { get; set; }
         public bool IsActive { get; set; }
+        public PromotionType Type { get; set; } = PromotionType.General;
+        public int? MinimumNights { get; set; }     
+        public int? MinimumDaysInAdvance { get; set; }
     }
 }

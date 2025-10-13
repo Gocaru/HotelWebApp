@@ -15,6 +15,6 @@ namespace HotelWebApp.Models.Api
         [Range(1, 50)]
         public int NumberOfPeople { get; set; }
 
-        public int? ReservationId { get; set; }
+        public int ReservationId { get; set; }
     }
 }

@@ -108,7 +108,7 @@ namespace HotelWebApp.Controllers.Api
                     Schedule = activity.Schedule,
                     Capacity = activity.Capacity,
                     ImageUrl = activity.ImageUrl,
-                    CurrentParticipants = currentParticipants 
+                    CurrentParticipants = currentParticipants
                 };
 
                 return Ok(new ApiResponse<ActivityDto>
@@ -156,7 +156,6 @@ namespace HotelWebApp.Controllers.Api
                     });
                 }
 
-                // Validar que a data não é no passado
                 if (date.Date < DateTime.Today)
                 {
                     return BadRequest(new ApiResponse<ActivityAvailabilityDto>
@@ -168,7 +167,7 @@ namespace HotelWebApp.Controllers.Api
 
                 var currentParticipants = await _context.ActivityBookings
                     .Where(ab => ab.ActivityId == id
-                        && ab.ScheduledDate.Date == date.Date  // ✅ DATA ESPECÍFICA
+                        && ab.ScheduledDate.Date == date.Date
                         && (ab.Status == ActivityBookingStatus.Pending
                             || ab.Status == ActivityBookingStatus.Confirmed))
                     .SumAsync(ab => ab.NumberOfPeople);
@@ -220,6 +219,7 @@ namespace HotelWebApp.Controllers.Api
             try
             {
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized(new ApiResponse<ActivityBookingDto>
@@ -241,12 +241,17 @@ namespace HotelWebApp.Controllers.Api
                     });
                 }
 
-                if (request.ScheduledDate < DateTime.Today)
+                var debugInfo = $"Server Today: {DateTime.Today:yyyy-MM-dd HH:mm:ss} | " +
+                                $"Server UtcNow: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} | " +
+                                $"Request Date: {request.ScheduledDate:yyyy-MM-dd HH:mm:ss} | " +
+                                $"Request.Date: {request.ScheduledDate.Date:yyyy-MM-dd}";
+
+                if (request.ScheduledDate.Date < DateTime.Today)
                 {
                     return BadRequest(new ApiResponse<ActivityBookingDto>
                     {
                         Success = false,
-                        Message = "Scheduled date cannot be in the past"
+                        Message = $"DEBUG: Scheduled date in past | {debugInfo}"
                     });
                 }
 
@@ -255,27 +260,58 @@ namespace HotelWebApp.Controllers.Api
                     return BadRequest(new ApiResponse<ActivityBookingDto>
                     {
                         Success = false,
-                        Message = $"Number of people must be between 1 and {activity.Capacity}"
+                        Message = $"DEBUG: Invalid participants | Requested: {request.NumberOfPeople} | Capacity: {activity.Capacity}"
                     });
                 }
 
-                // Verificar se o utilizador tem uma reserva ativa
-                Reservation? activeReservation = null;
-                if (request.ReservationId.HasValue)
-                {
-                    activeReservation = await _context.Reservations
-                        .FirstOrDefaultAsync(r => r.Id == request.ReservationId.Value
-                            && r.GuestId == userId
-                            && (r.Status == ReservationStatus.Confirmed || r.Status == ReservationStatus.CheckedIn));
+                // ✅ CORRIGIDO: Verificar se a reserva existe e pertence ao user
+                var reservation = await _context.Reservations
+                    .FirstOrDefaultAsync(r => r.Id == request.ReservationId
+                        && r.GuestId == userId
+                        && (r.Status == ReservationStatus.Confirmed || r.Status == ReservationStatus.CheckedIn));
 
-                    if (activeReservation == null)
+                if (reservation == null)
+                {
+                    return BadRequest(new ApiResponse<ActivityBookingDto>
                     {
-                        return BadRequest(new ApiResponse<ActivityBookingDto>
-                        {
-                            Success = false,
-                            Message = "Invalid or inactive reservation"
-                        });
-                    }
+                        Success = false,
+                        Message = "DEBUG: Reservation not found or does not belong to user"
+                    });
+                }
+
+                var reservationDebug = $"Reservation ID: {reservation.Id} | " +
+                                      $"Status: {reservation.Status} | " +
+                                      $"CheckIn: {reservation.CheckInDate:dd/MM/yyyy} | " +
+                                      $"CheckOut: {reservation.CheckOutDate:dd/MM/yyyy}";
+
+                // ✅ CORRIGIDO: Validar se a data está dentro do período
+                var dateInRange = request.ScheduledDate.Date >= reservation.CheckInDate.Date &&
+                                  request.ScheduledDate.Date <= reservation.CheckOutDate.Date;
+
+                if (!dateInRange)
+                {
+                    return BadRequest(new ApiResponse<ActivityBookingDto>
+                    {
+                        Success = false,
+                        Message = $"DEBUG: Date NOT in range | {reservationDebug} | Requested: {request.ScheduledDate:dd/MM/yyyy}"
+                    });
+                }
+
+                var currentParticipants = await _context.ActivityBookings
+                    .Where(ab => ab.ActivityId == id
+                        && ab.ScheduledDate.Date == request.ScheduledDate.Date
+                        && (ab.Status == ActivityBookingStatus.Pending || ab.Status == ActivityBookingStatus.Confirmed))
+                    .SumAsync(ab => ab.NumberOfPeople);
+
+                var availableSpots = activity.Capacity - currentParticipants;
+
+                if (currentParticipants + request.NumberOfPeople > activity.Capacity)
+                {
+                    return BadRequest(new ApiResponse<ActivityBookingDto>
+                    {
+                        Success = false,
+                        Message = $"DEBUG: Not enough spots | Available: {availableSpots} | Requested: {request.NumberOfPeople}"
+                    });
                 }
 
                 var totalPrice = activity.Price * request.NumberOfPeople;
@@ -284,7 +320,7 @@ namespace HotelWebApp.Controllers.Api
                 {
                     ActivityId = id,
                     GuestId = userId,
-                    ReservationId = request.ReservationId,
+                    ReservationId = reservation.Id,  // ✅ CORRIGIDO
                     BookingDate = DateTime.UtcNow,
                     ScheduledDate = request.ScheduledDate,
                     NumberOfPeople = request.NumberOfPeople,
@@ -310,7 +346,7 @@ namespace HotelWebApp.Controllers.Api
                 {
                     Success = true,
                     Data = bookingDto,
-                    Message = "Activity booked successfully"
+                    Message = $"DEBUG: SUCCESS! Booking created | BookingId: {booking.Id} | {reservationDebug}"
                 });
             }
             catch (Exception ex)
@@ -318,8 +354,8 @@ namespace HotelWebApp.Controllers.Api
                 return StatusCode(500, new ApiResponse<ActivityBookingDto>
                 {
                     Success = false,
-                    Message = "Error booking activity",
-                    Errors = new List<string> { ex.Message }
+                    Message = $"DEBUG: Exception | {ex.Message}",
+                    Errors = new List<string> { ex.Message, ex.StackTrace }
                 });
             }
         }
@@ -346,7 +382,7 @@ namespace HotelWebApp.Controllers.Api
                 }
 
                 var bookings = await _context.ActivityBookings
-                    .Include(ab => ab.Activity) 
+                    .Include(ab => ab.Activity)
                     .Where(ab => ab.GuestId == userId)
                     .OrderByDescending(ab => ab.BookingDate)
                     .ToListAsync();
@@ -360,7 +396,7 @@ namespace HotelWebApp.Controllers.Api
                     NumberOfPeople = b.NumberOfPeople,
                     Status = b.Status.ToString(),
                     TotalPrice = b.TotalPrice,
-                    ActivityLocation = b.Activity.Schedule, 
+                    ActivityLocation = b.Activity.Schedule,
                     ActivityDuration = b.Activity.Duration,
                     ActivitySchedule = b.Activity.Schedule,
                     ActivityPrice = b.Activity.Price

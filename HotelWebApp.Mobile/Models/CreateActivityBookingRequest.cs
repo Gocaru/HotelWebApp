@@ -11,6 +11,11 @@ namespace HotelWebApp.Mobile.Models
         public int ActivityId { get; set; }
         public DateTime ScheduledDate { get; set; }
         public int NumberOfPeople { get; set; }
-        public int? ReservationId { get; set; }
+        public int ReservationId { get; set; }
+
+        public override string ToString()
+        {
+            return $"Activity:{ActivityId}, Date:{ScheduledDate:yyyy-MM-dd HH:mm:ss zzz}, People:{NumberOfPeople}, Reservation:{ReservationId}";
+        }
     }
 }

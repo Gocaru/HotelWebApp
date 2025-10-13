@@ -51,48 +51,6 @@
             <VerticalStackLayout Padding="40,30"
                                  Spacing="30">
 
-                <!-- YOUR CURRENT STAY CARD -->
-                <Border StrokeThickness="0"
-                        StrokeShape="RoundRectangle 16"
-                        Padding="24"
-                        BackgroundColor="#1E3A8A">
-                    <Border.Shadow>
-                        <Shadow Brush="Black" Opacity="0.15" Radius="10" Offset="0,4"/>
-                    </Border.Shadow>
-                    <VerticalStackLayout Spacing="18">
-                        <Label Text="Your Current Stay"
-                               FontSize="18"
-                               FontAttributes="Bold"
-                               TextColor="White"/>
-
-                        <!-- Room Number -->
-                        <VerticalStackLayout Spacing="6">
-                            <Label Text="Room Number"
-                                   FontSize="12"
-                                   FontAttributes="Bold"
-                                   TextColor="White"
-                                   Opacity="0.7"/>
-                            <Label Text="Suite 1402"
-                                   FontSize="18"
-                                   FontAttributes="Bold"
-                                   TextColor="White"/>
-                        </VerticalStackLayout>
-
-                        <!-- Check-out Date -->
-                        <VerticalStackLayout Spacing="6">
-                            <Label Text="Check-out"
-                                   FontSize="12"
-                                   FontAttributes="Bold"
-                                   TextColor="White"
-                                   Opacity="0.7"/>
-                            <Label Text="October 15, 2025"
-                                   FontSize="18"
-                                   FontAttributes="Bold"
-                                   TextColor="White"/>
-                        </VerticalStackLayout>
-                    </VerticalStackLayout>
-                </Border>
-
                 <!-- STATISTICS -->
                 <Grid ColumnDefinitions="*,*"
                       ColumnSpacing="15">

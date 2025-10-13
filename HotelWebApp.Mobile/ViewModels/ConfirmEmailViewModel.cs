@@ -66,7 +66,8 @@ namespace HotelWebApp.Mobile.ViewModels
                         "OK");
 
                     // Navegar para login
-                    await Shell.Current.GoToAsync($"///{nameof(LoginPage)}");
+                    Application.Current.MainPage = new NavigationPage(
+                        new LoginPage(Application.Current.Handler.MauiContext.Services.GetService<LoginViewModel>()));
                 }
                 else
                 {
@@ -130,7 +131,8 @@ namespace HotelWebApp.Mobile.ViewModels
         [RelayCommand]
         private async Task BackToLoginAsync()
         {
-            await Shell.Current.GoToAsync($"///{nameof(LoginPage)}");
+            Application.Current.MainPage = new NavigationPage(
+                new LoginPage(Application.Current.Handler.MauiContext.Services.GetService<LoginViewModel>()));
         }
     }
 }

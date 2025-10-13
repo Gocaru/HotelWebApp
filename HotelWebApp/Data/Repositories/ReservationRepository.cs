@@ -50,6 +50,8 @@ namespace HotelWebApp.Data.Repositories
                     .ThenInclude(ra => ra.Amenity)
                 .Include(r => r.Invoice)
                 .Include(r => r.Promotion)
+                .Include(r => r.ActivityBookings)  
+                    .ThenInclude(ab => ab.Activity) 
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
@@ -104,8 +106,10 @@ namespace HotelWebApp.Data.Repositories
             var query = _context.Reservations
                 .Where(r => r.RoomId == roomId &&
                              r.Status != ReservationStatus.Cancelled &&
+                             r.Status != ReservationStatus.CheckedOut &&
+                             r.Status != ReservationStatus.Completed &&
                              r.CheckInDate < checkOut &&
-                             r.CheckInDate > checkIn);
+                             r.CheckOutDate > checkIn);
 
             // When editing a reservation, we must exclude it from the check,
             // otherwise it would conflict with itself.
@@ -162,7 +166,8 @@ namespace HotelWebApp.Data.Repositories
         public async Task<IEnumerable<Reservation>> GetReservationsForCheckInOnDateAsync(DateTime date)
         {
             return await _context.Reservations
-                .Where(r => r.CheckInDate.Date == date.Date && r.Status != ReservationStatus.Cancelled)
+                .Where(r => r.CheckInDate.Date == date.Date
+                    && r.Status == ReservationStatus.Confirmed)
                 .Include(r => r.ApplicationUser)
                 .Include(r => r.Room)
                 .ToListAsync();
@@ -212,6 +217,25 @@ namespace HotelWebApp.Data.Repositories
                 .Include(r => r.Room)
                 .Where(r => r.Status == ReservationStatus.Confirmed && r.CheckInDate.Date < today)
                 .ToListAsync();
+        }
+
+        public async Task CancelActivityBookingsForReservationAsync(int reservationId)
+        {
+            var activityBookings = await _context.ActivityBookings
+                .Where(ab => ab.ReservationId == reservationId
+                    && (ab.Status == ActivityBookingStatus.Pending || ab.Status == ActivityBookingStatus.Confirmed))
+                .ToListAsync();
+
+            foreach (var booking in activityBookings)
+            {
+                booking.Status = ActivityBookingStatus.Cancelled;
+            }
+
+            if (activityBookings.Any())
+            {
+                await _context.SaveChangesAsync();
+                System.Diagnostics.Debug.WriteLine($"✅ Cancelled {activityBookings.Count} activity bookings for reservation {reservationId}");
+            }
         }
 
     }

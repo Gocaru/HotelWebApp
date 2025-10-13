@@ -1,28 +1,29 @@
 ﻿using HotelWebApp.Data;
 using HotelWebApp.Data.Entities;
+using HotelWebApp.Data.Repositories;
 using HotelWebApp.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelWebApp.Services
 {
-    /// <summary>
-    /// Implements the IPaymentService interface to provide business logic for financial operations.
-    /// This service interacts directly with the DbContext to ensure transactional integrity.
-    /// </summary>
     public class PaymentService : IPaymentService
     {
         private readonly HotelWebAppContext _context;
+        private readonly IInvoiceRepository _invoiceRepo;
 
-        public PaymentService(HotelWebAppContext context)
+        public PaymentService(HotelWebAppContext context, IInvoiceRepository invoiceRepo)
         {
             _context = context;
+            _invoiceRepo = invoiceRepo;
         }
 
         public async Task<Result<Invoice>> CreateInvoiceForReservationAsync(int reservationId)
         {
             var reservation = await _context.Reservations
+                .Include(r => r.Room)
                 .Include(r => r.ReservationAmenities)
-                .Include(r => r.Invoice)
+                    .ThenInclude(ra => ra.Amenity)
+                .Include(r => r.ActivityBookings)
                 .FirstOrDefaultAsync(r => r.Id == reservationId);
 
             if (reservation == null)
@@ -30,122 +31,158 @@ namespace HotelWebApp.Services
                 return Result<Invoice>.Failure("Reservation not found.");
             }
 
-            if (reservation.Invoice != null)
+            if (reservation.Status != ReservationStatus.CheckedIn)
             {
-                return Result<Invoice>.Success(reservation.Invoice);
+                return Result<Invoice>.Failure("Only checked-in reservations can generate invoices.");
             }
 
-            // Calculate amenities total
-            decimal amenitiesTotal = reservation.ReservationAmenities.Sum(ra => ra.PriceAtTimeOfBooking * ra.Quantity);
+            var existingInvoice = await _invoiceRepo.GetByReservationIdAsync(reservationId);
 
-            // Calculate activities total (only Completed activities linked to this reservation)
-            decimal activitiesTotal = await _context.ActivityBookings
-                .Where(ab => ab.ReservationId == reservationId && ab.Status == ActivityBookingStatus.Completed)
-                .SumAsync(ab => ab.TotalPrice);
+            if (existingInvoice != null)
+            {
+                return Result<Invoice>.Success(existingInvoice, "Invoice already exists for this reservation.");
+            }
 
-            // Calculate final amount including activities
-            decimal finalInvoiceAmount = reservation.TotalPrice + amenitiesTotal + activitiesTotal;
+
+            // CALCULAR PREÇO DO QUARTO DO ZERO
+            var nights = (reservation.CheckOutDate - reservation.CheckInDate).Days;
+            if (nights <= 0) nights = 1;
+
+            decimal roomBasePrice = reservation.Room.PricePerNight * nights;
+
+            // APLICAR DESCONTO SE EXISTIR
+            decimal roomPrice = roomBasePrice;
+            if (reservation.DiscountPercentage.HasValue && reservation.DiscountPercentage > 0)
+            {
+                decimal discount = roomBasePrice * (reservation.DiscountPercentage.Value / 100);
+                roomPrice = roomBasePrice - discount;
+            }
+
+            // AMENITIES
+            decimal amenitiesCost = reservation.ReservationAmenities?
+                .Sum(ra => ra.PriceAtTimeOfBooking * ra.Quantity) ?? 0;
+
+
+            if (reservation.ActivityBookings != null)
+            {
+                foreach (var ab in reservation.ActivityBookings)
+                {
+                    System.Diagnostics.Debug.WriteLine($"  - {ab.Activity?.Name ?? "Unknown"}: Status={ab.Status}, Price=€{ab.TotalPrice:F2}");
+                }
+            }
+
+            decimal activitiesCost = reservation.ActivityBookings?
+                .Where(ab => ab.Status != ActivityBookingStatus.Cancelled)
+                .Sum(ab => ab.TotalPrice) ?? 0;
+
+            System.Diagnostics.Debug.WriteLine($"Activities (non-cancelled): €{activitiesCost:F2}");
+
+            // TOTAL
+            decimal totalAmount = roomPrice + amenitiesCost + activitiesCost;
 
             var invoice = new Invoice
             {
-                ReservationId = reservation.Id,
+                ReservationId = reservationId,
                 GuestId = reservation.GuestId,
                 InvoiceDate = DateTime.UtcNow,
-                TotalAmount = finalInvoiceAmount,
+                TotalAmount = totalAmount,
                 Status = InvoiceStatus.Unpaid
             };
 
-            _context.Invoices.Add(invoice);
-            await _context.SaveChangesAsync();
+            await _invoiceRepo.CreateAsync(invoice);
 
-            return Result<Invoice>.Success(invoice);
+            return Result<Invoice>.Success(invoice, "Invoice created successfully.");
         }
 
         public async Task<Result> ProcessPaymentAsync(int invoiceId, decimal amount, PaymentMethod paymentMethod)
         {
-            // Eagerly load the Reservation and existing Payments to perform all business logic.
-            var invoice = await _context.Invoices
-                .Include(i => i.Reservation)
-                .Include(i => i.Payments)
-                .FirstOrDefaultAsync(i => i.Id == invoiceId);
+            var invoice = await _invoiceRepo.GetByIdAsync(invoiceId);
 
-            // --- Business Rule Validations ---
-            if (invoice == null) return Result.Failure("Invoice not found.");
-            if (invoice.Status == InvoiceStatus.Paid) return Result.Failure("Invoice is already fully paid.");
-            if (amount <= 0) return Result.Failure("Payment amount must be positive.");
-
-            var totalPaidSoFar = invoice.Payments.Sum(p => p.Amount);
-            var balanceDue = invoice.TotalAmount - totalPaidSoFar;
-
-            if (amount > balanceDue)
+            if (invoice == null)
             {
-                return Result.Failure($"Payment of {amount:C} exceeds the balance due of {balanceDue:C}.");
+                return Result.Failure("Invoice not found.");
             }
-            // --- End of Validations ---
 
-            // Create the new payment record.
-            var newPayment = new Payment
+            if (invoice.Status == InvoiceStatus.Paid)
+            {
+                return Result.Failure("Invoice is already fully paid.");
+            }
+
+            var totalPaid = await _context.Payments
+                .Where(p => p.InvoiceId == invoiceId)
+                .SumAsync(p => p.Amount);
+
+            var remainingBalance = invoice.TotalAmount - totalPaid;
+
+            if (amount > remainingBalance)
+            {
+                return Result.Failure($"Payment amount exceeds remaining balance of {remainingBalance:C}.");
+            }
+
+            var payment = new Payment
             {
                 InvoiceId = invoiceId,
                 Amount = amount,
+                PaymentDate = DateTime.UtcNow,
                 PaymentMethod = paymentMethod,
-                PaymentDate = DateTime.UtcNow
+                TransactionId = GenerateTransactionId()
             };
-            _context.Payments.Add(newPayment);
 
-            // Update the invoice status based on the new total amount paid.
-            var newTotalPaid = totalPaidSoFar + amount;
-            if (newTotalPaid >= invoice.TotalAmount)
+            _context.Payments.Add(payment);
+
+            totalPaid += amount;
+            if (totalPaid >= invoice.TotalAmount)
             {
                 invoice.Status = InvoiceStatus.Paid;
-
-                // If the invoice is fully paid, also mark the reservation lifecycle as complete.
-                if (invoice.Reservation != null)
-                {
-                    invoice.Reservation.Status = ReservationStatus.Completed;
-                }
-            }
-            else
-            {
-                invoice.Status = InvoiceStatus.PartiallyPaid;
             }
 
-            // Save all changes (new Payment, updated Invoice, updated Reservation) in a single transaction.
             await _context.SaveChangesAsync();
 
-            return Result.Success("Payment registered successfully.");
+            return Result.Success("Payment processed successfully.");
         }
 
         public async Task<Result<Invoice>> CreateInvoiceForNoShowAsync(int reservationId)
         {
             var reservation = await _context.Reservations
                 .Include(r => r.Room)
-                .Include(r => r.Invoice)
                 .FirstOrDefaultAsync(r => r.Id == reservationId);
 
-            if (reservation == null) return Result<Invoice>.Failure("Reservation not found.");
-            if (reservation.Invoice != null) return Result<Invoice>.Success(reservation.Invoice); // Já existe
-
-            decimal noShowFee = reservation.Room?.PricePerNight ?? 0;
-
-            if (noShowFee <= 0)
+            if (reservation == null)
             {
-                return Result<Invoice>.Success(null, "No-show fee is zero, invoice not created.");
+                return Result<Invoice>.Failure("Reservation not found.");
             }
+
+            if (reservation.Status != ReservationStatus.NoShow)
+            {
+                return Result<Invoice>.Failure("Only no-show reservations can generate no-show invoices.");
+            }
+
+            var existingInvoice = await _invoiceRepo.GetByReservationIdAsync(reservationId);
+
+            if (existingInvoice != null)
+            {
+                return Result<Invoice>.Success(existingInvoice, "Invoice already exists for this reservation.");
+            }
+
+            decimal penaltyAmount = reservation.TotalPrice * 0.5m;
 
             var invoice = new Invoice
             {
-                ReservationId = reservation.Id,
+                ReservationId = reservationId,
                 GuestId = reservation.GuestId,
                 InvoiceDate = DateTime.UtcNow,
-                TotalAmount = noShowFee,
+                TotalAmount = penaltyAmount,
                 Status = InvoiceStatus.Unpaid
             };
 
-            _context.Invoices.Add(invoice);
-            await _context.SaveChangesAsync();
+            await _invoiceRepo.CreateAsync(invoice);
 
-            return Result<Invoice>.Success(invoice);
+            return Result<Invoice>.Success(invoice, "No-show invoice created successfully.");
+        }
+
+        private string GenerateTransactionId()
+        {
+            return $"TXN-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
         }
     }
 }

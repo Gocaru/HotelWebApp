@@ -376,14 +376,16 @@ namespace HotelWebApp.Controllers.Api
                     }
                 }
 
-                // 3. Activities
+                // 3. Activities - INCLUIR Pending, Confirmed e Completed (excluir só Cancelled)
                 var activities = await _context.ActivityBookings
                     .Include(ab => ab.Activity)
-                    .Where(ab => ab.ReservationId == invoice.ReservationId && ab.Status == ActivityBookingStatus.Completed)
+                    .Where(ab => ab.ReservationId == invoice.ReservationId
+                        && ab.Status != ActivityBookingStatus.Cancelled)  // CORRIGIDO
                     .ToListAsync();
 
                 foreach (var activityBooking in activities)
                 {
+
                     items.Add(new InvoiceItemDto
                     {
                         Description = $"{activityBooking.Activity?.Name ?? "Activity"} - {activityBooking.ScheduledDate:dd MMM yyyy}",

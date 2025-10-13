@@ -345,6 +345,8 @@ namespace HotelWebApp.Services
             {
                 reservation.Room.Status = RoomStatus.Available;
             }
+            await _reservationRepo.CancelActivityBookingsForReservationAsync(reservation.Id);
+
             await _reservationRepo.UpdateAsync(reservation);
         }
 

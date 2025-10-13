@@ -168,6 +168,10 @@ namespace HotelWebApp.Mobile.Services
 
         public async Task<ApiResponse<ActivityBookingDto>> BookActivityAsync(CreateActivityBookingRequest request)
         {
+            System.Diagnostics.Debug.WriteLine($" SERVICE - Before HTTP Call");
+            System.Diagnostics.Debug.WriteLine($"   request.ScheduledDate: {request.ScheduledDate:yyyy-MM-dd HH:mm:ss zzz}");
+            System.Diagnostics.Debug.WriteLine($"   request.ScheduledDate.Kind: {request.ScheduledDate.Kind}");
+
             try
             {
                 await AddAuthorizationHeaderAsync();
@@ -176,8 +180,9 @@ namespace HotelWebApp.Mobile.Services
                 System.Diagnostics.Debug.WriteLine($"ActivityId: {request.ActivityId}");
                 System.Diagnostics.Debug.WriteLine($"ScheduledDate: {request.ScheduledDate}");
                 System.Diagnostics.Debug.WriteLine($"NumberOfPeople: {request.NumberOfPeople}");
+                System.Diagnostics.Debug.WriteLine($"ReservationId: {request.ReservationId}");
 
-                // ✅ API espera POST para /api/Activities/{id}/book
+                // API espera POST para /api/Activities/{id}/book
                 var response = await _httpClient.PostAsJsonAsync(
                     $"api/Activities/{request.ActivityId}/book",
                     new
@@ -187,17 +192,18 @@ namespace HotelWebApp.Mobile.Services
                         ReservationId = request.ReservationId
                     });
 
-                System.Diagnostics.Debug.WriteLine($"StatusCode: {response.StatusCode}");
+                System.Diagnostics.Debug.WriteLine($"StatusCode: {response.StatusCode} ({(int)response.StatusCode})");
 
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    System.Diagnostics.Debug.WriteLine($"ERROR: {errorContent}");
+                    System.Diagnostics.Debug.WriteLine($"ERROR Content: {errorContent}");
 
+                    // Mostrar erro real no mobile
                     return new ApiResponse<ActivityBookingDto>
                     {
                         Success = false,
-                        Message = "Failed to book activity"
+                        Message = $"HTTP {(int)response.StatusCode}: {errorContent.Substring(0, Math.Min(300, errorContent.Length))}"
                     };
                 }
 

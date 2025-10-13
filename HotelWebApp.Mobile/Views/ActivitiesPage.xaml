@@ -14,17 +14,13 @@
         <ScrollView>
             <VerticalStackLayout Spacing="0">
 
-                <!-- HERO SECTION WITH IMAGE BACKGROUND -->
                 <Grid RowDefinitions="220">
-                    <!-- Background Image -->
                     <Image Source="hotel_lobby.jpg"
                            Aspect="AspectFill"/>
 
-                    <!-- White Overlay -->
                     <BoxView BackgroundColor="White"
                              Opacity="0.70"/>
 
-                    <!-- Content -->
                     <VerticalStackLayout VerticalOptions="Center" 
                                          Spacing="12"
                                          Padding="40,0">
@@ -47,17 +43,14 @@
                     </VerticalStackLayout>
                 </Grid>
 
-                <!-- CONTENT -->
                 <VerticalStackLayout Padding="40,30"
                                      Spacing="20">
 
-                    <!-- Loading Indicator -->
                     <ActivityIndicator IsRunning="{Binding IsBusy}"
                                        IsVisible="{Binding IsBusy}"
                                        Color="#1E3A8A"
                                        HeightRequest="50"/>
 
-                    <!-- Error Message -->
                     <Frame IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotEmptyConverter}}"
                            BackgroundColor="#FEE2E2"
                            BorderColor="#EF4444"
@@ -70,7 +63,6 @@
                                LineHeight="1.5"/>
                     </Frame>
 
-                    <!-- Empty State -->
                     <VerticalStackLayout IsVisible="{Binding HasActivities, Converter={StaticResource InvertedBoolConverter}}"
                                          Spacing="20"
                                          VerticalOptions="Center"
@@ -87,7 +79,6 @@
                                LineHeight="1.5"/>
                     </VerticalStackLayout>
 
-                    <!-- Activities List -->
                     <VerticalStackLayout IsVisible="{Binding HasActivities}"
                                          Spacing="20">
                         <CollectionView ItemsSource="{Binding Activities}"
@@ -114,14 +105,12 @@
                                               Padding="24"
                                               RowSpacing="16">
 
-                                            <!-- Activity Name -->
                                             <Label Grid.Row="0"
                                                    Text="{Binding Name}"
                                                    FontSize="20"
                                                    FontAttributes="Bold"
                                                    TextColor="{AppThemeBinding Light=#1E3A8A, Dark=#60A5FA}"/>
 
-                                            <!-- Description -->
                                             <Label Grid.Row="1"
                                                    Text="{Binding Description}"
                                                    FontSize="14"
@@ -131,12 +120,10 @@
                                                    LineHeight="1.5"
                                                    IsVisible="{Binding Description, Converter={StaticResource StringNotEmptyConverter}}"/>
 
-                                            <!-- Info Grid -->
                                             <Grid Grid.Row="2"
                                                   ColumnDefinitions="*,*"
                                                   ColumnSpacing="12">
 
-                                                <!-- Duration -->
                                                 <VerticalStackLayout Grid.Column="0"
                                                                      Spacing="4">
                                                     <Label Text="Duration"
@@ -148,7 +135,6 @@
                                                            TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"/>
                                                 </VerticalStackLayout>
 
-                                                <!-- Schedule -->
                                                 <VerticalStackLayout Grid.Column="1"
                                                                      Spacing="4">
                                                     <Label Text="Schedule"
@@ -162,7 +148,6 @@
                                                 </VerticalStackLayout>
                                             </Grid>
 
-                                            <!-- Price and Availability -->
                                             <Grid Grid.Row="3"
                                                   ColumnDefinitions="*,Auto"
                                                   Margin="0,8,0,0">

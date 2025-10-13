@@ -219,42 +219,6 @@
                         </CollectionView>
                     </VerticalStackLayout>
 
-                    <!-- Amenities -->
-                    <VerticalStackLayout Spacing="15"
-                                         IsVisible="{Binding Invoice.ReservationAmenities.Count, Converter={StaticResource IntToBoolConverter}}">
-                        <Label Text="Amenities"
-                               FontSize="20"
-                               FontAttributes="Bold"
-                               TextColor="{AppThemeBinding Light=#1E3A8A, Dark=#60A5FA}"/>
-
-                        <CollectionView ItemsSource="{Binding Invoice.ReservationAmenities}">
-                            <CollectionView.ItemTemplate>
-                                <DataTemplate x:DataType="models:ReservationAmenityDto">
-                                    <Border StrokeThickness="1"
-                                            Stroke="{AppThemeBinding Light=#E5E7EB, Dark=#374151}"
-                                            StrokeShape="RoundRectangle 10"
-                                            Padding="16"
-                                            Margin="0,0,0,10"
-                                            BackgroundColor="{AppThemeBinding Light=#F9FAFB, Dark=#1F2937}">
-                                        <Grid ColumnDefinitions="*,Auto">
-                                            <Label Grid.Column="0"
-                                                   Text="{Binding AmenityName}"
-                                                   FontSize="15"
-                                                   TextColor="{AppThemeBinding Light=#1F2937, Dark=#E5E7EB}"
-                                                   VerticalOptions="Center"/>
-                                            <Label Grid.Column="1"
-                                                   Text="{Binding Price, StringFormat='€{0:N2}'}"
-                                                   FontSize="18"
-                                                   FontAttributes="Bold"
-                                                   TextColor="{AppThemeBinding Light=#1E3A8A, Dark=#60A5FA}"
-                                                   VerticalOptions="Center"/>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
-                    </VerticalStackLayout>
-
                     <!-- Payment History -->
                     <VerticalStackLayout Spacing="15"
                                          IsVisible="{Binding Invoice.Payments.Count, Converter={StaticResource IntToBoolConverter}}">

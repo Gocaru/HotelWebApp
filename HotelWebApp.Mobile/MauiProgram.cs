@@ -3,7 +3,6 @@ using HotelWebApp.Mobile.Services;
 using HotelWebApp.Mobile.ViewModels;
 using HotelWebApp.Mobile.Views;
 using Microsoft.Extensions.Logging;
-//using Plugin.LocalNotification;
 
 namespace HotelWebApp.Mobile
 {

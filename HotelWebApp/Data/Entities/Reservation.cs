@@ -96,6 +96,11 @@ namespace HotelWebApp.Data.Entities
         public virtual Invoice? Invoice { get; set; }
 
         /// <summary>
+        /// Navigation property to the collection of activity bookings associated with this reservation.
+        /// </summary>
+        public virtual ICollection<ActivityBooking>? ActivityBookings { get; set; }
+
+        /// <summary>
         /// The ID of the promotion applied to this reservation, if any.
         /// </summary>
         public int? PromotionId { get; set; }
